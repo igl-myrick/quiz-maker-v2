@@ -135,6 +135,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"rate_limits": {
+                  Row: {
+                    "count": number,"scope": Database["public"]['Enums']["rate_limit_scope"],"subject": string,"window_ends_at": string,"window_start": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "count": number,"scope": Database["public"]['Enums']["rate_limit_scope"],"subject": string,"window_ends_at": string,"window_start": string
+                  }
+                  Update: {
+                    "count"?: number,"scope"?: Database["public"]['Enums']["rate_limit_scope"],"subject"?: string,"window_ends_at"?: string,"window_start"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"results": {
                   Row: {
                     "claim_token_hash": string | null,"created_at": string,"expires_at": string | null,"id": string,"outcome_ranking": Json | null,"owner_id": string | null,"quiz_id": string | null,"quiz_kind": Database["public"]['Enums']["quiz_kind"],"quiz_title": string,"quiz_version": number,"score": number | null,"snapshot": NonNullable<Json>
@@ -181,15 +195,27 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "get_result":
+            "get_quiz_for_edit":
 { Args: { "p_id": string }; Returns: Json
+                           },
+"get_result":
+{ Args: { "p_id": string }; Returns: Json
+                           },
+"hit_rate_limit":
+{ Args: { "p_max": number,"p_scope": Database["public"]['Enums']["rate_limit_scope"],"p_subject": string,"p_window": string }; Returns: boolean
+                           },
+"save_quiz":
+{ Args: { "p_quiz": Json }; Returns: Json
                            },
 "search_quizzes":
 { Args: { "p_cursor"?: Json,"p_limit"?: number,"p_query": string }; Returns: Json
+                           },
+"trim_text":
+{ Args: { "p_text": string }; Returns: string
                            }
           }
           Enums: {
-            "question_type": "single_choice"|"true_false"|"multi_select","quiz_kind": "trivia"|"personality"
+            "question_type": "single_choice"|"true_false"|"multi_select","quiz_kind": "trivia"|"personality","rate_limit_scope": "anon_submit"|"member_submit"|"quiz_create"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -309,7 +335,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "question_type": ["single_choice", "true_false", "multi_select"],"quiz_kind": ["trivia", "personality"]
+            "question_type": ["single_choice", "true_false", "multi_select"],"quiz_kind": ["trivia", "personality"],"rate_limit_scope": ["anon_submit", "member_submit", "quiz_create"]
           }
         }
 } as const

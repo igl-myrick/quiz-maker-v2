@@ -268,7 +268,7 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 - **Spec:** [`specs/01-quiz-taking.md`](specs/01-quiz-taking.md) (includes the submission rate limits and the client IP header). Do not build from it until its status says Approved.
 
 ### 2. Quiz creation
-- **Status:** Planned
+- **Status:** In progress
 - **Goal:** Logged-in members can create quizzes, which are always public, with an optional suggested time limit. They can edit and delete their own quizzes without affecting existing results. Each edit increases the quiz's version (see section 1). Quizzes must meet the validation rules in section 1, including unique titles per creator, and creating quizzes is rate limited (see section 6). Questions are single-choice, true/false, or multi-select (see section 1).
 - **Spec:** [`specs/02-quiz-creation.md`](specs/02-quiz-creation.md) (includes the text and count limits and the creation rate limit). Do not build from it until its status says Approved.
 
@@ -292,7 +292,7 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 - **Spec:** [`specs/05-settings.md`](specs/05-settings.md) (includes the text sizes, the Lexend font, and account deletion). Do not build from it until its status says Approved.
 
 ### 6. Quiz search
-- **Status:** In progress
+- **Status:** Done
 - **Goal:** Anyone can search the public quizzes and open a quiz's details popup (see section 1) from the results. Because all quizzes are public, this is how they are discovered.
 - **Notes:** Search matches only quiz titles and descriptions. A quiz matches when enough of the search words appear in them (Postgres full-text search is the expected approach, and the threshold and ranking are set in the spec). There are **no user-picked tags or categories**. Do not add them.
 - **Spec:** [`specs/06-quiz-search.md`](specs/06-quiz-search.md) (also covers the splash page and the quiz details popup's URL mechanism). Do not build from it until its status says Approved.
