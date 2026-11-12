@@ -258,7 +258,7 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 7. Settings (feature 5)
 
 ### 0. Project foundation
-- **Status:** In progress
+- **Status:** Done
 - **Goal:** Set up the project so features can be built on it: Vite, TypeScript, TanStack Router, TanStack Query, ESLint, Prettier, Vitest, the `typecheck` script, `.gitattributes`, the `vercel.json` rewrites, the local Supabase stack, and the core database schema and RLS for quizzes and results.
 - **Spec:** [`specs/00-project-foundation.md`](specs/00-project-foundation.md) (acceptance criteria, files in scope, out of scope). Do not build from it until its status says Approved.
 
@@ -278,7 +278,7 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 - **Spec:** [`specs/03-user-dashboard.md`](specs/03-user-dashboard.md) (includes "Save to my account" on the result page). Do not build from it until its status says Approved.
 
 ### 4. Authentication
-- **Status:** Planned
+- **Status:** In progress
 - **Goal:** Supabase Auth for members, using passwordless email login. The member enters their email address, receives a one-time code, and types it into the page they are on, then stays on that page once logged in. Signing up and logging in are the same flow, with no separate registration form. No passwords, no sign-in links, and no social or OAuth logins. Anonymous users can take quizzes but must log in to save results long term or create quizzes.
 - **Spec:** [`specs/04-authentication.md`](specs/04-authentication.md). Do not build from it until its status says Approved. Any change to the auth flow beyond that spec needs asking first.
 
