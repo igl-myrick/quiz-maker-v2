@@ -21,14 +21,18 @@ Members log in with a one-time code sent to their email. There are no passwords 
 
 - Quizzes are **always public**. There is no private, unlisted, or draft visibility option. Do not add one.
 - Creators can edit and delete their own quizzes. This **never changes existing results**. Each result stores a snapshot of the questions, answer options, correct answers, and scoring as they were when the quiz was taken. Results must not depend on the live quiz rows: deleting a quiz must not cascade to results, and result pages show a short notice (with no link) when the original quiz no longer exists.
-- **Edits during a take:** Each quiz has a version number that increases on every edit. A submission includes the version the taker loaded, and the grading function rejects it if the quiz has changed since. The taker then sees a clear message, announced to screen readers, saying the quiz changed while they were taking it, with a button to start the updated version. If the quiz was deleted, the submission is rejected with a message saying the quiz no longer exists. Do not keep old versions of questions to grade against.
+- **Edits during a take:** Each quiz has a version number that increases on every edit. A submission includes the version the taker loaded, and is always graded against **that** version, even if the quiz has since been edited or deleted. The result then shows the usual "updated since" or "no longer exists" notice.
+  - To make this possible, when a quiz is edited or deleted, the version being replaced is first saved as a **retired version**: a private, sealed copy including its answer key.
+  - No client can read retired versions. They are deleted automatically 24 hours after being retired, including those retired by deleting a quiz or an account.
+  - A submission whose version has neither live rows nor a retired copy (the take lasted more than a day) is rejected. The taker sees a clear message, announced to screen readers, saying the quiz changed or no longer exists, with a button to start the current version when there is one.
+  - Do not keep old versions for any other purpose or any longer. See `docs/adr/0003-retired-versions-for-in-progress-takes.md`.
 - **Progress during a take:** In-progress answers are saved in the browser's session storage as the taker goes (using Zustand's built-in persist middleware) and restored if the page reloads. Session storage is cleared when the tab closes, so unfinished quizzes do not pile up on the device. Saved progress is kept per quiz and per version, and is discarded if the quiz has changed since. Submitting clears it. Saved progress never goes to the server.
 - Every submitted quiz produces a result with its own **unguessable ID**, viewed at a result link. Anyone with the link can view that result, so results are effectively private unless the owner shares the link.
 - Result links fetch a result only by exact ID, through a database function. Never allow listing, searching, or enumerating results, and never create a policy that lets the public select from the results table. The one exception is a member listing their own results: RLS allows select only where the owner is the current user, and the dashboard uses this. No one can list anyone else's results, and anonymous results can never be listed. Result pages must not show an email or any other account identifier.
 - **Anonymous results expire after 1 day.** They are stored server-side with an `expires_at`. Reads must check `expires_at` and not rely only on cleanup, and expired links show a clear "expired" message. A Supabase Cron job deletes expired rows (see section 6).
 - **Claiming:** When an anonymous visitor submits a quiz, the server also returns a random **claim token**, once. Store only a hash of the token in the database, never the token itself. The browser keeps the token in local storage, keyed by result ID, and deletes it when the result is claimed or expires. Never put the token in a URL or log it, so sharing a result link never shares the ability to claim it. A logged-in member viewing an unexpired anonymous result in the browser that holds the token can choose "Save to my account". This runs through a single database function that atomically verifies the token hash, that the result has no owner, and that it has not expired, then sets the owner, clears `expires_at`, and clears the token hash. Claiming is always an explicit user action, never automatic, and it must not change the auth flow itself. Because login uses a code entered on the same page (see feature 4), the user is still on the result page after logging in. Without the token, or if the result is expired or already owned, it cannot be claimed and the "Save to my account" button is hidden. Members taking a quiz while logged in own their result immediately, with no token.
 - **Members' results are saved long term** with no expiry, appear in their dashboard, and can also be viewed by link. Results cannot be deleted individually by anyone, including their owner, so no role has a delete policy on the results table. A result row is removed only by account deletion or, for anonymous results, by the expiry cleanup job.
-- **Account deletion:** A member can delete their account from the settings menu (see feature 5). This permanently deletes the account, all of their results, all quizzes they created, and their saved settings. Other people's results for those quizzes are unaffected because results store snapshots, and they show the "quiz no longer exists" notice. Deletion requires explicit confirmation in an accessible dialog and runs in an edge function, because deleting an auth user needs the service role key. Set up foreign keys so the database does the cleanup: results, quizzes, and settings cascade from their owner, while results reference their quiz with `ON DELETE SET NULL` and never cascade from it.
+- **Account deletion:** A member can delete their account from the settings menu (see feature 5). This permanently deletes the account, all of their results, all quizzes they created, and their saved settings. Other people's results for those quizzes are unaffected because results store snapshots, and they show the "quiz no longer exists" notice. The only exception is the private retired copy of each deleted quiz's last version (see "Edits during a take"). No one can read it except the grading function, and it is deleted within 24 hours. Deletion requires explicit confirmation in an accessible dialog and runs in an edge function, because deleting an auth user needs the service role key. Set up foreign keys so the database does the cleanup: results, quizzes, and settings cascade from their owner, while results reference their quiz with `ON DELETE SET NULL` and never cascade from it.
 
 ### Quiz details popup
 
@@ -54,7 +58,7 @@ Members log in with a one-time code sent to their email. There are no passwords 
   - Single-choice questions have at least 2 options and exactly 1 correct option.
   - True/false questions have exactly 2 options, True and False, with 1 correct.
   - Multi-select questions have at least 2 options, with at least 1 correct and at least 1 incorrect.
-  - Personality quizzes have at least 2 outcomes. Every option maps to exactly 1 outcome and is worth a positive whole number of points (default 1). Every outcome is reachable from at least 1 option.
+  - Personality quizzes have at least 2 outcomes. Every option maps to exactly 1 outcome and is worth 1, 2, or 3 points (default 1), so no single answer can swing the outcome too far. Trivia answers have no points setting: a correct answer is always worth 1. Every outcome is reachable from at least 1 option.
   - Every question must be answered before a quiz can be submitted. A multi-select question counts as answered once at least 1 option is selected. If any are unanswered, an accessible error message names them and links to each one.
   - The creation form checks these rules with Zod, and the server checks them again: the function that saves a quiz rejects invalid quizzes, and the grading function rejects submissions with unanswered questions. Limits on text length and on the number of questions and options are set in feature 2's spec.
 
@@ -251,37 +255,27 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 ### 0. Project foundation
 - **Status:** Planned
 - **Goal:** Set up the project so features can be built on it: Vite, TypeScript, TanStack Router, TanStack Query, ESLint, Prettier, Vitest, the `typecheck` script, `.gitattributes`, the `vercel.json` rewrites, the local Supabase stack, and the core database schema and RLS for quizzes and results.
-- **Acceptance criteria:** TBD
-- **Files in scope:** TBD
-- **Out of scope:** Any feature UI.
+- **Spec:** [`specs/00-project-foundation.md`](specs/00-project-foundation.md) (acceptance criteria, files in scope, out of scope). Do not build from it until its status says Approved.
 
 ### 1. Quiz taking
 - **Status:** Planned
-- **Goal:** Anyone can take trivia and personality quizzes without an account. Each submission is graded server-side and produces a result link. This feature handles everything that happens at submission: a logged-in member owns their result immediately, while an anonymous result gets its 1-day expiry and its claim token (see section 1), which is issued, stored as a hash, and kept in the browser. Submissions for an outdated or deleted quiz, or with unanswered questions, are rejected, and in-progress answers survive a page reload (see section 1). Before starting, a quiz details popup (see section 1) shows the quiz's information and, if it has a suggested time, lets the taker choose to take it with or without the timer.
-- **Acceptance criteria:** TBD
-- **Files in scope:** TBD
-- **Out of scope:** The dashboard and the "Save to my account" button (feature 3), and creating quizzes (feature 2).
+- **Goal:** Anyone can take trivia and personality quizzes without an account. Each submission is graded server-side and produces a result link. This feature handles everything that happens at submission: a logged-in member owns their result immediately, while an anonymous result gets its 1-day expiry and its claim token (see section 1), which is issued, stored as a hash, and kept in the browser. Submissions are graded against the version the taker started on, even if the quiz was edited or deleted meanwhile, using 24-hour retired versions (see section 1). Submissions with unanswered questions are rejected, and in-progress answers survive a page reload (see section 1). Before starting, a quiz details popup (see section 1) shows the quiz's information and, if it has a suggested time, lets the taker choose to take it with or without the timer.
+- **Spec:** [`specs/01-quiz-taking.md`](specs/01-quiz-taking.md) (includes the submission rate limits and the client IP header). Do not build from it until its status says Approved.
 
 ### 2. Quiz creation
 - **Status:** Planned
 - **Goal:** Logged-in members can create quizzes, which are always public, with an optional suggested time limit. They can edit and delete their own quizzes without affecting existing results. Each edit increases the quiz's version (see section 1). Quizzes must meet the validation rules in section 1, including unique titles per creator, and creating quizzes is rate limited (see section 6). Questions are single-choice, true/false, or multi-select (see section 1).
-- **Acceptance criteria:** TBD
-- **Files in scope:** TBD
-- **Out of scope:** Taking quizzes (feature 1).
+- **Spec:** [`specs/02-quiz-creation.md`](specs/02-quiz-creation.md) (includes the text and count limits and the creation rate limit). Do not build from it until its status says Approved.
 
 ### 3. User dashboard
 - **Status:** Planned
 - **Goal:** Logged-in members see their saved quiz history and results, and the quizzes they have created. A member can also save a recent anonymous result to their account from its result page, but only in the browser that took the quiz, using the claim token issued in feature 1.
-- **Acceptance criteria:** TBD
-- **Files in scope:** TBD
-- **Out of scope:** Other users' results, which are reachable only by their link, and account deletion (feature 5).
+- **Spec:** [`specs/03-user-dashboard.md`](specs/03-user-dashboard.md) (includes "Save to my account" on the result page). Do not build from it until its status says Approved.
 
 ### 4. Authentication
 - **Status:** Planned
 - **Goal:** Supabase Auth for members, using passwordless email login. The member enters their email address, receives a one-time code, and types it into the page they are on, then stays on that page once logged in. Signing up and logging in are the same flow, with no separate registration form. No passwords, no sign-in links, and no social or OAuth logins. Anonymous users can take quizzes but must log in to save results long term or create quizzes.
-- **Acceptance criteria:** TBD
-- **Files in scope:** TBD
-- **Out of scope:** Any change to the auth flow without asking first.
+- **Spec:** [`specs/04-authentication.md`](specs/04-authentication.md). Do not build from it until its status says Approved. Any change to the auth flow beyond that spec needs asking first.
 
 ### 5. Settings
 - **Status:** Planned
@@ -290,17 +284,13 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
   - **Accessibility:** text size, high contrast, and a dyslexia-friendly font. High contrast defaults to following `prefers-contrast`.
   - **Account deletion**, shown only to logged-in members (see section 1).
 - **Notes:** Theme and accessibility settings are available to everyone, including anonymous visitors, whose settings are stored only in the browser's local storage. Logged-in members' settings are also saved to their account, in one row per member that only they can read or write, so their settings follow them across devices. Every device keeps a local copy so settings can be applied before the first paint and the page never flashes the wrong theme. When a member logs in, their account settings replace the local ones. If they have never saved settings to their account, their current local settings are saved to it instead. Allowed values are checked with Zod and by database constraints. Use Ply's theme support for light and dark (check the Ply docs). Text size scales the root font size, so text sizes elsewhere must use `rem`, not fixed pixels. Any font for the dyslexia-friendly option must be self-hosted, never loaded from a third-party service, and needs my approval before it is added. Settings only add to the accessibility baseline in section 8 and never turn any of it off.
-- **Acceptance criteria:** TBD
-- **Files in scope:** TBD
-- **Out of scope:** The accessibility baseline in section 8, which is always on.
+- **Spec:** [`specs/05-settings.md`](specs/05-settings.md) (includes the text sizes, the Lexend font, and account deletion). Do not build from it until its status says Approved.
 
 ### 6. Quiz search
 - **Status:** Planned
 - **Goal:** Anyone can search the public quizzes and open a quiz's details popup (see section 1) from the results. Because all quizzes are public, this is how they are discovered.
 - **Notes:** Search matches only quiz titles and descriptions. A quiz matches when enough of the search words appear in them (Postgres full-text search is the expected approach, and the threshold and ranking are set in the spec). There are **no user-picked tags or categories**. Do not add them.
-- **Acceptance criteria:** TBD
-- **Files in scope:** TBD
-- **Out of scope:** Suggestions or recommendations (stretch goal S4), and taking the quiz itself (feature 1).
+- **Spec:** [`specs/06-quiz-search.md`](specs/06-quiz-search.md) (also covers the splash page and the quiz details popup's URL mechanism). Do not build from it until its status says Approved.
 
 ## 12. Stretch goals
 
