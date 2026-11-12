@@ -54,9 +54,13 @@ async function requestCode(email: string) {
 
 type LoginDialogProps = {
   dialogRef: RefObject<HTMLDialogElement | null>
+  // Optional: called after a successful login, once the popup has closed. For pages
+  // where the button that opened the popup disappears on login, so focus can move
+  // somewhere sensible (such as the page heading).
+  onLoggedIn?: () => void
 }
 
-export function LoginDialog({ dialogRef }: LoginDialogProps) {
+export function LoginDialog({ dialogRef, onLoggedIn }: LoginDialogProps) {
   // The only local state: which step is showing, and the email the code was sent to.
   const [step, setStep] = useState<Step>('email')
   const [email, setEmail] = useState('')
@@ -87,6 +91,7 @@ export function LoginDialog({ dialogRef }: LoginDialogProps) {
     onSuccess: () => {
       dialogRef.current?.close()
       announce("You're logged in")
+      onLoggedIn?.()
     },
     onError: () => {
       codeForm.resetField('code')

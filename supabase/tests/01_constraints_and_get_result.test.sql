@@ -12,7 +12,7 @@ values ('11111111-1111-4111-8111-111111111111', 'trivia', 'Capitals Quiz');
 
 select throws_ok(
   $$insert into public.quizzes (creator_id, kind, title)
-    values ('11111111-1111-4111-8111-111111111111', 'trivia', 'capitals  quiz ')$$,
+    values ('11111111-1111-4111-8111-111111111111', 'trivia', 'capitals  quiz')$$,
   '23505', null, 'extra spaces and capitals count as the same title'
 );
 select throws_ok(

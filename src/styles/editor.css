@@ -1,0 +1,6 @@
+/* Ply only dims buttons with the disabled attribute. Move up and Move down use
+   aria-disabled instead, so they keep focus after a move; dim them the same way. */
+.btn[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

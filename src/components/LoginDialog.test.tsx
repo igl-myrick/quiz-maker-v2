@@ -20,11 +20,11 @@ vi.mock('../lib/supabase', () => ({
   },
 }))
 
-function renderLogin() {
+function renderLogin(onLoggedIn?: () => void) {
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
   return render(
     <QueryClientProvider client={queryClient}>
-      <LoginButton />
+      <LoginButton onLoggedIn={onLoggedIn} />
       <Announcer />
     </QueryClientProvider>,
   )
@@ -175,6 +175,35 @@ describe('LoginDialog', () => {
       type: 'email',
     })
     expect(await screen.findByText("You're logged in")).toBeInTheDocument()
+  })
+
+  it('calls onLoggedIn after a successful login, once the popup has closed', async () => {
+    const onLoggedIn = vi.fn(() => {
+      expect(getDialog()).not.toHaveAttribute('open')
+    })
+    renderLogin(onLoggedIn)
+    const codeField = await goToCodeStep()
+
+    fireEvent.change(codeField, { target: { value: '123456' } })
+    fireEvent.click(within(getDialog()).getByRole('button', { name: 'Log in' }))
+
+    await waitFor(() => expect(onLoggedIn).toHaveBeenCalledTimes(1))
+  })
+
+  it('does not call onLoggedIn when the code is wrong', async () => {
+    mocks.verifyOtp.mockResolvedValue({
+      data: {},
+      error: new AuthApiError('Token has expired or is invalid', 403, 'otp_expired'),
+    })
+    const onLoggedIn = vi.fn()
+    renderLogin(onLoggedIn)
+    const codeField = await goToCodeStep()
+
+    fireEvent.change(codeField, { target: { value: '123456' } })
+    fireEvent.click(within(getDialog()).getByRole('button', { name: 'Log in' }))
+
+    await screen.findByRole('alert', { hidden: true })
+    expect(onLoggedIn).not.toHaveBeenCalled()
   })
 
   it('has no detectable accessibility violations on either step', async () => {
