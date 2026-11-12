@@ -85,7 +85,7 @@ Use only these. Do not add competing libraries in any category.
 
 **Hosting:** Vercel, for the static front end only. All server logic lives in Supabase, so do not use Vercel functions or add Vercel-specific packages, and never enable Vercel Analytics or Speed Insights (see the no-telemetry rule). Direct loads of any URL, including result links and quiz URLs, must serve the app, so all paths rewrite to `index.html` (via `vercel.json`). Vercel's free Hobby plan is for personal, non-commercial use only, so revisit hosting if the site ever earns money.
 
-**Pre-approved dev dependencies:** `eslint-plugin-jsx-a11y` and `vitest-axe` (accessibility), and `@tanstack/router-plugin` (Vite plugin for file-based routing).
+**Pre-approved dev dependencies:** `eslint-plugin-jsx-a11y` and `vitest-axe` (accessibility), `@tanstack/router-plugin` (Vite plugin for file-based routing), and the `supabase` CLI (approved in feature 0).
 
 Never install any other library unless I have approved it for the current task.
 
@@ -94,19 +94,24 @@ Never install any other library unless I have approved it for the current task.
 Confirm exact script names in `package.json` before running.
 
 ```
-npm run dev          # Vite dev server
-npm run build        # Production build
-npm run lint         # ESLint
-npm run typecheck    # TypeScript check (tsc --noEmit), set up in feature 0
-npm run format       # Prettier
-npm test             # Vitest
+npm run dev            # Vite dev server
+npm run build          # Production build (tsc -b && vite build)
+npm run preview        # Serve the production build locally
+npm run lint           # ESLint
+npm run typecheck      # TypeScript check of every tsconfig (tsc -b; all set noEmit)
+npm run format         # Prettier (write)
+npm run format:check   # Prettier (check only)
+npm test               # Vitest, single run
 
-supabase start                                   # Local Supabase stack (Docker)
-supabase db reset                                # Rebuild local DB from migrations + seed
-supabase test db                                 # Run pgTAP database tests (supabase/tests/)
-supabase migration new <name>                    # Create a migration file
-supabase gen types typescript --local > src/types/database.types.ts
+npm run db:start       # supabase start: local Supabase stack (Docker)
+npm run db:stop        # supabase stop
+npm run db:reset       # supabase db reset: rebuild local DB from migrations + seed
+npm run db:test        # supabase test db: pgTAP database tests (supabase/tests/)
+npm run db:types       # regenerate src/types/database.types.ts from the local DB
+npm run db:new -- <name>   # supabase migration new <name>
 ```
+
+The Supabase CLI is a dev dependency, so outside npm scripts run it as `npx supabase …`. Never run commands that target a hosted project (`supabase link`, `db push`, `functions deploy`, or anything with `--remote`).
 
 ## 4. Project structure and code conventions
 
@@ -253,7 +258,7 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 7. Settings (feature 5)
 
 ### 0. Project foundation
-- **Status:** Planned
+- **Status:** In progress
 - **Goal:** Set up the project so features can be built on it: Vite, TypeScript, TanStack Router, TanStack Query, ESLint, Prettier, Vitest, the `typecheck` script, `.gitattributes`, the `vercel.json` rewrites, the local Supabase stack, and the core database schema and RLS for quizzes and results.
 - **Spec:** [`specs/00-project-foundation.md`](specs/00-project-foundation.md) (acceptance criteria, files in scope, out of scope). Do not build from it until its status says Approved.
 
