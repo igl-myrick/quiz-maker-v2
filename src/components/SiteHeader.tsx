@@ -23,7 +23,15 @@ export function SiteHeader() {
       <nav className="navbar" aria-label="Main">
         <ul>
           <li>
-            <Link to="/">Quiz Maker</Link>
+            <Link to="/" activeOptions={{ exact: true }}>
+              Quiz Maker
+            </Link>
+          </li>
+          <li>
+            {/* Marked aria-current="page" on /search, whatever the search terms. */}
+            <Link to="/search" activeOptions={{ includeSearch: false }}>
+              Search
+            </Link>
           </li>
           <li>
             {/* Hidden (but still taking up space) until Supabase reports the first session state. */}

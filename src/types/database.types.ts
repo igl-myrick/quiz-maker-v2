@@ -183,6 +183,9 @@ isOneToOne: false
           Functions: {
             "get_result":
 { Args: { "p_id": string }; Returns: Json
+                           },
+"search_quizzes":
+{ Args: { "p_cursor"?: Json,"p_limit"?: number,"p_query": string }; Returns: Json
                            }
           }
           Enums: {

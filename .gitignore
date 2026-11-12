@@ -4,3 +4,8 @@ dist/
 *.tsbuildinfo
 supabase/.temp/
 .superpowers/
+
+# Local agent tooling: installed skills, their lock file, and personal Claude settings
+.agents/
+.claude/
+skills-lock.json

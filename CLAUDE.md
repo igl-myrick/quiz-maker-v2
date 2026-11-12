@@ -278,7 +278,7 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 - **Spec:** [`specs/03-user-dashboard.md`](specs/03-user-dashboard.md) (includes "Save to my account" on the result page). Do not build from it until its status says Approved.
 
 ### 4. Authentication
-- **Status:** In progress
+- **Status:** Done
 - **Goal:** Supabase Auth for members, using passwordless email login. The member enters their email address, receives a one-time code, and types it into the page they are on, then stays on that page once logged in. Signing up and logging in are the same flow, with no separate registration form. No passwords, no sign-in links, and no social or OAuth logins. Anonymous users can take quizzes but must log in to save results long term or create quizzes.
 - **Spec:** [`specs/04-authentication.md`](specs/04-authentication.md). Do not build from it until its status says Approved. Any change to the auth flow beyond that spec needs asking first.
 
@@ -292,7 +292,7 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 - **Spec:** [`specs/05-settings.md`](specs/05-settings.md) (includes the text sizes, the Lexend font, and account deletion). Do not build from it until its status says Approved.
 
 ### 6. Quiz search
-- **Status:** Planned
+- **Status:** In progress
 - **Goal:** Anyone can search the public quizzes and open a quiz's details popup (see section 1) from the results. Because all quizzes are public, this is how they are discovered.
 - **Notes:** Search matches only quiz titles and descriptions. A quiz matches when enough of the search words appear in them (Postgres full-text search is the expected approach, and the threshold and ranking are set in the spec). There are **no user-picked tags or categories**. Do not add them.
 - **Spec:** [`specs/06-quiz-search.md`](specs/06-quiz-search.md) (also covers the splash page and the quiz details popup's URL mechanism). Do not build from it until its status says Approved.
