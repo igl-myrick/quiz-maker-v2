@@ -131,7 +131,7 @@ These hold nothing secret. Anyone can read them so they can take the quiz.
 | `option_id` | `uuid` PK → `options(id) on delete cascade` | One key per option. |
 | `is_correct` | `boolean null` | Trivia only. |
 | `outcome_id` | `uuid null` → `outcomes(id) on delete cascade` | Personality only. |
-| `points` | `int null`, `check (points > 0)` | Personality only. Defaults to 1 in the form. |
+| `points` | `int null`, `check (points between 1 and 3)` | Personality only. Defaults to 1 in the form. Capped at 3 by the project owner (2026-11-10). |
 
 Check constraint, so each row is clearly one shape or the other:
 
@@ -161,6 +161,8 @@ Rules that need other tables (such as "the outcome belongs to the same quiz" or 
 | `outcome_ranking` | `jsonb null` | Personality only. Section 5. |
 | `expires_at` | `timestamptz null` | Set only for anonymous results. |
 | `claim_token_hash` | `text null` | Lowercase hex SHA-256 of the claim token string's UTF-8 bytes (section 7.2 step 8). Anonymous only. |
+| `timed` | `boolean not null default false` | Whether the taker chose to use the timer. Approved by the project owner (2026-11-10). |
+| `duration_seconds` | `int null`, `check (duration_seconds >= 0)` | Timed takes only: from the client-reported start time to submission, capped at 24 hours. Advisory only, never used for grading. |
 | `created_at` | `timestamptz not null default now()` | |
 
 Check constraints:
@@ -181,6 +183,18 @@ Indexes:
 - `(quiz_id)`: **required.** Without it, deleting a quiz runs `ON DELETE SET NULL` as a full scan of `results`.
 - `(expires_at) where owner_id is null`: a partial index for the cleanup job and expiry checks.
 
+### 4.5a `quiz_versions` (retired versions, built in feature 1; see ADR 0003)
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `quiz_id` | `uuid not null` | **No foreign key**, because the copy must outlive the quiz's deletion. |
+| `version` | `int not null` | The version that was replaced. |
+| `snapshot` | `jsonb not null` | The same quiz shape as a result snapshot (section 5): quiz details, outcomes, questions, and options with their keys. There are no taker answers and no creator ID. |
+| `retired_at` | `timestamptz not null default now()` | |
+
+- PK `(quiz_id, version)`. Index `(retired_at)` for cleanup.
+- RLS is enabled, and `anon` and `authenticated` get no grants. `service_role` gets select only, for grading. Rows are written only by `save_quiz` (before replacing child rows on edit) and by a `before delete` trigger on `quizzes`. The trigger is a `security definer` function, so it also runs for deletes caused by an account deletion's cascade.
+
 ### 4.6 `user_settings` (built in feature 5)
 
 | Column | Type | Notes |
@@ -190,7 +204,8 @@ Indexes:
 | `text_size` | `text not null`, with a check constraint | Allowed values set in feature 5's spec and mirrored by Zod. |
 | `high_contrast` | `contrast_pref not null default 'system'` | `system` follows `prefers-contrast`. |
 | `dyslexia_font` | `boolean not null default false` | |
-| `updated_at` | `timestamptz not null default now()` | |
+
+Feature 5's spec dropped an `updated_at` column, because nothing read it.
 
 ### 4.7 `rate_limits` (built in features 1 and 2)
 
@@ -294,6 +309,7 @@ In policies, write `(select auth.uid())` instead of `auth.uid()`. Postgres then 
 | `results` | none. One row by exact ID through `get_result`. | R own rows (`owner_id = (select auth.uid())`), all columns except `claim_token_hash`. Others by exact ID through `get_result`. Claim through `claim_result`. **No I/U/D policy for any client role.** | I and R only (submit). `delete` revoked. |
 | `user_settings` | none | R/I/U own row (`user_id = (select auth.uid())`). No D (cascades with the account). | full |
 | `rate_limits` | none | none | through `hit_rate_limit` |
+| `quiz_versions` | none | none | R only (grading). Written by `save_quiz` and the delete trigger. |
 
 No role ever gets a delete policy on `results`, matching `CLAUDE.md` §1. `delete` on `results` is also revoked from `service_role`, so no edge function can delete a result. Rows leave only through two paths. The `auth.users` cascade runs as part of the account deletion. The `pg_cron` job runs as `postgres`, which owns the tables and is not subject to these grants.
 
@@ -327,7 +343,8 @@ All are `security definer`, `set search_path = ''`, with execute granted only wh
 | `claim_result(p_id uuid, p_token text) returns boolean` | authenticated | One statement: `update results set owner_id = (select auth.uid()), expires_at = null, claim_token_hash = null where id = p_id and owner_id is null and expires_at > now() and claim_token_hash = encode(sha256(convert_to(p_token, 'UTF8')), 'hex') returning id`. This uses Postgres's built-in `sha256()`, so pgcrypto is not needed. Returns false if no row matched. Atomic, with no read-then-write race. Raises an error if `auth.uid()` is null. |
 | `save_quiz(p_quiz jsonb) returns jsonb` | authenticated | Creates (no `id`) or edits (with `id` and `expected_version`) a quiz in one transaction. Returns `{id, version}`. See the full rules below. |
 | `get_quiz_for_edit(p_id uuid) returns jsonb` | authenticated | Returns the full quiz, including answer keys, only if the caller is the creator. |
-| `list_my_quizzes(p_after …) returns setof …` | authenticated | The caller's quizzes, keyset-paginated, for the dashboard. |
+| `list_my_quizzes(p_cursor jsonb, p_limit int) returns jsonb` | authenticated | The caller's quizzes, keyset-paginated, for the dashboard. |
+| `list_my_results(p_cursor jsonb, p_limit int) returns jsonb` | authenticated | **security invoker** (an exception: the member's own column grants and RLS on `results` already allow everything it reads). The caller's results, keyset-paginated, for the dashboard. Returns narrow fields only (title, kind, date, score, question count, winning outcome title, and whether the quiz is current, updated or deleted), never the snapshot or account fields. Added in feature 3's spec. |
 | `search_quizzes(p_query text, …) returns setof …` | anon, authenticated | **security invoker** (no extra rights needed). Full-text search over `quizzes_public` (section 9). |
 | `hit_rate_limit(p_scope, p_subject, p_max int, p_window interval) returns boolean` | service_role, and internally by `save_quiz` | Atomic upsert: `insert … (count) values (1) on conflict (scope, subject, window_start) do update set count = rate_limits.count + 1 returning count`. Returns `count <= p_max`. |
 
@@ -339,11 +356,11 @@ All are `security definer`, `set search_path = ''`, with execute granted only wh
    - single-choice: at least 2 options, exactly 1 correct
    - true/false: exactly 2 options labelled `True` and `False`, exactly 1 correct
    - multi-select: at least 2 options, at least 1 correct, at least 1 incorrect
-   - personality quizzes: single-choice questions only, at least 2 outcomes, every option mapped to exactly 1 outcome of **this** quiz with whole-number points greater than 0, and every outcome reachable from at least 1 option
+   - personality quizzes: single-choice questions only, at least 2 outcomes, every option mapped to exactly 1 outcome of **this** quiz worth 1, 2 or 3 points, and every outcome reachable from at least 1 option
    - the answer-key shape matches the kind (trivia keys use `is_correct`, personality keys use `outcome_id` and `points`)
    - text and count limits from feature 2's spec
 3. On create only, call `hit_rate_limit('quiz_create', caller_id, …)`. If it returns false, raise `rate_limited`.
-4. Write the rows. On edit, delete the questions (which cascades to options and keys) and the outcomes, insert the new ones, and set `version = version + 1, updated_at = now()`.
+4. Write the rows. On edit, **first copy the current version into `quiz_versions`** (section 4.5a). Then delete the questions (which cascades to options and keys) and the outcomes, insert the new ones, and set `version = version + 1, updated_at = now()`.
 5. Catch `unique_violation` on the title index in a nested `begin … exception` block. Look up the creator's existing quiz with that normalized title, then raise `duplicate_title` with its ID in `detail`, so the form can link to it.
 
 Quiz deletion uses the RLS delete policy directly (section 6.2) rather than a function. That is the simplest path, and the cascades and `SET NULL` do the rest.
@@ -353,17 +370,20 @@ Quiz deletion uses the RLS delete policy directly (section 6.2) rather than a fu
 **`submit-quiz`** (feature 1). It must accept both anonymous and logged-in callers. Set its JWT verification according to current Supabase docs for the key type in use. Steps:
 
 1. Parse the body with Zod: `{ quiz_id, quiz_version, answers: { [question_id]: option_id[] } }`.
-2. Identify the caller. Verify any user token with Supabase Auth (`getUser` or `getClaims`, whichever current docs recommend), never by decoding it yourself. With no user token, the submission is anonymous. **(call)** A user token that is invalid or expired returns `401` instead of falling back to anonymous, so a member never silently gets an expiring, unowned result. The client refreshes the session and retries.
+2. Identify the caller. Verify any user token with Supabase Auth (`getUser` or `getClaims`, whichever current docs recommend), never by decoding it yourself. With no user token, the submission is anonymous. **(call)** A user token that is invalid or expired returns `401` instead of falling back to anonymous, so a member never silently gets an expiring, unowned result. `supabase.functions.invoke` already refreshes the session before sending, so a 401 means the member really is signed out. The client asks them to log in.
 3. Rate limit before anything else. **(call)** Every accepted request counts, including ones later rejected with 409, 410 or 422. The limit is for stopping spam, and a counter that only counts successes is easier to flood with bad requests. Anonymous: subject = HMAC-SHA256(secret salt, client IP). The header holding the real IP must be confirmed from current Supabase docs and recorded in feature 1's spec. Never log or store the raw IP. Member: subject = user ID. Over the limit returns `429`.
 4. Load the quiz, its questions, options, outcomes, and `option_keys` in **one** PostgREST request with embedded resources. One request is one SQL statement, so it sees a consistent copy of the quiz even if `save_quiz` runs at the same moment.
-5. No quiz returns `410 quiz_deleted`. A version other than `quiz_version` returns `409 quiz_changed` with the current version.
+5. Choose what to grade against (ADR 0003):
+   - If the live quiz exists at `quiz_version`, grade against it.
+   - Otherwise, if `quiz_versions` has a row for `(quiz_id, quiz_version)`, grade against that retired copy.
+   - Otherwise reject: `409 quiz_changed` with the current version if the quiz still exists, or `410 quiz_deleted` if it doesn't. This only happens to takes that lasted more than 24 hours.
 6. Any unanswered question (a multi-select needs at least 1 selection) returns `422 unanswered` with the question IDs. These return `422 invalid_answers`:
    - an answer for a question that is not in this quiz
    - an option ID that does not belong to its question
    - a duplicate option ID
    - more than 1 selection on a single-choice or true/false question
 7. Grade (section 5). For personality quizzes, total points per outcome, sort, and shuffle each group of tied outcomes using `crypto.getRandomValues`.
-8. Build the snapshot and insert the result with the service role. Member: `owner_id` set, no expiry, no token. Anonymous: generate a token (32 random bytes, encoded as a base64url string), and store `expires_at = now() + interval '1 day'` and the lowercase hex SHA-256 of **the base64url string's UTF-8 bytes** (Web Crypto `crypto.subtle.digest('SHA-256', new TextEncoder().encode(token))`). This matches `claim_result` exactly. If the quiz was deleted after step 4, the insert fails its foreign key (`23503`). Return `410 quiz_deleted` in that case.
+8. Build the snapshot and insert the result with the service role. Member: `owner_id` set, no expiry, no token. Anonymous: generate a token (32 random bytes, encoded as a base64url string), and store `expires_at = now() + interval '1 day'` and the lowercase hex SHA-256 of **the base64url string's UTF-8 bytes** (Web Crypto `crypto.subtle.digest('SHA-256', new TextEncoder().encode(token))`). This matches `claim_result` exactly. If the quiz was deleted after step 4, the insert fails its foreign key (`23503`). In that case, retry the insert once with `quiz_id` null. The take was already graded, so the taker still gets a result, which shows "no longer exists" (ADR 0003).
 9. Return `200 { result_id, claim_token? }`. The claim token appears in this response once and never anywhere else. It is never logged.
 
 **`delete-account`** (feature 5). Verify the caller's JWT, then call `auth.admin.deleteUser(user_id)` with the service role. The foreign keys delete their quizzes (and child rows and keys), their results, and their settings. Other people's results keep their snapshots, and their `quiz_id` becomes null. Member `rate_limits` rows are not linked and expire with their window.
@@ -373,9 +393,12 @@ Quiz deletion uses the RLS delete policy directly (section 6.2) rather than a fu
 Defined in a migration that first enables the `pg_cron` extension the way current Supabase docs show. The job runs as `postgres`, the table owner, so RLS and the client grants do not block it.
 
 ```sql
+-- feature 1 wraps these statements in public.cleanup_expired() so pgTAP can test them;
+-- the job then runs: select public.cleanup_expired();
 select cron.schedule('cleanup-expired', '*/15 * * * *', $$
   delete from public.results     where owner_id is null and expires_at <= now();
   delete from public.rate_limits where window_ends_at <= now();
+  delete from public.quiz_versions where retired_at <= now() - interval '24 hours';
 $$);
 ```
 
@@ -403,7 +426,7 @@ sequenceDiagram
 
 ## 8. Concurrency and integrity
 
-- **Optimistic concurrency on quizzes.** `version` is the guard. Takers send the version they loaded and `submit-quiz` rejects a mismatch. Editors send `expected_version` and `save_quiz` rejects a mismatch. No locks and no stored old versions.
+- **Optimistic concurrency on quizzes.** `version` is the guard. Takers send the version they loaded, and `submit-quiz` grades against that version, using a retired copy for up to 24 hours (ADR 0003). Editors send `expected_version` and `save_quiz` rejects a mismatch. There are no locks.
 - **Consistent reads for grading.** The quiz and its keys are loaded in a single statement (section 7.2 step 4), and `save_quiz` replaces child rows in one transaction, so grading never sees half an edit.
 - **Atomic claim.** A single conditional `UPDATE` (section 7.1). Two simultaneous claims cannot both succeed.
 - **Uniqueness in the database.** The title rule is a unique index on a generated column, not an app-side check that can race.
@@ -423,7 +446,7 @@ sequenceDiagram
 ## 10. Client data architecture (how the browser meets the database)
 
 - **Server state: TanStack Query.** Query keys **(call)**: `['quizzes', 'search', query]`, `['quiz', quizId]`, `['result', resultId]`, `['me', 'results']`, `['me', 'quizzes']`, `['me', 'settings']`. Invalidate `['me', …]` on login, logout, and claim.
-- **Take progress: Zustand persist in session storage.** One entry per quiz and version, key `take:<quizId>:<version>`, holding the selected option IDs, whether the timer is on, and `timerStartedAt`. An entry for an older version is discarded. Submitting clears it. It is never sent to the server except as the submission itself.
+- **Take progress: Zustand persist in session storage.** One persisted store (a single session storage key) holds one entry per quiz and version, keyed `<quizId>:<version>`. Each entry holds the public quiz content as it was at start, the selected option IDs, whether the timer is on, and `startedAt`. Feature 1 replaces the older one-key-per-take idea. Submitting clears it. It is never sent to the server except as the submission itself.
 - **Claim tokens: local storage.** Key `claim:<resultId>`, value `{ token, expiresAt }`. Delete it after a successful claim, and prune entries whose `expiresAt` has passed on app start.
 - **Settings:** local storage for everyone, applied before first paint, and synced with `user_settings` for members as `CLAUDE.md` feature 5 describes.
 - **Types:** database row types come only from the generated `src/types/database.types.ts`. Zod schemas in `src/schemas/` cover forms, the `save_quiz` payload, the submission body, and the snapshot shape read on result pages.
@@ -438,8 +461,8 @@ Create each migration with `supabase migration new <name>`, one concern per file
 | 4. Authentication | No tables. Login email template in `supabase/templates/`. |
 | 6. Search | `search_quizzes`. |
 | 2. Creation | `rate_limits`, `hit_rate_limit`; `save_quiz`, `get_quiz_for_edit`; length and count limit constraints. |
-| 1. Taking | `submit-quiz` edge function; `pg_cron` cleanup job. |
-| 3. Dashboard | `claim_result`, `list_my_quizzes`. |
+| 1. Taking | `submit-quiz` edge function; `quiz_versions`, the retire step added to `save_quiz`, and the `before delete` trigger on `quizzes`; `results.timed` and `results.duration_seconds`; `pg_cron` cleanup job. |
+| 3. Dashboard | `claim_result`, `list_my_quizzes`, `list_my_results`. |
 | 5. Settings | `user_settings`; `delete-account` edge function. |
 
 **(call)** `rate_limits` is built in feature 2 because creation comes before taking in the build order, and both use it. Schema in feature 0 is limited to quizzes and results, as `CLAUDE.md` says.
@@ -457,6 +480,7 @@ At minimum:
 - `claim_result`: succeeds once, fails on a second try, fails with a wrong token, fails when expired, fails when already owned, and fails for `anon`.
 - Deleting a quiz sets `results.quiz_id` to null and leaves the result intact.
 - Deleting an auth user removes their quizzes, results, and settings, and leaves other people's results.
+- Editing or deleting a quiz writes a `quiz_versions` row, which clients cannot read, and the cleanup removes rows older than 24 hours.
 - `save_quiz` rejects each validation rule in `CLAUDE.md` §1, duplicate normalized titles, a stale `expected_version`, and an edit by a non-creator.
 - The `results` check constraints reject owned-with-expiry and anonymous-without-token rows.
 
@@ -491,7 +515,7 @@ Review these. Each one can be changed before its feature starts.
 - After cleanup, expired and unknown results share one message that mentions the 1-day limit (call 17, confirmed).
 - **Known limitation, accepted:** the right to claim belongs to the browser holding the claim token, not to a person. On a shared browser, a different member who logs in later can claim an anonymous result left there. Preventing this would mean tying anonymous visitors to an identity, which the site avoids.
 - **Left to feature specs:** calls 1, 5, 7, 9, 10, 11, 12, 13, 14, 18, and 19 are technical and easy to change. Each feature's spec may confirm or change them without asking the project owner again.
-- **Deferred to the build phase (feature 3):** whether the dashboard's history list flags results whose quiz has since been edited or deleted.
+- **Decided in feature 3's spec:** the dashboard's history list tags results whose quiz has since been edited or deleted ("Quiz updated", "Quiz deleted").
 
 1. UUIDv4 for all IDs, not UUIDv7 (section 4).
 2. Quiz `kind` cannot change after creation (4.2).
