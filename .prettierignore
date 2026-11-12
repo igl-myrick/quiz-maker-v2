@@ -1,0 +1,13 @@
+dist
+node_modules
+package-lock.json
+src/routeTree.gen.ts
+src/types/database.types.ts
+supabase/.temp
+.agents
+.claude
+.superpowers
+skills-lock.json
+
+# Docs and specs are written by hand and reviewed as-is
+*.md
