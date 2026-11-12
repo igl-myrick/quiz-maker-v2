@@ -8,12 +8,26 @@ expect.extend(axeMatchers)
 
 // vitest-axe 0.1 only types its matcher for older Vitest versions,
 // so add toHaveNoViolations to Vitest's own Matchers interface here.
+// The type parameters must repeat Vitest's own exactly, even though they are unused here.
+/* eslint-disable @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars */
 declare module 'vitest' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars
   interface Matchers<
     R extends void | Promise<void> = void | Promise<void>,
     T = unknown,
   > extends AxeMatchers {}
+}
+/* eslint-enable @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars */
+
+// jsdom has no showModal(), focus trap, Escape handling or focus return.
+// This minimal stub lets tests open and close dialogs. Real dialog behaviour
+// is covered by the manual checks in the feature specs.
+HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
+  this.open = true
+}
+HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+  if (!this.open) return
+  this.open = false
+  this.dispatchEvent(new Event('close'))
 }
 
 afterEach(() => {
