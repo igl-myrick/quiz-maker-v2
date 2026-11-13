@@ -34,11 +34,16 @@ export function SiteHeader() {
             </Link>
           </li>
           {session && (
-            <li>
-              <Link to="/quizzes/new" activeOptions={{ includeSearch: false }}>
-                Create quiz
-              </Link>
-            </li>
+            <>
+              <li>
+                <Link to="/quizzes/new" activeOptions={{ includeSearch: false }}>
+                  Create quiz
+                </Link>
+              </li>
+              <li>
+                <Link to="/dashboard">Dashboard</Link>
+              </li>
+            </>
           )}
           <li>
             {/* Hidden (but still taking up space) until Supabase reports the first session state. */}

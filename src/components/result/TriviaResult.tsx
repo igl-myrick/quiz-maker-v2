@@ -1,9 +1,5 @@
+import { formatPoints } from '../../lib/formatScore'
 import type { Result, ResultQuestion } from '../../schemas/result'
-
-// Points to at most 2 decimal places: 7.5, 8, 6.33.
-function formatPoints(points: number) {
-  return String(Number(points.toFixed(2)))
-}
 
 function pointsText(points: number) {
   return `${formatPoints(points)} ${points === 1 ? 'point' : 'points'}`

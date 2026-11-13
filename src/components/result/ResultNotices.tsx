@@ -31,7 +31,7 @@ export function ResultNotices({ data }: { data: ResultOk }) {
             dateStyle: 'medium',
             timeStyle: 'short',
           })}
-          . Log in to save it to your account.
+          .
         </p>
       )}
     </>

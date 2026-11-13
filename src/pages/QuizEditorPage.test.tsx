@@ -12,7 +12,6 @@ type AuthListener = (event: string, session: Session | null) => void
 
 const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
-  deleteSelect: vi.fn(),
   listener: null as AuthListener | null,
 }))
 
@@ -20,7 +19,6 @@ vi.mock('../lib/supabase', () => ({
   supabase: {
     rpc: mocks.rpc,
     from: () => ({
-      delete: () => ({ eq: () => ({ select: mocks.deleteSelect }) }),
       select: () => ({
         eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
       }),
@@ -164,7 +162,6 @@ describe('QuizEditorPage', () => {
         error: null,
       })
     })
-    mocks.deleteSelect.mockReset().mockResolvedValue({ data: [{ id: QUIZ_ID }], error: null })
   })
 
   it('asks anonymous visitors to log in', async () => {
@@ -375,18 +372,12 @@ describe('QuizEditorPage', () => {
     expect(sessionStorage.getItem('quiz-draft:new')).toBeNull()
   })
 
-  it('shows the kind as text when editing, and deletes after confirming', async () => {
-    const { router } = await renderApp(`/quizzes/${QUIZ_ID}/edit`)
+  it('shows the kind as text when editing, with no Delete (it lives on the dashboard)', async () => {
+    await renderApp(`/quizzes/${QUIZ_ID}/edit`)
     await waitFor(() => expect(main().getByLabelText('Title')).toHaveValue('Saved Quiz'))
     expect(main().getByText(/Kind: Trivia/)).toBeInTheDocument()
     expect(main().queryByRole('radio', { name: /Personality/ })).not.toBeInTheDocument()
-
-    fireEvent.click(main().getByRole('button', { name: 'Delete quiz' }))
-    await waitFor(() => expect(getConfirmDialog()).toHaveAccessibleName('Delete "Saved Quiz"?'))
-    await confirmDialog('Delete quiz')
-
-    await waitFor(() => expect(router.state.location.pathname).toBe('/search'))
-    expect(mocks.deleteSelect).toHaveBeenCalledWith('id')
+    expect(main().queryByRole('button', { name: /Delete/ })).not.toBeInTheDocument()
   })
 
   it('says when the quiz belongs to someone else', async () => {

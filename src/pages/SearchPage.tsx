@@ -1,7 +1,8 @@
-import { QuizCard, quizCardLinkId } from '../components/QuizCard'
+import { QuizCard } from '../components/QuizCard'
 import { QuizDetailsDialog } from '../components/QuizDetailsDialog'
 import { SearchForm } from '../components/SearchForm'
 import { useQuizSearch } from '../hooks/useQuizSearch'
+import { useShowMore } from '../hooks/useShowMore'
 
 type SearchPageProps = {
   q: string | undefined
@@ -14,6 +15,7 @@ function countText(count: number) {
 
 export function SearchPage({ q, quizId }: SearchPageProps) {
   const search = useQuizSearch(q)
+  const { showMore, rowRef } = useShowMore(search)
 
   // Everything below is derived from the query, never copied into state.
   const pages = search.data?.pages ?? []
@@ -29,19 +31,6 @@ export function SearchPage({ q, quizId }: SearchPageProps) {
   else if (firstPage && search.hasNextPage) {
     status = `${countText(firstPage.total)} found, showing ${quizzes.length}`
   } else if (firstPage) status = `${countText(firstPage.total)} found`
-
-  async function handleShowMore() {
-    const firstNewIndex = quizzes.length
-    const result = await search.fetchNextPage()
-    if (result.hasNextPage) return // focus stays on the button
-
-    // No more pages, so the button is about to disappear. Move focus to the first new card.
-    // Query results reach React on the next tick, so look for the card after that.
-    const newQuiz = result.data?.pages.flatMap((page) => page.items)[firstNewIndex]
-    if (newQuiz) {
-      setTimeout(() => document.getElementById(quizCardLinkId(newQuiz.id))?.focus(), 0)
-    }
-  }
 
   return (
     <main className="units-container">
@@ -66,7 +55,7 @@ export function SearchPage({ q, quizId }: SearchPageProps) {
       {quizzes.length > 0 && (
         <ul className="flat-list">
           {quizzes.map((quiz) => (
-            <li key={quiz.id}>
+            <li key={quiz.id} ref={rowRef(quiz.id)}>
               <QuizCard quiz={quiz} />
             </li>
           ))}
@@ -79,9 +68,7 @@ export function SearchPage({ q, quizId }: SearchPageProps) {
           type="button"
           className="btn"
           aria-disabled={search.isFetchingNextPage}
-          onClick={() => {
-            if (!search.isFetchingNextPage) void handleShowMore()
-          }}
+          onClick={() => void showMore()}
         >
           {search.isFetchingNextPage ? 'Loading…' : 'Show more'}
         </button>

@@ -87,6 +87,20 @@ describe('SiteHeader', () => {
     expect(screen.queryByText(/alex@example\.test/)).not.toBeInTheDocument()
   })
 
+  it('shows the Dashboard link to members only, after Create quiz', () => {
+    renderHeader()
+    fireAuthEvent('INITIAL_SESSION', null)
+    expect(screen.queryByRole('link', { name: 'Dashboard' })).not.toBeInTheDocument()
+
+    fireAuthEvent('SIGNED_IN', memberSession)
+    expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/dashboard')
+    const names = screen
+      .getAllByRole('listitem')
+      .map((item) => item.textContent)
+      .slice(1)
+    expect(names).toEqual(['Search', 'Create quiz', 'Dashboard', 'Log out'])
+  })
+
   it('logs out, switches back to "Log in", and announces it', async () => {
     renderHeader()
     fireAuthEvent('INITIAL_SESSION', memberSession)

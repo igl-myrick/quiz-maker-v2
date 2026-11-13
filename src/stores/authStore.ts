@@ -14,11 +14,17 @@ export const useAuthStore = create<AuthState>()(() => ({ status: 'loading' }))
 const { data } = supabase.auth.onAuthStateChange((event, session) => {
   useAuthStore.setState({ status: 'ready', session }, true)
 
-  if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-    // Supabase warns that calling Supabase inside this callback can deadlock,
-    // so member-only queries are refreshed on the next tick instead.
+  // Supabase warns that calling Supabase inside this callback can deadlock,
+  // so member-only queries are handled on the next tick instead.
+  if (event === 'SIGNED_IN') {
     setTimeout(() => {
       void queryClient.invalidateQueries({ queryKey: ['me'] })
+    }, 0)
+  } else if (event === 'SIGNED_OUT') {
+    // Removed, not just refreshed, so whoever logs in next on this browser never
+    // briefly sees the previous member's lists.
+    setTimeout(() => {
+      queryClient.removeQueries({ queryKey: ['me'] })
     }, 0)
   }
 })

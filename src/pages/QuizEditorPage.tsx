@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 import { z } from 'zod'
 import { LoginButton } from '../components/LoginButton'
-import { DeleteQuizSection } from '../components/quiz-editor/DeleteQuizSection'
 import { QuizEditor } from '../components/quiz-editor/QuizEditor'
 import { useQuizForEdit } from '../hooks/useQuizForEdit'
 import type { EditorPart } from '../schemas/quiz'
@@ -83,15 +82,12 @@ function EditQuiz({ quizId, part }: { quizId: string; part: EditorPart }) {
   }
 
   return (
-    <>
-      <QuizEditor
-        key={formKey}
-        savedQuiz={query.data.quiz}
-        part={part}
-        onRestart={() => setFormKey((k) => k + 1)}
-        onLoadLatest={() => void loadLatest()}
-      />
-      <DeleteQuizSection quizId={quizId} title={query.data.quiz.title} />
-    </>
+    <QuizEditor
+      key={formKey}
+      savedQuiz={query.data.quiz}
+      part={part}
+      onRestart={() => setFormKey((k) => k + 1)}
+      onLoadLatest={() => void loadLatest()}
+    />
   )
 }
