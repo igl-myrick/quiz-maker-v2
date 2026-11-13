@@ -13,6 +13,9 @@ type ConfirmDialogProps = {
   options: ConfirmOptions | null
   onConfirm: () => void
   onClose: () => void
+  // Shown (and announced) inside the dialog, for a confirm action that can fail and
+  // keeps the dialog open, such as deleting a quiz from the dashboard.
+  error?: string | null
 }
 
 // A native <dialog> asking the person to confirm or cancel. Use it through useConfirmDialog.
@@ -22,6 +25,7 @@ export function ConfirmDialog({
   options,
   onConfirm,
   onClose,
+  error,
 }: ConfirmDialogProps) {
   const headingId = useId()
   const bodyId = useId()
@@ -39,6 +43,11 @@ export function ConfirmDialog({
       </div>
       <div className="dialog-body">
         <p id={bodyId}>{options?.body}</p>
+        {error && (
+          <p role="alert" className="error">
+            {error}
+          </p>
+        )}
       </div>
       <div className="dialog-footer">
         <button

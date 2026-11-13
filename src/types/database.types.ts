@@ -209,7 +209,10 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "cleanup_expired":
+            "claim_result":
+{ Args: { "p_id": string,"p_token": string }; Returns: boolean
+                           },
+"cleanup_expired":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "get_quiz_for_edit":
@@ -220,6 +223,12 @@ isOneToOne: false
                            },
 "hit_rate_limit":
 { Args: { "p_max": number,"p_scope": Database["public"]['Enums']["rate_limit_scope"],"p_subject": string,"p_window": string }; Returns: boolean
+                           },
+"list_my_quizzes":
+{ Args: { "p_cursor"?: Json,"p_limit"?: number }; Returns: Json
+                           },
+"list_my_results":
+{ Args: { "p_cursor"?: Json,"p_limit"?: number }; Returns: Json
                            },
 "quiz_snapshot":
 { Args: { "p_quiz_id": string }; Returns: Json

@@ -1,13 +1,13 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
+import { useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
-import { announce } from '../stores/announcerStore'
+import type { MyQuizzesPage } from '../schemas/myQuizzes'
 import { quizDraftKey, removeQuizDraft } from './useQuizDraft'
 
 // Deletes through the RLS delete policy. An empty result means nothing was deleted.
+// Only the cache is handled here. Closing dialogs, focus and announcements are the
+// caller's job (the dashboard's My quizzes section).
 export function useDeleteQuiz() {
   const queryClient = useQueryClient()
-  const navigate = useNavigate()
 
   return useMutation({
     mutationFn: async (quizId: string) => {
@@ -18,11 +18,22 @@ export function useDeleteQuiz() {
     },
     onSuccess: (quizId) => {
       removeQuizDraft(quizDraftKey(quizId))
-      void queryClient.invalidateQueries({ queryKey: ['me', 'quizzes'] })
+      // Take the card off the dashboard straight away, so it can't be pressed twice.
+      queryClient.setQueryData<InfiniteData<MyQuizzesPage>>(['me', 'quizzes'], (data) =>
+        data
+          ? {
+              ...data,
+              pages: data.pages.map((page) => ({
+                ...page,
+                items: page.items.filter((quiz) => quiz.id !== quizId),
+              })),
+            }
+          : data,
+      )
+      // ['me'] also refreshes My results, whose rows for this quiz become "Quiz deleted".
+      void queryClient.invalidateQueries({ queryKey: ['me'] })
       void queryClient.invalidateQueries({ queryKey: ['quizzes'] })
-      // Announce once the search page is showing, so its own page-change announcement
-      // doesn't replace this one.
-      void navigate({ to: '/search' }).then(() => setTimeout(() => announce('Quiz deleted'), 0))
+      queryClient.removeQueries({ queryKey: ['quiz', quizId] })
     },
   })
 }

@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { CopyLinkButton } from '../components/result/CopyLinkButton'
 import { PersonalityResult } from '../components/result/PersonalityResult'
 import { ResultNotices } from '../components/result/ResultNotices'
+import { SaveResultSection } from '../components/result/SaveResultSection'
 import { TriviaResult } from '../components/result/TriviaResult'
 import { useResult } from '../hooks/useResult'
 
@@ -46,6 +47,7 @@ export function ResultPage({ resultId }: { resultId: string }) {
           <PersonalityResult result={data.result} />
         )}
         <ResultNotices data={data} />
+        <SaveResultSection data={data} />
         <p>
           <CopyLinkButton />{' '}
           <Link to="/search" className="btn">

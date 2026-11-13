@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { Announcer } from '../components/Announcer'
 import { SiteHeader } from '../components/SiteHeader'
 import { queryClient } from '../lib/queryClient'
+import { takeReturnFocus } from '../lib/returnFocus'
 import { announce } from '../stores/announcerStore'
 
 export const Route = createRootRoute({
@@ -18,14 +19,18 @@ function RootLayout() {
   // The site-wide page-change rule (CLAUDE.md section 8): when the path changes,
   // move focus to the new page's <h1> and announce it. Changes to search params
   // only (such as q or quiz) are left alone. onRendered fires once the new page is on screen.
+  // Coming back to a page that recorded what opened something (returnFocus.ts), focus
+  // goes back to that element instead.
   useEffect(() => {
     return router.subscribe('onRendered', (event) => {
       if (!event.fromLocation || !event.pathChanged) return
 
       const heading = document.querySelector<HTMLElement>('main h1')
-      if (!heading) return
-      heading.focus()
-      announce(heading.textContent ?? '')
+      const returnTarget = takeReturnFocus(event.toLocation.state.__TSR_key)
+      const target = returnTarget ?? heading
+      if (!target) return
+      target.focus()
+      announce(heading?.textContent ?? '')
     })
   }, [router])
 

@@ -174,9 +174,9 @@ describe('ResultPage', () => {
       'href',
       `/search?quiz=${QUIZ_ID}`,
     )
-    expect(
-      main().getByText(/This result is kept until .*Log in to save it to your account\./),
-    ).toBeInTheDocument()
+    // The login sentence is gone: the Save button covers it, only where it can work.
+    expect(main().getByText(/^This result is kept until .*\.$/)).toBeInTheDocument()
+    expect(main().queryByText(/Log in to save it/)).not.toBeInTheDocument()
     unmount()
     queryClient.clear()
 
