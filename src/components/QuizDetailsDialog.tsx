@@ -1,7 +1,7 @@
 import { useCanGoBack, useNavigate, useRouter } from '@tanstack/react-router'
 import { useEffect, useId, useRef, type SyntheticEvent } from 'react'
 import { useQuizDetails } from '../hooks/useQuizDetails'
-import { formatSuggestedTime } from '../lib/formatSuggestedTime'
+import { StartQuizControls } from './StartQuizControls'
 
 type QuizDetailsDialogProps = {
   quizId: string
@@ -108,10 +108,12 @@ export function QuizDetailsDialog({ quizId }: QuizDetailsDialogProps) {
               <span className="label">{quiz.kind === 'trivia' ? 'Trivia' : 'Personality'}</span>{' '}
               <span className="text-secondary">{quiz.question_count} questions</span>
             </p>
-            {quiz.suggested_time_seconds !== null && (
-              <p>{formatSuggestedTime(quiz.suggested_time_seconds)}</p>
-            )}
             {quiz.description && <p>{quiz.description}</p>}
+            {/* Shows the suggested time next to the timer switch, when there is one. */}
+            <StartQuizControls
+              quizId={quiz.id}
+              suggestedTimeSeconds={quiz.suggested_time_seconds}
+            />
           </>
         )}
       </div>

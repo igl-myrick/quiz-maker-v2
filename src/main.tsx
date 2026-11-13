@@ -2,7 +2,11 @@ import 'ply-css/dist/css/ply.min.css'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { pruneClaimTokens } from './lib/claimTokens'
 import { routeTree } from './routeTree.gen'
+
+// Drop claim tokens for anonymous results that have expired (ARCHITECTURE_SPEC.md section 10).
+pruneClaimTokens()
 
 const router = createRouter({ routeTree })
 
