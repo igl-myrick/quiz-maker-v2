@@ -1,4 +1,10 @@
 import 'ply-css/dist/css/ply.min.css'
+// Lexend for the dyslexia-friendly font setting, bundled and served from our own domain.
+import '@fontsource/lexend/400.css'
+import '@fontsource/lexend/700.css'
+import './styles/settings.css'
+// Applies the saved settings as soon as the app loads (see settingsStore).
+import './stores/settingsStore'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'

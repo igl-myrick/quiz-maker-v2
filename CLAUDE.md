@@ -273,7 +273,7 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 - **Spec:** [`specs/02-quiz-creation.md`](specs/02-quiz-creation.md) (includes the text and count limits and the creation rate limit). Do not build from it until its status says Approved.
 
 ### 3. User dashboard
-- **Status:** In progress
+- **Status:** Done
 - **Goal:** Logged-in members see their saved quiz history and results, and the quizzes they have created. A member can also save a recent anonymous result to their account from its result page, but only in the browser that took the quiz, using the claim token issued in feature 1.
 - **Spec:** [`specs/03-user-dashboard.md`](specs/03-user-dashboard.md) (includes "Save to my account" on the result page). Do not build from it until its status says Approved.
 
@@ -283,7 +283,7 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 - **Spec:** [`specs/04-authentication.md`](specs/04-authentication.md). Do not build from it until its status says Approved. Any change to the auth flow beyond that spec needs asking first.
 
 ### 5. Settings
-- **Status:** Planned
+- **Status:** In progress
 - **Goal:** A settings menu, reachable from every page, with:
   - **Theme:** System (the default, following `prefers-color-scheme`), Light, or Dark.
   - **Accessibility:** text size, high contrast, and a dyslexia-friendly font. High contrast defaults to following `prefers-contrast`.

@@ -4,6 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quiz Maker</title>
+    <script>
+      // Applies saved settings before the first paint, so the page never flashes the wrong
+      // theme or text size. Sets the same attributes as src/lib/applySettings.ts, and only
+      // values from the allowed lists in src/schemas/settings.ts. Our own code, not a
+      // third-party script: a future Content-Security-Policy needs a hash for it.
+      try {
+        const saved = JSON.parse(localStorage.getItem('settings')).state
+        const root = document.documentElement
+        if (['light', 'dark'].includes(saved.theme)) root.dataset.theme = saved.theme
+        if (['default', 'large', 'larger', 'largest'].includes(saved.textSize)) {
+          root.dataset.textSize = saved.textSize
+        }
+        if (['system', 'on', 'off'].includes(saved.highContrast)) {
+          root.dataset.contrast = saved.highContrast
+        }
+        if (saved.dyslexiaFont === true) root.dataset.font = 'lexend'
+      } catch {
+        // Nothing saved yet, or unreadable: the defaults apply.
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

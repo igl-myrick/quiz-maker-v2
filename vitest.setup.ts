@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
-import { afterEach, expect } from 'vitest'
+import { afterEach, expect, vi } from 'vitest'
 import * as axeMatchers from 'vitest-axe/matchers'
 import type { AxeMatchers } from 'vitest-axe/matchers'
 
@@ -29,6 +29,14 @@ HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
   this.open = false
   this.dispatchEvent(new Event('close'))
 }
+
+// Settings sync runs on every auth event and talks to the user_settings table. Most
+// test files mock Supabase without tables, so it's off by default here.
+// src/lib/settingsSync.test.ts unmocks it to test it.
+vi.mock('./src/lib/settingsSync', () => ({
+  syncSettingsOnAuthChange: vi.fn(),
+  saveSettingsToAccount: vi.fn(),
+}))
 
 afterEach(() => {
   cleanup()
