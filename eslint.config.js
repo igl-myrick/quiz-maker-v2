@@ -10,7 +10,10 @@ export default tseslint.config(
     ignores: [
       'dist',
       'node_modules',
-      'supabase',
+      'supabase/.temp',
+      // Deno entry points use Deno globals and npm: imports; they are checked by
+      // running them with `supabase functions serve`. The pure _shared modules are linted.
+      'supabase/functions/*/index.ts',
       'src/routeTree.gen.ts',
       'src/types/database.types.ts',
       '.agents',

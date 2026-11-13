@@ -3,6 +3,8 @@ dist/
 .env*.local
 *.tsbuildinfo
 supabase/.temp/
+# Local edge function secrets (see supabase/functions/.env.example)
+supabase/functions/.env
 .superpowers/
 
 # Local agent tooling: installed skills, their lock file, and personal Claude settings

@@ -1,0 +1,24 @@
+{
+  // The edge functions' shared modules (grading, IP handling, CORS). They are pure
+  // TypeScript, so the app's type-check covers them. The Deno entry points
+  // (supabase/functions/*/index.ts) are left out: they use Deno and npm: imports and are
+  // checked by running them with `supabase functions serve`.
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.functions.tsbuildinfo",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": [],
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "include": ["supabase/functions/_shared"]
+}

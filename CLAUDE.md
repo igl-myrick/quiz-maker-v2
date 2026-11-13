@@ -263,12 +263,12 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 - **Spec:** [`specs/00-project-foundation.md`](specs/00-project-foundation.md) (acceptance criteria, files in scope, out of scope). Do not build from it until its status says Approved.
 
 ### 1. Quiz taking
-- **Status:** Planned
+- **Status:** In progress
 - **Goal:** Anyone can take trivia and personality quizzes without an account. Each submission is graded server-side and produces a result link. This feature handles everything that happens at submission: a logged-in member owns their result immediately, while an anonymous result gets its 1-day expiry and its claim token (see section 1), which is issued, stored as a hash, and kept in the browser. Submissions are graded against the version the taker started on, even if the quiz was edited or deleted meanwhile, using 24-hour retired versions (see section 1). Submissions with unanswered questions are rejected, and in-progress answers survive a page reload (see section 1). Before starting, a quiz details popup (see section 1) shows the quiz's information and, if it has a suggested time, lets the taker choose to take it with or without the timer.
 - **Spec:** [`specs/01-quiz-taking.md`](specs/01-quiz-taking.md) (includes the submission rate limits and the client IP header). Do not build from it until its status says Approved.
 
 ### 2. Quiz creation
-- **Status:** In progress
+- **Status:** Done
 - **Goal:** Logged-in members can create quizzes, which are always public, with an optional suggested time limit. They can edit and delete their own quizzes without affecting existing results. Each edit increases the quiz's version (see section 1). Quizzes must meet the validation rules in section 1, including unique titles per creator, and creating quizzes is rate limited (see section 6). Questions are single-choice, true/false, or multi-select (see section 1).
 - **Spec:** [`specs/02-quiz-creation.md`](specs/02-quiz-creation.md) (includes the text and count limits and the creation rate limit). Do not build from it until its status says Approved.
 

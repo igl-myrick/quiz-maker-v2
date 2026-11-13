@@ -121,6 +121,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"quiz_versions": {
+                  Row: {
+                    "quiz_id": string,"retired_at": string,"snapshot": NonNullable<Json>,"version": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "quiz_id": string,"retired_at"?: string,"snapshot": NonNullable<Json>,"version": number
+                  }
+                  Update: {
+                    "quiz_id"?: string,"retired_at"?: string,"snapshot"?: NonNullable<Json>,"version"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"quizzes": {
                   Row: {
                     "created_at": string,"creator_id": string,"description": string,"id": string,"kind": Database["public"]['Enums']["quiz_kind"],"normalized_title": string | null,"search": unknown,"suggested_time_seconds": number | null,"title": string,"updated_at": string,"version": number
@@ -151,14 +165,14 @@ isOneToOne: false
                   ]
                 },"results": {
                   Row: {
-                    "claim_token_hash": string | null,"created_at": string,"expires_at": string | null,"id": string,"outcome_ranking": Json | null,"owner_id": string | null,"quiz_id": string | null,"quiz_kind": Database["public"]['Enums']["quiz_kind"],"quiz_title": string,"quiz_version": number,"score": number | null,"snapshot": NonNullable<Json>
+                    "claim_token_hash": string | null,"created_at": string,"duration_seconds": number | null,"expires_at": string | null,"id": string,"outcome_ranking": Json | null,"owner_id": string | null,"quiz_id": string | null,"quiz_kind": Database["public"]['Enums']["quiz_kind"],"quiz_title": string,"quiz_version": number,"score": number | null,"snapshot": NonNullable<Json>,"timed": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "claim_token_hash"?: string | null,"created_at"?: string,"expires_at"?: string | null,"id"?: string,"outcome_ranking"?: Json | null,"owner_id"?: string | null,"quiz_id"?: string | null,"quiz_kind": Database["public"]['Enums']["quiz_kind"],"quiz_title": string,"quiz_version": number,"score"?: number | null,"snapshot": NonNullable<Json>
+                    "claim_token_hash"?: string | null,"created_at"?: string,"duration_seconds"?: number | null,"expires_at"?: string | null,"id"?: string,"outcome_ranking"?: Json | null,"owner_id"?: string | null,"quiz_id"?: string | null,"quiz_kind": Database["public"]['Enums']["quiz_kind"],"quiz_title": string,"quiz_version": number,"score"?: number | null,"snapshot": NonNullable<Json>,"timed"?: boolean
                   }
                   Update: {
-                    "claim_token_hash"?: string | null,"created_at"?: string,"expires_at"?: string | null,"id"?: string,"outcome_ranking"?: Json | null,"owner_id"?: string | null,"quiz_id"?: string | null,"quiz_kind"?: Database["public"]['Enums']["quiz_kind"],"quiz_title"?: string,"quiz_version"?: number,"score"?: number | null,"snapshot"?: NonNullable<Json>
+                    "claim_token_hash"?: string | null,"created_at"?: string,"duration_seconds"?: number | null,"expires_at"?: string | null,"id"?: string,"outcome_ranking"?: Json | null,"owner_id"?: string | null,"quiz_id"?: string | null,"quiz_kind"?: Database["public"]['Enums']["quiz_kind"],"quiz_title"?: string,"quiz_version"?: number,"score"?: number | null,"snapshot"?: NonNullable<Json>,"timed"?: boolean
                   }
                   Relationships: [
                     {
@@ -195,7 +209,10 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "get_quiz_for_edit":
+            "cleanup_expired":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"get_quiz_for_edit":
 { Args: { "p_id": string }; Returns: Json
                            },
 "get_result":
@@ -203,6 +220,12 @@ isOneToOne: false
                            },
 "hit_rate_limit":
 { Args: { "p_max": number,"p_scope": Database["public"]['Enums']["rate_limit_scope"],"p_subject": string,"p_window": string }; Returns: boolean
+                           },
+"quiz_snapshot":
+{ Args: { "p_quiz_id": string }; Returns: Json
+                           },
+"retire_quiz_version":
+{ Args: { "p_quiz_id": string }; Returns: undefined
                            },
 "save_quiz":
 { Args: { "p_quiz": Json }; Returns: Json
