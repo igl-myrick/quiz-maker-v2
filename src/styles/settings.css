@@ -1,0 +1,145 @@
+/* Settings (feature 5), applied as attributes on <html> by src/lib/applySettings.ts
+   and the inline script in index.html. */
+
+/* ---- Theme -------------------------------------------------------------------
+   Ply switches colours on data-theme but doesn't set color-scheme, so native controls
+   and scrollbars are matched here. No data-theme means System. */
+:root {
+  color-scheme: light dark;
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+/* ---- Text size ---------------------------------------------------------------
+   Our text is sized in rem, and Ply's only px font sizes are in components we don't
+   use (nav toggle, breadcrumbs, code line numbers), so scaling the root scales the page. */
+:root[data-text-size='large'] {
+  font-size: 112.5%;
+}
+:root[data-text-size='larger'] {
+  font-size: 125%;
+}
+:root[data-text-size='largest'] {
+  font-size: 150%;
+}
+
+/* ---- High contrast -----------------------------------------------------------
+   "On" uses Ply's own prefers-contrast colours whatever the system says. "Follow
+   system" gets them from Ply directly. Both also get underlined links and thicker
+   focus rings. */
+:root[data-contrast='on'] {
+  --ply-color-body: #000000;
+  --ply-color-headings: #000000;
+  --ply-color-secondary: #1a1a1a;
+  --ply-color-muted: #333333;
+  --ply-border-color: #000000;
+  --ply-border-strong: #000000;
+  --ply-color-link: #0000ee;
+  --ply-color-link-hover: #0000cc;
+  --ply-color-focus: #000000;
+  --ply-shadow-1: none;
+  --ply-shadow-2: none;
+  --ply-shadow-3: none;
+}
+
+/* Dark, chosen or followed from the system. */
+:root[data-contrast='on'][data-theme='dark'] {
+  --ply-color-body: #ffffff;
+  --ply-color-headings: #ffffff;
+  --ply-color-secondary: #e5e5e5;
+  --ply-color-muted: #cccccc;
+  --ply-border-color: #ffffff;
+  --ply-border-strong: #ffffff;
+  --ply-color-link: #6eb5ff;
+  --ply-color-link-hover: #a6d0ff;
+  --ply-color-focus: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-contrast='on']:not([data-theme]) {
+    --ply-color-body: #ffffff;
+    --ply-color-headings: #ffffff;
+    --ply-color-secondary: #e5e5e5;
+    --ply-color-muted: #cccccc;
+    --ply-border-color: #ffffff;
+    --ply-border-strong: #ffffff;
+    --ply-color-link: #6eb5ff;
+    --ply-color-link-hover: #a6d0ff;
+    --ply-color-focus: #ffffff;
+  }
+}
+
+:root[data-contrast='on'] a:not(.btn) {
+  text-decoration: underline;
+}
+:root[data-contrast='on'] :focus-visible {
+  outline: 3px solid var(--ply-color-focus);
+  outline-offset: 2px;
+}
+@media (prefers-contrast: more) {
+  :root:not([data-contrast='off']) a:not(.btn) {
+    text-decoration: underline;
+  }
+  :root:not([data-contrast='off']) :focus-visible {
+    outline: 3px solid var(--ply-color-focus);
+    outline-offset: 2px;
+  }
+}
+
+/* ---- Lexend ------------------------------------------------------------------
+   Self-hosted through @fontsource/lexend (imported in src/main.tsx). Browsers only
+   download it once text uses it, so it never loads with the setting off. */
+:root[data-font='lexend'] {
+  --ply-font-body:
+    'Lexend', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans,
+    sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --ply-font-heading: var(--ply-font-body);
+  letter-spacing: 0.02em;
+}
+:root[data-font='lexend'] body {
+  line-height: 1.6;
+}
+
+/* ---- The settings popup ------------------------------------------------------ */
+
+/* "Delete my account" uses aria-disabled until the word is typed, so it keeps focus.
+   Dim it the way Ply dims disabled buttons (the same rule as editor.css, which only
+   loads on the quiz editor). */
+.btn[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Ply pads the dialog, its body and each fieldset by 1.5rem. At the largest text size on
+   a 320px screen that leaves the groups too little room and the popup scrolls sideways
+   (WCAG 1.4.10), so the body relies on the dialog's own padding and fieldsets use less. */
+.settings-dialog .dialog-body {
+  padding-inline: 0;
+}
+.settings-dialog fieldset {
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Each choice's label is part of its target, which is at least 24 by 24 CSS pixels
+   (WCAG 2.2, 2.5.8). Not text, so px is fine here. */
+.settings-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: max(24px, 1.5rem);
+}
+
+/* Each text size option is shown at its own size, relative to the others. */
+.text-size-large {
+  font-size: 1.125rem;
+}
+.text-size-larger {
+  font-size: 1.25rem;
+}
+.text-size-largest {
+  font-size: 1.5rem;
+}

@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js'
 import { create } from 'zustand'
 import { queryClient } from '../lib/queryClient'
+import { syncSettingsOnAuthChange } from '../lib/settingsSync'
 import { supabase } from '../lib/supabase'
 import { announce } from './announcerStore'
 
@@ -15,7 +16,11 @@ const { data } = supabase.auth.onAuthStateChange((event, session) => {
   useAuthStore.setState({ status: 'ready', session }, true)
 
   // Supabase warns that calling Supabase inside this callback can deadlock,
-  // so member-only queries are handled on the next tick instead.
+  // so member-only work is done on the next tick instead.
+  setTimeout(() => {
+    void syncSettingsOnAuthChange(event, session)
+  }, 0)
+
   if (event === 'SIGNED_IN') {
     setTimeout(() => {
       void queryClient.invalidateQueries({ queryKey: ['me'] })

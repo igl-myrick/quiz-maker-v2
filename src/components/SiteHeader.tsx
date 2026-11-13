@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { logOut, useAuthStatus, useSession } from '../stores/authStore'
 import { LoginDialog, openLoginDialog } from './LoginDialog'
+import { SettingsButton } from './SettingsButton'
 
 export function SiteHeader() {
   const status = useAuthStatus()
@@ -45,6 +46,9 @@ export function SiteHeader() {
               </li>
             </>
           )}
+          <li>
+            <SettingsButton />
+          </li>
           <li>
             {/* Hidden (but still taking up space) until Supabase reports the first session state. */}
             <button

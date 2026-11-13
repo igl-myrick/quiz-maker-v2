@@ -189,6 +189,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"user_settings": {
+                  Row: {
+                    "dyslexia_font": boolean,"high_contrast": Database["public"]['Enums']["contrast_pref"],"text_size": string,"theme": Database["public"]['Enums']["theme_pref"],"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "dyslexia_font"?: boolean,"high_contrast"?: Database["public"]['Enums']["contrast_pref"],"text_size"?: string,"theme"?: Database["public"]['Enums']["theme_pref"],"user_id": string
+                  }
+                  Update: {
+                    "dyslexia_font"?: boolean,"high_contrast"?: Database["public"]['Enums']["contrast_pref"],"text_size"?: string,"theme"?: Database["public"]['Enums']["theme_pref"],"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
@@ -247,7 +261,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "question_type": "single_choice"|"true_false"|"multi_select","quiz_kind": "trivia"|"personality","rate_limit_scope": "anon_submit"|"member_submit"|"quiz_create"
+            "contrast_pref": "system"|"on"|"off","question_type": "single_choice"|"true_false"|"multi_select","quiz_kind": "trivia"|"personality","rate_limit_scope": "anon_submit"|"member_submit"|"quiz_create","theme_pref": "system"|"light"|"dark"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -367,7 +381,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "question_type": ["single_choice", "true_false", "multi_select"],"quiz_kind": ["trivia", "personality"],"rate_limit_scope": ["anon_submit", "member_submit", "quiz_create"]
+            "contrast_pref": ["system", "on", "off"],"question_type": ["single_choice", "true_false", "multi_select"],"quiz_kind": ["trivia", "personality"],"rate_limit_scope": ["anon_submit", "member_submit", "quiz_create"],"theme_pref": ["system", "light", "dark"]
           }
         }
 } as const

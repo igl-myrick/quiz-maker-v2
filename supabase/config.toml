@@ -440,3 +440,7 @@ enabled = true
 # pass the platform's JWT check (feature 1, criterion 16).
 [functions.submit-quiz]
 verify_jwt = false
+
+# delete-account does the same check, and accepts members only (feature 5, criterion 21).
+[functions.delete-account]
+verify_jwt = false

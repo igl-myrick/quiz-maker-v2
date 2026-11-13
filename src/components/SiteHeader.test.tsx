@@ -32,6 +32,8 @@ vi.mock('../lib/supabase', () => ({
 // The header only needs Link to render a plain link in these tests.
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ to, children }: { to: string; children: ReactNode }) => <a href={to}>{children}</a>,
+  // For the Settings popup's account deletion, which isn't used in these tests.
+  useRouter: () => ({}),
 }))
 
 const memberSession = {
@@ -96,9 +98,10 @@ describe('SiteHeader', () => {
     expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/dashboard')
     const names = screen
       .getAllByRole('listitem')
-      .map((item) => item.textContent)
+      // The first control in each item: the Settings item also holds its (closed) popup.
+      .map((item) => item.firstElementChild?.textContent)
       .slice(1)
-    expect(names).toEqual(['Search', 'Create quiz', 'Dashboard', 'Log out'])
+    expect(names).toEqual(['Search', 'Create quiz', 'Dashboard', 'Settings', 'Log out'])
   })
 
   it('logs out, switches back to "Log in", and announces it', async () => {
