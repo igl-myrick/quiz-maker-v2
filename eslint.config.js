@@ -19,6 +19,9 @@ export default tseslint.config(
       '.agents',
       '.claude',
       '.superpowers',
+      // Claude Design sync (/design-sync): staged tools and generated bundle, both git-ignored.
+      '.ds-sync',
+      'ds-bundle',
     ],
   },
   {

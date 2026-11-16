@@ -1,0 +1,54 @@
+{
+  "projectId": "debf46a7-0469-4e16-a40a-7f1c8b93cd45",
+  "shape": "package",
+  "pkg": "quiz-maker",
+  "globalName": "QuizMaker",
+  "entry": ".design-sync/entry.tsx",
+  "provider": {
+    "component": "QuizMakerProvider"
+  },
+  "componentSrcMap": {
+    "QuizCard": "src/components/QuizCard.tsx",
+    "SearchForm": "src/components/SearchForm.tsx",
+    "QuizIllustration": "src/components/QuizIllustration.tsx",
+    "ConfirmDialog": "src/components/ConfirmDialog.tsx",
+    "QuestionFieldset": "src/components/take/QuestionFieldset.tsx",
+    "PageNav": "src/components/take/PageNav.tsx",
+    "ErrorSummary": "src/components/take/ErrorSummary.tsx",
+    "Countdown": "src/components/take/Countdown.tsx",
+    "FieldError": "src/components/quiz-editor/FieldError.tsx",
+    "CopyLinkButton": "src/components/result/CopyLinkButton.tsx",
+    "TriviaResult": "src/components/result/TriviaResult.tsx",
+    "PersonalityResult": "src/components/result/PersonalityResult.tsx",
+    "ResultNotices": "src/components/result/ResultNotices.tsx",
+    "ResultRow": "src/components/dashboard/ResultRow.tsx"
+  },
+  "dtsPropsFor": {
+    "QuizCard": "/** The quiz to show. Its title links to the quiz details popup. */ quiz: { id: string; kind: \"trivia\" | \"personality\"; title: string; description: string; question_count: number; suggested_time_seconds: number | null }; /** Optional buttons or links under the card, e.g. Edit and Delete. */ actions?: React.ReactNode",
+    "SearchForm": "/** The current search text, shown in the box. */ q: string | undefined",
+    "ConfirmDialog": "/** Ref to the native <dialog>; call dialogRef.current.showModal() to open it. */ dialogRef: React.RefObject<HTMLDialogElement | null>; /** Ref to the Cancel button, focused on open. */ cancelRef: React.RefObject<HTMLButtonElement | null>; options: { title: string; body: string; confirmLabel: string } | null; onConfirm: () => void; onClose: () => void; /** Shown and announced inside the dialog when the confirm action fails. */ error?: string | null",
+    "QuestionFieldset": "/** Key of the take in the take store (quiz id + version). */ takeKey: string; question: { id: string; position: number; type: \"single_choice\" | \"true_false\" | \"multi_select\"; prompt: string; options: Array<{ id: string; position: number; label: string }> }; /** 1-based question number. */ number: number; total: number; /** Option ids chosen so far. */ chosen: string[]; /** Shows the \"Answer this question.\" error. */ showMissing: boolean",
+    "PageNav": "/** 1-based current page. */ page: number; totalPages: number; /** Disables Submit and shows \"Submitting…\". */ submitting: boolean; onPrevious: () => void; onNext: () => void; onSubmit: () => void",
+    "ErrorSummary": "/** Ref to the summary; focus it after showing. */ summaryRef: React.RefObject<HTMLDivElement | null>; heading: string; /** Linked list of problems. */ items: Array<{ questionId: string; text: string; targetId: string }>; onSelect: (item: { questionId: string; text: string; targetId: string }) => void; /** Extra message under the heading, e.g. a server error with an action. */ children?: React.ReactNode",
+    "Countdown": "/** When the timer started, in epoch milliseconds. */ startedAt: number; /** The creator’s suggested time limit, in seconds. */ suggestedSeconds: number",
+    "FieldError": "/** Element id; the field points to it with aria-describedby. */ id: string; /** Renders nothing when undefined. */ message: string | undefined",
+    "TriviaResult": "result: { id: string; quiz_id: string | null; quiz_version: number; quiz_kind: \"trivia\" | \"personality\"; quiz_title: string; created_at: string; expires_at: string | null; score: number | null; snapshot: { quiz: { suggested_time_seconds: number | null }; questions: Array<{ id: string; position: number; type: \"single_choice\" | \"true_false\" | \"multi_select\"; prompt: string; options: Array<{ id: string; label: string; is_correct?: boolean }>; selected_option_ids: string[]; score?: number }> }; winning_outcome: { id: string; title: string; description: string } | null; timed: boolean; duration_seconds: number | null }",
+    "PersonalityResult": "result: { id: string; quiz_id: string | null; quiz_version: number; quiz_kind: \"trivia\" | \"personality\"; quiz_title: string; created_at: string; expires_at: string | null; score: number | null; snapshot: { quiz: { suggested_time_seconds: number | null }; questions: Array<{ id: string; position: number; type: \"single_choice\" | \"true_false\" | \"multi_select\"; prompt: string; options: Array<{ id: string; label: string; is_correct?: boolean }>; selected_option_ids: string[]; score?: number }> }; winning_outcome: { id: string; title: string; description: string } | null; timed: boolean; duration_seconds: number | null }",
+    "ResultNotices": "data: { status: \"ok\"; quiz_exists: boolean; quiz_updated: boolean; claimable: boolean; result: { id: string; quiz_id: string | null; quiz_version: number; quiz_kind: \"trivia\" | \"personality\"; quiz_title: string; created_at: string; expires_at: string | null; score: number | null; snapshot: { quiz: { suggested_time_seconds: number | null }; questions: Array<{ id: string; position: number; type: \"single_choice\" | \"true_false\" | \"multi_select\"; prompt: string; options: Array<{ id: string; label: string; is_correct?: boolean }>; selected_option_ids: string[]; score?: number }> }; winning_outcome: { id: string; title: string; description: string } | null; timed: boolean; duration_seconds: number | null } }",
+    "ResultRow": "result: { id: string; quiz_kind: \"trivia\" | \"personality\"; quiz_title: string; created_at: string; score: number | null; question_count: number | null; winning_outcome_title: string | null; quiz_status: \"current\" | \"updated\" | \"deleted\" }",
+    "QuizIllustration": "/** No props. Decorative (aria-hidden); colours follow the theme. */",
+    "CopyLinkButton": "/** No props. Copies window.location.href and announces \"Link copied\". */"
+  },
+  "overrides": {
+    "ConfirmDialog": {
+      "cardMode": "single",
+      "viewport": "560x440"
+    },
+    "TriviaResult": {
+      "cardMode": "single",
+      "viewport": "760x1100"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md",
+  "buildCmd": "(none: cfg.entry is .design-sync/entry.tsx, bundled from src/)"
+}
