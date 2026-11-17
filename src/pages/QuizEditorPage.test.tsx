@@ -277,7 +277,7 @@ describe('QuizEditorPage', () => {
     const answers = main().getByRole('group', { name: 'Answers to question 1' })
     expect(answers.querySelector('.answer-table-head')).toHaveAttribute('aria-hidden', 'true')
     expect(within(answers).getByLabelText('Answer 1 text')).toHaveValue('Nap')
-    expect(within(answers).getByLabelText('Answer 1 outcome')).toHaveValue('cat')
+    expect(within(answers).getByLabelText('Answer 1 leads to')).toHaveValue('cat')
     const points = within(answers).getByRole('group', { name: 'Answer 1 points' })
     expect(within(points).getByRole('radio', { name: '1' })).toBeChecked()
     fireEvent.click(within(points).getByRole('radio', { name: '3' }))
@@ -314,7 +314,7 @@ describe('QuizEditorPage', () => {
     fireEvent.click(main().getByRole('button', { name: 'Publish' }))
     const summary = await main().findByRole('group', { name: 'Fix these before publishing' })
     fireEvent.click(within(summary).getByRole('link', { name: /answer 1: Choose an outcome/ }))
-    await waitFor(() => expect(main().getByLabelText('Answer 1 outcome')).toHaveFocus())
+    await waitFor(() => expect(main().getByLabelText('Answer 1 leads to')).toHaveFocus())
   })
 
   it('adds, moves and removes questions, keeping focus and announcing each change', async () => {

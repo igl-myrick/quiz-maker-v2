@@ -28,7 +28,7 @@ export function AnswerList({ questionIndex: q, questionType, kind, answerIds }: 
 
   if (kind === 'personality') {
     // One row per answer under Answer / Leads to / Points. The headings are only visual:
-    // every control has its own full label ("Answer 2 outcome"), which is shown on narrow
+    // every control has its own full label ("Answer 2 leads to"), which is shown on narrow
     // screens, where the rows stack (specs/07-ui-redesign.md, P6.5).
     return (
       <fieldset>
@@ -63,7 +63,9 @@ export function AnswerList({ questionIndex: q, questionType, kind, answerIds }: 
                 </div>
                 <div className="answer-cell">
                   <label className="cell-label" htmlFor={fieldDomId(outcomeName)}>
-                    Answer {n} outcome
+                    {/* Ends in "leads to", like its column heading, so the name contains
+                        the visible words (WCAG 2.5.3). */}
+                    Answer {n} leads to
                   </label>
                   <select {...fieldProps(outcomeName, outcomeError)} {...register(outcomeName)}>
                     <option value="">Choose an outcome</option>
