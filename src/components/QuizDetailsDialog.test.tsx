@@ -106,6 +106,25 @@ describe('QuizDetailsDialog', () => {
     expect(getDialog()).toHaveAttribute('data-kind', 'personality')
   })
 
+  it('keeps focus on the close button when the quiz finishes loading', async () => {
+    let finishLoading: (value: { data: QuizSummary; error: null }) => void = () => {}
+    mocks.maybeSingle.mockReturnValue(
+      new Promise((resolve) => {
+        finishLoading = resolve
+      }),
+    )
+    renderApp(`/search?quiz=${capitals.id}`)
+    await screen.findByText('Loading quiz…')
+
+    // As browsers do when a modal opens: focus goes to its first focusable element.
+    const close = screen.getByRole('button', { name: 'Close' })
+    close.focus()
+    finishLoading({ data: capitals, error: null })
+    await screen.findByRole('heading', { level: 2, name: 'World Capitals' })
+
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus()
+  })
+
   it('closes with Escape (the cancel event)', async () => {
     const { router } = renderApp('/search?q=capital')
     fireEvent.click(await screen.findByRole('link', { name: 'World Capitals' }))

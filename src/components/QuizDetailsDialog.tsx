@@ -77,12 +77,6 @@ export function QuizDetailsDialog({ quizId }: QuizDetailsDialogProps) {
   if (quiz) heading = quiz.title
   else if (quiz === null) heading = 'Quiz not found'
 
-  const closeButton = (
-    <button type="button" className="dialog-close" aria-label="Close" onClick={requestClose}>
-      ×
-    </button>
-  )
-
   return (
     <dialog
       ref={dialogRef}
@@ -94,6 +88,16 @@ export function QuizDetailsDialog({ quizId }: QuizDetailsDialogProps) {
       onCancel={handleCancel}
       onClose={handleCloseEvent}
     >
+      {/* One close button, always first and never remounted, so focus on it survives
+          the switch from loading to loaded. CSS places it in the top-right corner. */}
+      <button
+        type="button"
+        className="dialog-close details-close"
+        aria-label="Close"
+        onClick={requestClose}
+      >
+        ×
+      </button>
       {quiz ? (
         <div className="details-layout">
           <div className="details-strip" data-strip-kind={quiz.kind}>
@@ -102,7 +106,6 @@ export function QuizDetailsDialog({ quizId }: QuizDetailsDialogProps) {
           <div className="details-main">
             <div className="details-top">
               <KindChip kind={quiz.kind} />
-              {closeButton}
             </div>
             <h2 id={headingId}>{heading}</h2>
             <QuizMeta
@@ -123,7 +126,6 @@ export function QuizDetailsDialog({ quizId }: QuizDetailsDialogProps) {
         <>
           <div className="dialog-header">
             <h2 id={headingId}>{heading}</h2>
-            {closeButton}
           </div>
           <div className="dialog-body">
             {isPending && <p>Loading quiz…</p>}
