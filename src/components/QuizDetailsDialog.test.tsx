@@ -80,6 +80,32 @@ describe('QuizDetailsDialog', () => {
     await waitFor(() => expect(screen.getByRole('link', { name: 'World Capitals' })).toHaveFocus())
   })
 
+  it('shows the kind chip, the meta and the decorative strip', async () => {
+    renderApp(`/search?quiz=${capitals.id}`)
+    await screen.findByRole('heading', { level: 2, name: 'World Capitals' })
+    const dialog = getDialog()
+
+    expect(within(dialog).getByText('Trivia')).toBeInTheDocument()
+    expect(within(dialog).getByText('4 questions')).toBeInTheDocument()
+    expect(dialog.querySelector('svg.strip-art')).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  it('turns on the personality highlight only for personality quizzes', async () => {
+    const first = renderApp(`/search?quiz=${capitals.id}`)
+    await screen.findByRole('heading', { level: 2, name: 'World Capitals' })
+    expect(getDialog()).not.toHaveAttribute('data-kind')
+    first.unmount()
+
+    queryClient.clear()
+    mocks.maybeSingle.mockResolvedValue({
+      data: { ...capitals, kind: 'personality', title: 'Which Houseplant Are You?' },
+      error: null,
+    })
+    renderApp(`/search?quiz=${capitals.id}`)
+    await screen.findByRole('heading', { level: 2, name: 'Which Houseplant Are You?' })
+    expect(getDialog()).toHaveAttribute('data-kind', 'personality')
+  })
+
   it('closes with Escape (the cancel event)', async () => {
     const { router } = renderApp('/search?q=capital')
     fireEvent.click(await screen.findByRole('link', { name: 'World Capitals' }))

@@ -2,6 +2,9 @@ import { useCanGoBack, useNavigate, useRouter } from '@tanstack/react-router'
 import { useEffect, useId, useRef, type SyntheticEvent } from 'react'
 import { useQuizDetails } from '../hooks/useQuizDetails'
 import { StartQuizControls } from './StartQuizControls'
+import { KindChip } from './ui/KindChip'
+import { QuizMeta } from './ui/QuizMeta'
+import { StripArt } from './ui/StripArt'
 
 type QuizDetailsDialogProps = {
   quizId: string
@@ -74,49 +77,70 @@ export function QuizDetailsDialog({ quizId }: QuizDetailsDialogProps) {
   if (quiz) heading = quiz.title
   else if (quiz === null) heading = 'Quiz not found'
 
+  const closeButton = (
+    <button type="button" className="dialog-close" aria-label="Close" onClick={requestClose}>
+      ×
+    </button>
+  )
+
   return (
     <dialog
       ref={dialogRef}
+      className="details-dialog"
+      // Personality quizzes turn the popup's buttons, links and focus purple, including
+      // the "Start over?" confirm opened from inside it.
+      data-kind={quiz?.kind === 'personality' ? 'personality' : undefined}
       aria-labelledby={headingId}
       onCancel={handleCancel}
       onClose={handleCloseEvent}
     >
-      <div className="dialog-header">
-        <h2 id={headingId}>{heading}</h2>
-        <button type="button" className="dialog-close" aria-label="Close" onClick={requestClose}>
-          ×
-        </button>
-      </div>
-
-      <div className="dialog-body">
-        {isPending && <p>Loading quiz…</p>}
-
-        {isError && (
-          <>
-            <p>Couldn&apos;t load this quiz.</p>
-            <button type="button" className="btn" onClick={() => void refetch()}>
-              Try again
-            </button>
-          </>
-        )}
-
-        {quiz === null && <p>This quiz no longer exists.</p>}
-
-        {quiz && (
-          <>
-            <p>
-              <span className="label">{quiz.kind === 'trivia' ? 'Trivia' : 'Personality'}</span>{' '}
-              <span className="text-secondary">{quiz.question_count} questions</span>
-            </p>
-            {quiz.description && <p>{quiz.description}</p>}
-            {/* Shows the suggested time next to the timer switch, when there is one. */}
-            <StartQuizControls
-              quizId={quiz.id}
+      {quiz ? (
+        <div className="details-layout">
+          <div className="details-strip" data-strip-kind={quiz.kind}>
+            <StripArt kind={quiz.kind} />
+          </div>
+          <div className="details-main">
+            <div className="details-top">
+              <KindChip kind={quiz.kind} />
+              {closeButton}
+            </div>
+            <h2 id={headingId}>{heading}</h2>
+            <QuizMeta
+              questionCount={quiz.question_count}
               suggestedTimeSeconds={quiz.suggested_time_seconds}
             />
-          </>
-        )}
-      </div>
+            {quiz.description && <p className="details-description">{quiz.description}</p>}
+            <div className="details-footer">
+              <StartQuizControls
+                quizId={quiz.id}
+                suggestedTimeSeconds={quiz.suggested_time_seconds}
+                variant="popup"
+              />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="dialog-header">
+            <h2 id={headingId}>{heading}</h2>
+            {closeButton}
+          </div>
+          <div className="dialog-body">
+            {isPending && <p>Loading quiz…</p>}
+
+            {isError && (
+              <>
+                <p>Couldn&apos;t load this quiz.</p>
+                <button type="button" className="btn" onClick={() => void refetch()}>
+                  Try again
+                </button>
+              </>
+            )}
+
+            {quiz === null && <p>This quiz no longer exists.</p>}
+          </div>
+        </>
+      )}
     </dialog>
   )
 }

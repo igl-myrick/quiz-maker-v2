@@ -1,0 +1,76 @@
+/* The redesigned popups (specs/07-ui-redesign.md, Phase 3). Loaded after ui.css, which
+   holds the shared dialog shell. */
+
+/* ---- Start controls (details popup and take page) ------------------------------- */
+.start-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.start-controls-timer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.no-timer-note {
+  color: var(--ply-color-secondary);
+}
+
+/* ---- Quiz details popup (P3.1) ---------------------------------------------------
+   A strip in the kind colour down the left, the details on the right. The dialog is a
+   size container, so the strip can step aside when the popup is narrow; rem here
+   follows the text-size setting. */
+.details-dialog {
+  max-width: 34rem;
+  padding: 0;
+  overflow: hidden;
+  container-type: inline-size;
+}
+.details-layout {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+}
+.details-strip {
+  padding: 1rem 0.75rem;
+  background: var(--qm-trivia);
+}
+.details-strip[data-strip-kind='personality'] {
+  background: var(--qm-personality);
+}
+.details-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 1.25rem 1.5rem;
+}
+.details-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.details-main h2 {
+  margin: 0;
+  font-size: 1.375rem;
+  overflow-wrap: anywhere;
+}
+.details-description {
+  margin: 0;
+}
+.details-footer {
+  margin-top: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ply-border-color);
+}
+@container (max-width: 26rem) {
+  .details-layout {
+    grid-template-columns: 1fr;
+  }
+  .details-strip {
+    display: none;
+  }
+}

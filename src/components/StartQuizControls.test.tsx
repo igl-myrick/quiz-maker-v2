@@ -87,6 +87,33 @@ describe('StartQuizControls in the details popup', () => {
     expect(within(dialog).getByText('Suggested time: 5 min')).toBeInTheDocument()
   })
 
+  it('shows the suggested time once, leaving it to the popup meta', async () => {
+    const { dialog } = await openPopup()
+
+    expect(within(dialog).getByRole('switch', { name: 'Timer' })).toHaveTextContent('Timer enabled')
+    expect(within(dialog).getAllByText('Suggested time: 5 min')).toHaveLength(1)
+  })
+
+  it('says when there is no suggested time, with no timer switch', async () => {
+    mocks.maybeSingle.mockImplementation(() =>
+      Promise.resolve({
+        data: {
+          id: QUIZ_ID,
+          kind: 'trivia',
+          title: 'World Capitals',
+          description: '',
+          question_count: 1,
+          suggested_time_seconds: null,
+        },
+        error: null,
+      }),
+    )
+    const { dialog } = await openPopup()
+
+    expect(within(dialog).getByText('No suggested time')).toBeInTheDocument()
+    expect(within(dialog).queryByRole('switch')).not.toBeInTheDocument()
+  })
+
   it('starts a timed take and opens the first page', async () => {
     const { dialog, router } = await openPopup()
 

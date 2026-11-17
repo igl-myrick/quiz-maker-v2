@@ -8,6 +8,8 @@ import './styles/settings.css'
 import './styles/tokens.css'
 // The shared components, dialog shell and quiz card.
 import './styles/ui.css'
+// The redesigned popups (details, Settings, Log in, confirms).
+import './styles/popups.css'
 // Applies the saved settings as soon as the app loads (see settingsStore).
 import './stores/settingsStore'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
