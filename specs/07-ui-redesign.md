@@ -1,6 +1,6 @@
 # Feature 7: UI redesign
 
-Status: **Approved** (2026-11-17, by the project owner). Phase 1 built on `feature/7-ui-shared-pieces` (2026-11-17). Phase 2 built on `feature/7-ui-home-search` (2026-11-17). Phase 3 built on `feature/7-ui-popups` (2026-11-17). Phase 4 built on `feature/7-ui-take-results` (2026-11-17). Phase 5 built on `feature/7-ui-dashboard` (2026-11-17). Not to be built until the status says Approved. It depends on features 0 to 6 being Done, and on the owner's in-progress UI polish on `fix/ui-polish` being committed first (it is the starting point). Rules come from `CLAUDE.md` (§1, §5, §6, §8, §9). Domain terms come from `GLOSSARY.md`.
+Status: **Approved** (2026-11-17, by the project owner). Phase 1 built on `feature/7-ui-shared-pieces` (2026-11-17). Phase 2 built on `feature/7-ui-home-search` (2026-11-17). Phase 3 built on `feature/7-ui-popups` (2026-11-17). Phase 4 built on `feature/7-ui-take-results` (2026-11-17). Phase 5 built on `feature/7-ui-dashboard` (2026-11-17). Phase 6 built on `feature/7-ui-editor` (2026-11-17). Not to be built until the status says Approved. It depends on features 0 to 6 being Done, and on the owner's in-progress UI polish on `fix/ui-polish` being committed first (it is the starting point). Rules come from `CLAUDE.md` (§1, §5, §6, §8, §9). Domain terms come from `GLOSSARY.md`.
 
 ## Goal
 
