@@ -184,3 +184,16 @@
   width: 100%;
   height: auto;
 }
+
+/* ---- Dialog shell (P1.5) -------------------------------------------------------
+   One look for every <dialog>: larger rounded corners, Ply's surface and shadow, and a
+   thin border so the edge still shows in high contrast, where Ply removes shadows. */
+dialog {
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-card);
+}
+dialog .dialog-close {
+  flex-shrink: 0;
+  border-radius: 50%;
+  line-height: 1;
+}
