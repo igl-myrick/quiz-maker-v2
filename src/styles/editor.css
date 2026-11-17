@@ -48,3 +48,55 @@
 .editor-frame select {
   border-radius: var(--qm-radius-input);
 }
+
+/* ---- Question and outcome blocks (P6.4) --------------------------------------------
+   A thin rounded outline. The legend stays first (it names the block and takes focus
+   after a move); the tools sit beside it, because a flex container starts a new block
+   formatting context and so fits next to the floated legend. */
+.editor-block {
+  min-width: 0;
+  margin: 0 0 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-card);
+}
+.editor-block > legend {
+  width: auto;
+  margin: 0.3rem 1rem 0.75rem 0;
+  font-weight: 700;
+}
+.editor-block > legend + .editor-block-tools {
+  clear: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+.editor-block-tools + * {
+  clear: both;
+}
+.editor-block-tools .btn {
+  min-height: max(24px, 1.75rem);
+  padding: 0.2rem 0.7rem;
+  font-size: 0.8125rem;
+}
+
+/* "Add question" and "Add outcome": dashed full-width slots. Still buttons. */
+.form .add-slot {
+  display: block;
+  width: 100%;
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  border: 1.5px dashed var(--ply-border-strong);
+  border-radius: var(--qm-radius-card);
+  background: transparent;
+  color: var(--ply-color-link);
+}
+.form .add-slot:hover:not(:disabled) {
+  background: var(--ply-bg-surface-alt);
+}
+.form .add-slot:focus-visible {
+  outline: 2px solid var(--ply-color-focus);
+  outline-offset: 2px;
+}

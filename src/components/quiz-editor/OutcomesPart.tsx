@@ -80,28 +80,12 @@ export function OutcomesPart() {
         const isLast = index === fields.length - 1
 
         return (
-          <fieldset key={field.id} className="border padding margin-bottom">
+          <fieldset key={field.id} className="editor-block">
             <legend id={outcomeElementId(field.id, 'legend')} tabIndex={-1}>
               Outcome {index + 1}
             </legend>
-            <div className="margin-bottom">
-              <label htmlFor={fieldDomId(nameName)}>Outcome {index + 1} name</label>
-              <input type="text" {...fieldProps(nameName, nameError)} {...register(nameName)} />
-              <FieldError id={`${fieldDomId(nameName)}-error`} message={nameError} />
-            </div>
-            <div className="margin-bottom">
-              <label htmlFor={fieldDomId(descriptionName)}>
-                Outcome {index + 1} description (optional)
-              </label>
-              <textarea
-                rows={2}
-                {...fieldProps(descriptionName, descriptionError)}
-                {...register(descriptionName)}
-              />
-              <FieldError id={`${fieldDomId(descriptionName)}-error`} message={descriptionError} />
-            </div>
             {/* aria-disabled, not disabled, so a button never loses focus after a move. */}
-            <div className="btn-group">
+            <div className="editor-block-tools">
               <button
                 id={outcomeElementId(field.id, 'up')}
                 type="button"
@@ -129,6 +113,23 @@ export function OutcomesPart() {
                 Remove <span className="sr-only">outcome {index + 1}</span>
               </button>
             </div>
+
+            <div className="margin-bottom">
+              <label htmlFor={fieldDomId(nameName)}>Outcome {index + 1} name</label>
+              <input type="text" {...fieldProps(nameName, nameError)} {...register(nameName)} />
+              <FieldError id={`${fieldDomId(nameName)}-error`} message={nameError} />
+            </div>
+            <div className="margin-bottom">
+              <label htmlFor={fieldDomId(descriptionName)}>
+                Outcome {index + 1} description (optional)
+              </label>
+              <textarea
+                rows={2}
+                {...fieldProps(descriptionName, descriptionError)}
+                {...register(descriptionName)}
+              />
+              <FieldError id={`${fieldDomId(descriptionName)}-error`} message={descriptionError} />
+            </div>
           </fieldset>
         )
       })}
@@ -136,7 +137,7 @@ export function OutcomesPart() {
       <button
         id={ADD_OUTCOME_ID}
         type="button"
-        className="btn"
+        className="btn add-slot"
         disabled={fields.length >= QUIZ_LIMITS.outcomesMax}
         onClick={() => append(emptyOutcome(), { focusName: `outcomes.${fields.length}.title` })}
       >

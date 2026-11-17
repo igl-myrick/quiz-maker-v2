@@ -244,6 +244,31 @@ describe('QuizEditorPage', () => {
     expect(main().getByRole('group', { name: 'Suggested time' })).toHaveClass('option-panel')
   })
 
+  it('shows each question as an outlined block with its tools in the header', async () => {
+    await renderApp('/quizzes/new?part=questions')
+    await main().findByRole('heading', { name: 'Part 2 of 2: Questions' })
+
+    const block = main().getByRole('group', { name: 'Question 1' })
+    expect(block).toHaveClass('editor-block')
+    const moveUp = within(block).getByRole('button', { name: 'Move up: question 1' })
+    expect(block.querySelector('.editor-block-tools')?.contains(moveUp)).toBe(true)
+    expect(moveUp).toHaveAttribute('aria-disabled', 'true')
+    expect(main().getByRole('button', { name: 'Add question' })).toHaveClass('add-slot')
+  })
+
+  it('shows each outcome as an outlined block, with Add outcome as a slot', async () => {
+    saveDraft('quiz-draft:new', personality())
+    await renderApp('/quizzes/new?part=outcomes')
+    await main().findByRole('heading', { name: 'Part 2 of 3: Outcomes' })
+
+    const block = main().getByRole('group', { name: 'Outcome 2' })
+    expect(block).toHaveClass('editor-block')
+    const moveDown = within(block).getByRole('button', { name: 'Move down: outcome 2' })
+    expect(block.querySelector('.editor-block-tools')?.contains(moveDown)).toBe(true)
+    expect(moveDown).toHaveAttribute('aria-disabled', 'true')
+    expect(main().getByRole('button', { name: 'Add outcome' })).toHaveClass('add-slot')
+  })
+
   it('adds, moves and removes questions, keeping focus and announcing each change', async () => {
     await renderApp('/quizzes/new?part=questions')
     await main().findByRole('heading', { name: 'Part 2 of 2: Questions' })
