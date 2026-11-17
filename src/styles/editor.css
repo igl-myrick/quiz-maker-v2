@@ -17,3 +17,34 @@
 .editor-nav-end {
   margin-left: auto;
 }
+
+/* ---- Basics (P6.2, P6.3) ---------------------------------------------------------- */
+/* The character count sits at the right of its label. */
+.label-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 1rem;
+}
+.form .label-row label {
+  width: auto;
+  margin-top: 0;
+}
+/* Kind and Suggested time: the same padded, rounded panel. */
+.option-panel {
+  min-width: 0;
+  padding: 0.85rem 1rem 0.5rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-card);
+  background: var(--ply-bg-surface-alt);
+}
+.option-panel > legend {
+  font-weight: 700;
+}
+/* Fields in the editor get the medium radius. */
+.editor-frame input:not([type='radio'], [type='checkbox']),
+.editor-frame textarea,
+.editor-frame select {
+  border-radius: var(--qm-radius-input);
+}

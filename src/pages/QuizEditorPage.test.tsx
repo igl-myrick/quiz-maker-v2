@@ -230,6 +230,20 @@ describe('QuizEditorPage', () => {
     expect(document.querySelector('.editor-nav-end')).toHaveTextContent(/Next.*Publish/)
   })
 
+  it('puts Kind and Suggested time in matching panels, and counts beside the labels', async () => {
+    const { unmount } = await renderApp('/quizzes/new')
+    await main().findByRole('heading', { name: 'Part 1 of 2: Basics' })
+
+    expect(main().getByRole('group', { name: 'Kind' })).toHaveClass('option-panel')
+    const titleRow = main().getByText('Title', { selector: 'label' }).closest('.label-row')
+    expect(titleRow).toHaveTextContent(/Title.*0\/75/)
+    unmount()
+
+    await renderApp('/quizzes/new?part=questions')
+    await main().findByRole('heading', { name: 'Part 2 of 2: Questions' })
+    expect(main().getByRole('group', { name: 'Suggested time' })).toHaveClass('option-panel')
+  })
+
   it('adds, moves and removes questions, keeping focus and announcing each change', async () => {
     await renderApp('/quizzes/new?part=questions')
     await main().findByRole('heading', { name: 'Part 2 of 2: Questions' })
