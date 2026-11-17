@@ -176,3 +176,11 @@
   color: #ffffff;
   font-weight: 700;
 }
+
+/* ---- Artwork ------------------------------------------------------------------- */
+.cover-art,
+.strip-art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
