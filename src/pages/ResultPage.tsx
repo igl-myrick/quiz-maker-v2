@@ -48,12 +48,12 @@ export function ResultPage({ resultId }: { resultId: string }) {
         )}
         <ResultNotices data={data} />
         <SaveResultSection data={data} />
-        <p>
-          <CopyLinkButton />{' '}
+        <div className="btn-group margin-bottom">
+          <CopyLinkButton />
           <Link to="/search" className="btn">
             Find another quiz
           </Link>
-        </p>
+        </div>
       </>
     )
   }

@@ -238,12 +238,14 @@ export function QuizEditor({ savedQuiz, part, onRestart, onLoadLatest }: QuizEdi
         {isStale && (
           <div role="alert" className="border padding margin-bottom">
             <p>This quiz changed since you opened it (maybe in another tab).</p>
-            <button type="button" className="btn" onClick={() => void handleLoadLatest()}>
-              Load the latest version
-            </button>{' '}
-            <button type="button" className="btn" onClick={() => void handleSaveMine()}>
-              Save mine over it
-            </button>
+            <div className="btn-group">
+              <button type="button" className="btn" onClick={() => void handleLoadLatest()}>
+                Load the latest version
+              </button>
+              <button type="button" className="btn" onClick={() => void handleSaveMine()}>
+                Save mine over it
+              </button>
+            </div>
           </div>
         )}
 
@@ -264,34 +266,30 @@ export function QuizEditor({ savedQuiz, part, onRestart, onLoadLatest }: QuizEdi
         {part === 'outcomes' && <OutcomesPart />}
         {part === 'questions' && <QuestionsPart />}
 
-        <p>
+        <div className="btn-group margin-bottom">
           {partIndex > 0 && (
-            <>
-              <button
-                type="button"
-                className="btn"
-                onClick={() => void goToPart(parts[partIndex - 1])}
-              >
-                Back
-              </button>{' '}
-            </>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => void goToPart(parts[partIndex - 1])}
+            >
+              Back
+            </button>
           )}
           {partIndex < parts.length - 1 && (
-            <>
-              <button type="button" className="btn" onClick={() => void handleNext()}>
-                Next
-              </button>{' '}
-            </>
+            <button type="button" className="btn" onClick={() => void handleNext()}>
+              Next
+            </button>
           )}
           <button type="submit" className="btn btn-primary" disabled={save.isPending}>
             {save.isPending ? 'Publishing…' : savedQuiz ? 'Save changes' : 'Publish'}
-          </button>{' '}
+          </button>
           {hasDraft && (
             <button type="button" className="btn" onClick={() => void handleDiscard()}>
               Discard draft
             </button>
           )}
-        </p>
+        </div>
       </form>
       {dialog}
     </FormProvider>

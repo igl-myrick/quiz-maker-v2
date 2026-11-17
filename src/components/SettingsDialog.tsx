@@ -26,7 +26,7 @@ function RadioGroup<T extends string>({
     <fieldset>
       <legend>{legend}</legend>
       {choices.map((choice) => (
-        <label key={choice.value} className={`settings-choice ${choice.className ?? ''}`}>
+        <label key={choice.value} className={choice.className}>
           <input
             type="radio"
             name={name}
@@ -116,7 +116,7 @@ export function SettingsDialog({ dialogRef }: SettingsDialogProps) {
         />
         <fieldset>
           <legend>Font</legend>
-          <label className="settings-choice">
+          <label>
             <input
               type="checkbox"
               checked={settings.dyslexiaFont}

@@ -13,7 +13,7 @@ function questionOutcome(score: number) {
 
 // What an option means for this taker. The text carries the meaning; icons are decorative.
 function optionNote(option: ResultQuestion['options'][number], chosen: boolean) {
-  if (option.is_correct) return chosen ? 'your answer, correct' : "correct answer you didn't choose"
+  if (option.is_correct) return chosen ? 'your answer, correct' : 'correct answer'
   return chosen ? 'your answer, not correct' : 'not correct'
 }
 

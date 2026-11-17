@@ -101,32 +101,34 @@ export function OutcomesPart() {
               <FieldError id={`${fieldDomId(descriptionName)}-error`} message={descriptionError} />
             </div>
             {/* aria-disabled, not disabled, so a button never loses focus after a move. */}
-            <button
-              id={outcomeElementId(field.id, 'up')}
-              type="button"
-              className="btn"
-              aria-disabled={isFirst}
-              onClick={() => !isFirst && moveOutcome(index, index - 1, 'up')}
-            >
-              Move up<span className="sr-only">: outcome {index + 1}</span>
-            </button>{' '}
-            <button
-              id={outcomeElementId(field.id, 'down')}
-              type="button"
-              className="btn"
-              aria-disabled={isLast}
-              onClick={() => !isLast && moveOutcome(index, index + 1, 'down')}
-            >
-              Move down<span className="sr-only">: outcome {index + 1}</span>
-            </button>{' '}
-            <button
-              type="button"
-              className="btn"
-              disabled={fields.length <= QUIZ_LIMITS.outcomesMin}
-              onClick={() => void removeOutcome(index)}
-            >
-              Remove <span className="sr-only">outcome {index + 1}</span>
-            </button>
+            <div className="btn-group">
+              <button
+                id={outcomeElementId(field.id, 'up')}
+                type="button"
+                className="btn"
+                aria-disabled={isFirst}
+                onClick={() => !isFirst && moveOutcome(index, index - 1, 'up')}
+              >
+                Move up<span className="sr-only">: outcome {index + 1}</span>
+              </button>
+              <button
+                id={outcomeElementId(field.id, 'down')}
+                type="button"
+                className="btn"
+                aria-disabled={isLast}
+                onClick={() => !isLast && moveOutcome(index, index + 1, 'down')}
+              >
+                Move down<span className="sr-only">: outcome {index + 1}</span>
+              </button>
+              <button
+                type="button"
+                className="btn"
+                disabled={fields.length <= QUIZ_LIMITS.outcomesMin}
+                onClick={() => void removeOutcome(index)}
+              >
+                Remove <span className="sr-only">outcome {index + 1}</span>
+              </button>
+            </div>
           </fieldset>
         )
       })}

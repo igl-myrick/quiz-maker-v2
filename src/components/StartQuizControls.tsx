@@ -44,7 +44,7 @@ export function StartQuizControls({
   return (
     <div>
       {hasTimer && (
-        <p>
+        <div className="btn-group items-center margin-bottom">
           <button
             type="button"
             role="switch"
@@ -54,9 +54,9 @@ export function StartQuizControls({
             onClick={() => setTimerOn((on) => !on)}
           >
             {timerOn ? 'Timer enabled' : 'Timer disabled'}
-          </button>{' '}
+          </button>
           <span className="text-secondary">{formatSuggestedTime(suggestedTimeSeconds)}</span>
-        </p>
+        </div>
       )}
 
       {startTake.isError && (
@@ -65,7 +65,7 @@ export function StartQuizControls({
         </p>
       )}
 
-      <p>
+      <div className="btn-group">
         <button
           type="button"
           className="btn btn-primary"
@@ -73,13 +73,13 @@ export function StartQuizControls({
           onClick={() => void handleStart()}
         >
           {startTake.isPending ? 'Starting…' : startLabel}
-        </button>{' '}
+        </button>
         {takeInProgress && !isRestart && (
           <Link to="/quizzes/$quizId/take" params={{ quizId }} search={{ page: 1 }} className="btn">
             Continue your quiz
           </Link>
         )}
-      </p>
+      </div>
       {dialog}
     </div>
   )

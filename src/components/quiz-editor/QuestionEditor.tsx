@@ -180,27 +180,29 @@ export function QuestionEditor({
       />
       <FieldError id={`${baseId}-answers-error`} message={answersError} />
       {/* aria-disabled, not disabled, so a button never loses focus after a move. */}
-      <button
-        id={questionElementId(fieldId, 'up')}
-        type="button"
-        className="btn"
-        aria-disabled={isFirst}
-        onClick={() => !isFirst && onMove(q, q - 1, 'up')}
-      >
-        Move up<span className="sr-only">: question {q + 1}</span>
-      </button>{' '}
-      <button
-        id={questionElementId(fieldId, 'down')}
-        type="button"
-        className="btn"
-        aria-disabled={isLast}
-        onClick={() => !isLast && onMove(q, q + 1, 'down')}
-      >
-        Move down<span className="sr-only">: question {q + 1}</span>
-      </button>{' '}
-      <button type="button" className="btn" disabled={total <= 1} onClick={() => onRemove(q)}>
-        Remove <span className="sr-only">question {q + 1}</span>
-      </button>
+      <div className="btn-group">
+        <button
+          id={questionElementId(fieldId, 'up')}
+          type="button"
+          className="btn"
+          aria-disabled={isFirst}
+          onClick={() => !isFirst && onMove(q, q - 1, 'up')}
+        >
+          Move up<span className="sr-only">: question {q + 1}</span>
+        </button>
+        <button
+          id={questionElementId(fieldId, 'down')}
+          type="button"
+          className="btn"
+          aria-disabled={isLast}
+          onClick={() => !isLast && onMove(q, q + 1, 'down')}
+        >
+          Move down<span className="sr-only">: question {q + 1}</span>
+        </button>
+        <button type="button" className="btn" disabled={total <= 1} onClick={() => onRemove(q)}>
+          Remove <span className="sr-only">question {q + 1}</span>
+        </button>
+      </div>
     </fieldset>
   )
 }

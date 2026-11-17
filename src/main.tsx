@@ -1,4 +1,5 @@
 import 'ply-css/dist/css/ply.min.css'
+import './styles/app.css'
 // Lexend for the dyslexia-friendly font setting, bundled and served from our own domain.
 import '@fontsource/lexend/400.css'
 import '@fontsource/lexend/700.css'

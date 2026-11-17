@@ -145,7 +145,7 @@ describe('ResultPage', () => {
       .getByRole('heading', { name: 'Question 2: Which are capitals?' })
       .closest('li')
     expect(multi).toHaveTextContent('Lisbon (your answer, correct)')
-    expect(multi).toHaveTextContent("Nairobi (correct answer you didn't choose)")
+    expect(multi).toHaveTextContent('Nairobi (correct answer)')
     expect(multi).toHaveTextContent('Sydney (not correct)')
     expect(main().getByText('Finished in 3:05 (suggested 5:00)')).toBeInTheDocument()
   })
@@ -209,7 +209,7 @@ describe('ResultPage', () => {
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
     await renderResult(trivia())
 
-    fireEvent.click(main().getByRole('button', { name: 'Copy link' }))
+    fireEvent.click(main().getByRole('button', { name: 'Copy results link' }))
 
     await waitFor(() => expect(writeText).toHaveBeenCalledWith(window.location.href))
     await waitFor(() => expect(useAnnouncerStore.getState().message).toBe('Link copied'))
@@ -220,7 +220,7 @@ describe('ResultPage', () => {
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
     await renderResult(trivia())
 
-    fireEvent.click(main().getByRole('button', { name: 'Copy link' }))
+    fireEvent.click(main().getByRole('button', { name: 'Copy results link' }))
 
     const field = await main().findByRole('textbox', { name: 'Result link (copy it from here)' })
     expect(field).toHaveAttribute('readonly')

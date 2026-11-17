@@ -19,13 +19,11 @@ export function PageNav({
   const isLast = page >= totalPages
 
   return (
-    <p>
+    <div className="btn-group margin-bottom">
       {page > 1 && (
-        <>
-          <button type="button" className="btn" onClick={onPrevious}>
-            Previous page
-          </button>{' '}
-        </>
+        <button type="button" className="btn" onClick={onPrevious}>
+          Previous page
+        </button>
       )}
       {isLast ? (
         <button type="button" className="btn btn-primary" disabled={submitting} onClick={onSubmit}>
@@ -36,6 +34,6 @@ export function PageNav({
           Next page
         </button>
       )}
-    </p>
+    </div>
   )
 }

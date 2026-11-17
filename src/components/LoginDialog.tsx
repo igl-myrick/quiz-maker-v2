@@ -205,9 +205,11 @@ export function LoginDialog({ dialogRef, onLoggedIn }: LoginDialogProps) {
                 {emailError}
               </p>
             )}
-            <button type="submit" className="btn btn-primary" disabled={busy}>
-              {sendCode.isPending ? 'Sending…' : 'Send code'}
-            </button>
+            <div className="btn-group margin-top">
+              <button type="submit" className="btn btn-primary" disabled={busy}>
+                {sendCode.isPending ? 'Sending…' : 'Send code'}
+              </button>
+            </div>
           </form>
         ) : (
           <form className="form" noValidate onSubmit={codeForm.handleSubmit(handleVerify)}>
@@ -227,15 +229,22 @@ export function LoginDialog({ dialogRef, onLoggedIn }: LoginDialogProps) {
                 {codeError}
               </p>
             )}
-            <button type="submit" className="btn btn-primary" disabled={busy}>
-              {verifyCode.isPending ? 'Checking…' : 'Log in'}
-            </button>
-            <button type="button" className="btn" disabled={busy} onClick={handleResend}>
-              {resendCode.isPending ? 'Sending…' : 'Send a new code'}
-            </button>
-            <button type="button" className="btn" disabled={busy} onClick={handleUseDifferentEmail}>
-              Use a different email
-            </button>
+            <div className="btn-group margin-top">
+              <button type="submit" className="btn btn-primary" disabled={busy}>
+                {verifyCode.isPending ? 'Checking…' : 'Log in'}
+              </button>
+              <button type="button" className="btn" disabled={busy} onClick={handleResend}>
+                {resendCode.isPending ? 'Sending…' : 'Send a new code'}
+              </button>
+              <button
+                type="button"
+                className="btn"
+                disabled={busy}
+                onClick={handleUseDifferentEmail}
+              >
+                Use a different email
+              </button>
+            </div>
           </form>
         )}
       </div>
