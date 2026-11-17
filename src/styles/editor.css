@@ -76,6 +76,17 @@
 .editor-block-tools + * {
   clear: both;
 }
+/* The answers group inside a block: no second box (Ply pads every fieldset), so the
+   answers keep their room on phones and at large text sizes. */
+.editor-block fieldset {
+  min-width: 0;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  border: 0;
+}
+.editor-block fieldset > legend {
+  font-weight: 700;
+}
 .editor-block-tools .btn {
   min-height: max(24px, 1.75rem);
   padding: 0.2rem 0.7rem;
@@ -99,4 +110,82 @@
 .form .add-slot:focus-visible {
   outline: 2px solid var(--ply-color-focus);
   outline-offset: 2px;
+}
+
+/* ---- Personality answers table (P6.5) ----------------------------------------------
+   Wide: one row per answer under Answer / Leads to / Points. The headings are visual
+   only, and each control's own label is clipped out of sight but still read.
+   Narrow (the list under 34rem, so larger text sizes switch too): the headings hide and
+   each answer stacks into a block with its labels showing. Same controls, same order. */
+.answer-table {
+  container-type: inline-size;
+}
+.answer-table-head,
+.answer-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+.answer-table-head {
+  margin-bottom: 0.35rem;
+  color: var(--ply-color-secondary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.answer-row {
+  padding: 0.35rem 0;
+}
+.answer-cell {
+  min-width: 0;
+}
+.form .answer-cell input,
+.form .answer-cell select {
+  margin: 0;
+}
+.answer-table .cell-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@container (max-width: 34rem) {
+  .answer-table-head {
+    display: none;
+  }
+  .answer-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--ply-border-color);
+  }
+  .answer-row:first-of-type {
+    border-top: 0;
+  }
+  .form .answer-table .cell-label {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0 0 0.25rem;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    white-space: normal;
+  }
+  /* The points legend: hidden in the wide layout (the column heading says it), shown
+     here. Only inside the table, so other pill groups keep their own setting. */
+  .answer-row .pill-group > legend.sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0 0 0.35rem;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    font-weight: 400;
+  }
 }

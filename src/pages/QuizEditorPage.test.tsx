@@ -269,6 +269,54 @@ describe('QuizEditorPage', () => {
     expect(main().getByRole('button', { name: 'Add outcome' })).toHaveClass('add-slot')
   })
 
+  it('lays personality answers out as a table with 1-2-3 points pills', async () => {
+    saveDraft('quiz-draft:new', personality())
+    await renderApp('/quizzes/new?part=questions')
+    await main().findByRole('heading', { name: 'Part 3 of 3: Questions' })
+
+    const answers = main().getByRole('group', { name: 'Answers to question 1' })
+    expect(answers.querySelector('.answer-table-head')).toHaveAttribute('aria-hidden', 'true')
+    expect(within(answers).getByLabelText('Answer 1 text')).toHaveValue('Nap')
+    expect(within(answers).getByLabelText('Answer 1 outcome')).toHaveValue('cat')
+    const points = within(answers).getByRole('group', { name: 'Answer 1 points' })
+    expect(within(points).getByRole('radio', { name: '1' })).toBeChecked()
+    fireEvent.click(within(points).getByRole('radio', { name: '3' }))
+    expect(within(points).getByRole('radio', { name: '3' })).toBeChecked()
+  })
+
+  it('publishes the chosen points', async () => {
+    const quiz = personality()
+    quiz.questions = [1, 2, 3].map((n) => ({ ...quiz.questions[0], prompt: `Pick ${n}` }))
+    saveDraft('quiz-draft:new', quiz)
+    await renderApp('/quizzes/new?part=questions')
+    await main().findByRole('heading', { name: 'Part 3 of 3: Questions' })
+
+    const answers = main().getByRole('group', { name: 'Answers to question 1' })
+    const points = within(answers).getByRole('group', { name: 'Answer 1 points' })
+    fireEvent.click(within(points).getByRole('radio', { name: '3' }))
+    fireEvent.click(main().getByRole('button', { name: 'Publish' }))
+
+    await waitFor(() =>
+      expect(mocks.rpc.mock.calls.some(([name]) => name === 'save_quiz')).toBe(true),
+    )
+    const [, args] = mocks.rpc.mock.calls.find(([name]) => name === 'save_quiz') ?? []
+    expect(args.p_quiz.questions[0].options[0]).toMatchObject({ points: 3 })
+    expect(args.p_quiz.questions[0].options[1]).toMatchObject({ points: 1 })
+  })
+
+  it('links the summary to an answer outcome inside the table', async () => {
+    const quiz = personality()
+    quiz.questions[0].options[0].outcomeKey = ''
+    saveDraft('quiz-draft:new', quiz)
+    await renderApp('/quizzes/new?part=questions')
+    await main().findByRole('heading', { name: 'Part 3 of 3: Questions' })
+
+    fireEvent.click(main().getByRole('button', { name: 'Publish' }))
+    const summary = await main().findByRole('group', { name: 'Fix these before publishing' })
+    fireEvent.click(within(summary).getByRole('link', { name: /answer 1: Choose an outcome/ }))
+    await waitFor(() => expect(main().getByLabelText('Answer 1 outcome')).toHaveFocus())
+  })
+
   it('adds, moves and removes questions, keeping focus and announcing each change', async () => {
     await renderApp('/quizzes/new?part=questions')
     await main().findByRole('heading', { name: 'Part 2 of 2: Questions' })
