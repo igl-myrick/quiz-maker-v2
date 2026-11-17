@@ -43,3 +43,48 @@
   margin: 0.75rem 0 0.35rem;
   font-size: 1rem;
 }
+
+/* ---- Questions (T1) --------------------------------------------------------------
+   No boxes: questions are separated by thin lines. An unanswered question gets a red
+   bar down its left edge, next to its "Answer this question." text. */
+.question {
+  min-width: 0;
+  margin: 0;
+  padding: 1rem 0;
+  border: 0;
+  border-top: 1px solid var(--ply-border-color);
+  border-radius: 0;
+  background: none;
+}
+.take-progress + .question {
+  border-top: 0;
+}
+.question[data-missing] {
+  padding-left: 0.85rem;
+  border-left: 3px solid var(--qm-wrong);
+}
+.question-number {
+  display: block;
+  color: var(--ply-color-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.question-prompt {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+/* ---- Page navigation -------------------------------------------------------------- */
+.page-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.25rem 0;
+}
+.page-nav .page-nav-next {
+  margin-left: auto;
+}

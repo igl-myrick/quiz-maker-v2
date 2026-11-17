@@ -187,6 +187,27 @@ describe('TakePage', () => {
     expect(main().getByText('Choose all that apply')).toBeInTheDocument()
   })
 
+  it('lays out each question as a line, named "Question N of M: prompt"', async () => {
+    seedTake()
+    await renderApp(`/quizzes/${QUIZ_ID}/take`)
+
+    expect(main().getByRole('group', { name: 'Question 1 of 12: Question text 1' })).toHaveClass(
+      'question',
+    )
+  })
+
+  it('marks an unanswered question for the bar and keeps its message', async () => {
+    seedTake()
+    await renderApp(`/quizzes/${QUIZ_ID}/take`)
+
+    fireEvent.click(main().getByRole('button', { name: 'Next page' }))
+    await main().findByRole('group', { name: 'Answer these questions to continue' })
+
+    const question = main().getByRole('group', { name: 'Question 1 of 12: Question text 1' })
+    expect(question).toHaveAttribute('data-missing', 'true')
+    expect(question).toHaveAccessibleDescription(/Answer this question\./)
+  })
+
   it('checks every page on submit, and links to questions on other pages', async () => {
     seedTake()
     const { router } = await renderApp(`/quizzes/${QUIZ_ID}/take?page=2`)

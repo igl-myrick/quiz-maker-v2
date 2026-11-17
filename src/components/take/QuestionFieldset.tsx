@@ -47,9 +47,20 @@ export function QuestionFieldset({
   }
 
   return (
-    <fieldset className="border padding margin-bottom" aria-describedby={describedBy || undefined}>
+    // data-missing draws a red bar down the left edge; the words below still say it.
+    <fieldset
+      className="question"
+      data-missing={showMissing || undefined}
+      aria-describedby={describedBy || undefined}
+    >
+      {/* The number and the prompt on separate lines; the hidden colon keeps the group's
+          name as "Question N of M: prompt". */}
       <legend>
-        Question {number} of {total}: {question.prompt}
+        <span className="question-number">
+          Question {number} of {total}
+        </span>
+        <span className="sr-only">:</span>{' '}
+        <span className="question-prompt">{question.prompt}</span>
       </legend>
       {isMulti && (
         <p id={hintId} className="form-desc">

@@ -19,18 +19,24 @@ export function PageNav({
   const isLast = page >= totalPages
 
   return (
-    <div className="btn-group margin-bottom">
+    // Previous on the left; Next page or Submit answers always on the right.
+    <div className="page-nav">
       {page > 1 && (
         <button type="button" className="btn" onClick={onPrevious}>
           Previous page
         </button>
       )}
       {isLast ? (
-        <button type="button" className="btn btn-primary" disabled={submitting} onClick={onSubmit}>
+        <button
+          type="button"
+          className="btn btn-primary page-nav-next"
+          disabled={submitting}
+          onClick={onSubmit}
+        >
           {submitting ? 'Submitting…' : 'Submit answers'}
         </button>
       ) : (
-        <button type="button" className="btn btn-primary" onClick={onNext}>
+        <button type="button" className="btn btn-primary page-nav-next" onClick={onNext}>
           Next page
         </button>
       )}
