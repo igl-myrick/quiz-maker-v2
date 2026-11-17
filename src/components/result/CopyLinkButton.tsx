@@ -21,7 +21,7 @@ export function CopyLinkButton() {
   return (
     <>
       <button type="button" className="btn" onClick={() => void handleCopy()}>
-        Copy results link
+        Copy link
       </button>
       {showLink && (
         <span className="form">

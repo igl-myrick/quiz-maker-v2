@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { formatPoints } from '../../lib/formatScore'
 import type { Result, ResultQuestion } from '../../schemas/result'
 
@@ -6,9 +7,11 @@ function pointsText(points: number) {
 }
 
 function questionOutcome(score: number) {
-  if (score === 1) return { icon: '✓', text: `Correct: ${pointsText(score)}` }
-  if (score > 0) return { icon: '◐', text: `Partly correct: ${pointsText(score)}` }
-  return { icon: '✗', text: `Wrong: ${pointsText(score)}` }
+  if (score === 1) return { status: 'correct', icon: '✓', text: `Correct: ${pointsText(score)}` }
+  if (score > 0) {
+    return { status: 'partly', icon: '◐', text: `Partly correct: ${pointsText(score)}` }
+  }
+  return { status: 'wrong', icon: '✗', text: `Wrong: ${pointsText(score)}` }
 }
 
 // What an option means for this taker. The text carries the meaning; icons are decorative.
@@ -17,7 +20,15 @@ function optionNote(option: ResultQuestion['options'][number], chosen: boolean) 
   return chosen ? 'your answer, not correct' : 'not correct'
 }
 
-export function TriviaResult({ result }: { result: Result }) {
+type TriviaResultProps = {
+  result: Result
+  // Copy link and Find another quiz, shown inside the score card.
+  actions: ReactNode
+  // Notices and Save to my account, between the score card and the questions.
+  children?: ReactNode
+}
+
+export function TriviaResult({ result, actions, children }: TriviaResultProps) {
   const questions = result.snapshot.questions
   const scores = questions.map((question) => question.score ?? 0)
   const points = scores.reduce((sum, score) => sum + score, 0)
@@ -29,28 +40,50 @@ export function TriviaResult({ result }: { result: Result }) {
   return (
     <>
       <h1 tabIndex={-1}>{result.quiz_title}</h1>
-      <p>
-        <strong>
+      <div className="score-card">
+        <p className="score-value">
           {formatPoints(points)} / {questions.length} ({percent}%)
-        </strong>
-      </p>
-      <p>
-        <span aria-hidden="true">✓ </span>
-        {correct} correct · <span aria-hidden="true">◐ </span>
-        {partly} partly correct · <span aria-hidden="true">✗ </span>
-        {wrong} wrong
-      </p>
+        </p>
+        {/* The score is in words just above, so the bar is decoration. */}
+        <div className="score-bar" aria-hidden="true">
+          <span style={{ width: `${percent}%` }} />
+        </div>
+        {/* Separators stay in the text for anyone copying it, but are hidden on screen. */}
+        <p className="tally">
+          <span>
+            <span aria-hidden="true">✓ </span>
+            {correct} correct
+          </span>
+          <span className="tally-sep" aria-hidden="true">
+            {' · '}
+          </span>
+          <span>
+            <span aria-hidden="true">◐ </span>
+            {partly} partly correct
+          </span>
+          <span className="tally-sep" aria-hidden="true">
+            {' · '}
+          </span>
+          <span>
+            <span aria-hidden="true">✗ </span>
+            {wrong} wrong
+          </span>
+        </p>
+        <div className="result-actions">{actions}</div>
+      </div>
+
+      {children}
 
       <h2>Question by question</h2>
       <ol className="flat-list">
         {questions.map((question, index) => {
           const outcome = questionOutcome(question.score ?? 0)
           return (
-            <li key={question.id} className="border padding margin-bottom">
+            <li key={question.id} className="result-question">
               <h3>
                 Question {index + 1}: {question.prompt}
               </h3>
-              <p>
+              <p className="status-badge" data-status={outcome.status}>
                 <span aria-hidden="true">{outcome.icon} </span>
                 {outcome.text}
               </p>

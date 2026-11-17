@@ -9,23 +9,23 @@ export function ResultNotices({ data }: { data: ResultOk }) {
   return (
     <>
       {result.timed && result.duration_seconds !== null && suggested !== null && (
-        <p>
+        <p className="notice">
           Finished in {formatClock(result.duration_seconds)} (suggested {formatClock(suggested)})
         </p>
       )}
 
       {data.quiz_updated && result.quiz_id && (
-        <p>
+        <p className="notice">
           This quiz has been updated since this result was saved.{' '}
           <Link to="/search" search={{ quiz: result.quiz_id }}>
             See the current version
           </Link>
         </p>
       )}
-      {!data.quiz_exists && <p>The original quiz no longer exists.</p>}
+      {!data.quiz_exists && <p className="notice">The original quiz no longer exists.</p>}
 
       {result.expires_at && (
-        <p>
+        <p className="notice">
           This result is kept until{' '}
           {new Date(result.expires_at).toLocaleString(undefined, {
             dateStyle: 'medium',

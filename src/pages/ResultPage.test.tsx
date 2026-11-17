@@ -136,7 +136,10 @@ describe('ResultPage', () => {
 
     expect(main().getByRole('heading', { level: 1, name: 'World Capitals' })).toBeInTheDocument()
     expect(main().getByText('1.5 / 3 (50%)')).toBeInTheDocument()
-    expect(main().getByText(/1 correct · .*1 partly correct · .*1 wrong/)).toBeInTheDocument()
+    // The tally is now three pills; the words are unchanged.
+    expect(document.querySelector('.tally')).toHaveTextContent(
+      /1 correct · .*1 partly correct · .*1 wrong/,
+    )
     expect(main().getByText('Correct: 1 point')).toBeInTheDocument()
     expect(main().getByText('Partly correct: 0.5 points')).toBeInTheDocument()
     expect(main().getByText('Wrong: 0 points')).toBeInTheDocument()
@@ -148,6 +151,25 @@ describe('ResultPage', () => {
     expect(multi).toHaveTextContent('Nairobi (correct answer)')
     expect(multi).toHaveTextContent('Sydney (not correct)')
     expect(main().getByText('Finished in 3:05 (suggested 5:00)')).toBeInTheDocument()
+  })
+
+  it('puts Copy link and Find another quiz inside the score card', async () => {
+    await renderResult(trivia())
+
+    const card = main().getByRole('button', { name: 'Copy link' }).closest('.score-card')
+    expect(card).not.toBeNull()
+    expect(card?.contains(main().getByRole('link', { name: 'Find another quiz' }))).toBe(true)
+  })
+
+  it('keeps each question status in words with its symbol, in a badge', async () => {
+    await renderResult(trivia())
+
+    const badge = main().getByText('Partly correct: 0.5 points').closest('.status-badge')
+    expect(badge).toHaveAttribute('data-status', 'partly')
+    expect(main().getByText('Wrong: 0 points').closest('.status-badge')).toHaveAttribute(
+      'data-status',
+      'wrong',
+    )
   })
 
   it('shows only the winning outcome for a personality result', async () => {
@@ -209,7 +231,7 @@ describe('ResultPage', () => {
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
     await renderResult(trivia())
 
-    fireEvent.click(main().getByRole('button', { name: 'Copy results link' }))
+    fireEvent.click(main().getByRole('button', { name: 'Copy link' }))
 
     await waitFor(() => expect(writeText).toHaveBeenCalledWith(window.location.href))
     await waitFor(() => expect(useAnnouncerStore.getState().message).toBe('Link copied'))
@@ -220,7 +242,7 @@ describe('ResultPage', () => {
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
     await renderResult(trivia())
 
-    fireEvent.click(main().getByRole('button', { name: 'Copy results link' }))
+    fireEvent.click(main().getByRole('button', { name: 'Copy link' }))
 
     const field = await main().findByRole('textbox', { name: 'Result link (copy it from here)' })
     expect(field).toHaveAttribute('readonly')

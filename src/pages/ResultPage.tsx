@@ -39,23 +39,29 @@ export function ResultPage({ resultId }: { resultId: string }) {
       </>
     )
   } else {
-    content = (
+    // Shown inside the score or outcome card.
+    const actions = (
       <>
-        {data.result.quiz_kind === 'trivia' ? (
-          <TriviaResult result={data.result} />
-        ) : (
-          <PersonalityResult result={data.result} />
-        )}
-        <ResultNotices data={data} />
-        <SaveResultSection data={data} />
-        <div className="btn-group margin-bottom">
-          <CopyLinkButton />
-          <Link to="/search" className="btn">
-            Find another quiz
-          </Link>
-        </div>
+        <CopyLinkButton />
+        <Link to="/search" className="btn">
+          Find another quiz
+        </Link>
       </>
     )
+    content =
+      data.result.quiz_kind === 'trivia' ? (
+        <TriviaResult result={data.result} actions={actions}>
+          <ResultNotices data={data} />
+          <SaveResultSection data={data} />
+        </TriviaResult>
+      ) : (
+        <>
+          <PersonalityResult result={data.result} />
+          <div className="result-actions">{actions}</div>
+          <ResultNotices data={data} />
+          <SaveResultSection data={data} />
+        </>
+      )
   }
 
   return <main className="units-container">{content}</main>

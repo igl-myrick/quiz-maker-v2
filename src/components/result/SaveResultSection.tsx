@@ -23,11 +23,11 @@ export function SaveResultSection({ data }: { data: ResultOk }) {
   // outcome has to come first.
   if (claim.isSuccess) {
     return claim.data ? (
-      <p ref={focusOnMount} tabIndex={-1}>
+      <p ref={focusOnMount} tabIndex={-1} className="notice">
         Saved to your account. <Link to="/dashboard">See your dashboard</Link>
       </p>
     ) : (
-      <p ref={focusOnMount} tabIndex={-1}>
+      <p ref={focusOnMount} tabIndex={-1} className="notice">
         This result can&apos;t be saved. It may have expired or already been saved.
       </p>
     )
@@ -50,7 +50,7 @@ export function SaveResultSection({ data }: { data: ResultOk }) {
   if (session) label = claim.isPending ? 'Saving…' : 'Save to my account'
 
   return (
-    <div className="margin-bottom">
+    <div className="save-card">
       {/* aria-disabled rather than disabled: a disabled button drops focus to the page. */}
       <button
         type="button"
