@@ -91,3 +91,58 @@
     transition: left 0.15s ease;
   }
 }
+
+/* ---- PillGroup -----------------------------------------------------------------
+   Real radios, clipped out of sight but still focusable, so arrow keys work as in any
+   radio group. Each label is one pill segment; the chosen one is filled and bold. */
+.pill-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.pill-group > legend {
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+.pill-group-options {
+  display: inline-flex;
+  flex-wrap: wrap;
+  max-width: 100%;
+  border: 1px solid var(--ply-border-strong);
+  border-radius: 1.25rem;
+  overflow: hidden;
+}
+.pill-group label:has(> input[type='radio']) {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: auto;
+  min-height: max(24px, 1.75rem);
+  margin: 0;
+  padding: 0.25rem 0.875rem;
+  border-left: 1px solid var(--ply-border-strong);
+  cursor: pointer;
+}
+.pill-group label:has(> input[type='radio']):first-child {
+  border-left: 0;
+}
+.pill-group input[type='radio'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.pill-group label:has(> input:checked) {
+  background: var(--ply-btn-default-bg);
+  color: #ffffff;
+  font-weight: 700;
+}
+.pill-group label:has(> input:focus-visible) {
+  outline: 2px solid var(--ply-color-focus);
+  outline-offset: -4px;
+}
