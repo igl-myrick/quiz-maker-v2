@@ -206,6 +206,30 @@ describe('QuizEditorPage', () => {
     expect(main().getByRole('heading', { name: 'Part 1 of 3: Basics' })).toBeInTheDocument()
   })
 
+  it('shows step pills and turns purple once Personality is picked', async () => {
+    await renderApp('/quizzes/new')
+    await main().findByRole('heading', { name: 'Part 1 of 2: Basics' })
+
+    const frame = document.querySelector('.editor-frame')
+    expect(frame).not.toHaveAttribute('data-kind')
+    expect(document.querySelector('.step-pills')).toHaveAttribute('aria-hidden', 'true')
+    expect(document.querySelectorAll('.step-pills li')).toHaveLength(2)
+
+    // A fresh form has no kind-specific work, so there's no confirm.
+    fireEvent.click(main().getByRole('radio', { name: /Personality/ }))
+    await waitFor(() => expect(frame).toHaveAttribute('data-kind', 'personality'))
+    expect(document.querySelectorAll('.step-pills li')).toHaveLength(3)
+  })
+
+  it('puts Back and Discard on the left, Next and Publish on the right', async () => {
+    saveDraft('quiz-draft:new', personality())
+    await renderApp('/quizzes/new?part=outcomes')
+    await main().findByRole('heading', { name: 'Part 2 of 3: Outcomes' })
+
+    expect(document.querySelector('.editor-nav-start')).toHaveTextContent(/Back.*Discard draft/)
+    expect(document.querySelector('.editor-nav-end')).toHaveTextContent(/Next.*Publish/)
+  })
+
   it('adds, moves and removes questions, keeping focus and announcing each change', async () => {
     await renderApp('/quizzes/new?part=questions')
     await main().findByRole('heading', { name: 'Part 2 of 2: Questions' })
