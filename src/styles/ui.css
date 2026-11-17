@@ -146,3 +146,33 @@
   outline: 2px solid var(--ply-color-focus);
   outline-offset: -4px;
 }
+
+/* ---- StepPills -----------------------------------------------------------------
+   The current step is filled; done steps show a tick, so state isn't colour alone. */
+.step-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+.step-pills li {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: 999px;
+  color: var(--ply-color-secondary);
+  font-size: 0.8rem;
+}
+.step-pills li[data-state='done'] {
+  color: var(--ply-color-body);
+}
+.step-pills li[data-state='current'] {
+  border-color: var(--ply-btn-default-bg);
+  background: var(--ply-btn-default-bg);
+  color: #ffffff;
+  font-weight: 700;
+}
