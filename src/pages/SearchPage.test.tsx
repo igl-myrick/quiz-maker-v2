@@ -183,6 +183,16 @@ describe('SearchPage', () => {
     expect(heading).not.toHaveFocus()
   })
 
+  it('shows the results heading and the count together', async () => {
+    renderApp('/search')
+    const status = await screen.findByText('2 quizzes found')
+    const heading = screen.getByRole('heading', { level: 2, name: 'All quizzes' })
+
+    expect(status).toHaveAttribute('role', 'status')
+    expect(heading.parentElement).toBe(status.parentElement)
+    expect(heading.parentElement).toHaveClass('results-head')
+  })
+
   it('has no detectable accessibility violations', async () => {
     const { container } = renderApp('/search')
     await screen.findByText('2 quizzes found')

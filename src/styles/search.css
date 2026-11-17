@@ -47,3 +47,38 @@
   height: 1rem;
   color: var(--ply-color-secondary);
 }
+
+/* ---- Results heading and grid (P2.2) -------------------------------------------
+   As many 18rem columns as fit: three on desktop, two on tablets and one on phones at
+   the default text size, fewer at larger sizes. Cards in a row share the tallest height. */
+.results-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  margin: 1.75rem 0 1rem;
+}
+.results-head h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.results-head p {
+  margin: 0;
+  color: var(--ply-color-secondary);
+}
+.quiz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: 1rem;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+.quiz-grid > li {
+  display: flex;
+  margin: 0;
+}
+.quiz-grid .quiz-card {
+  flex: 1;
+  margin-bottom: 0;
+}

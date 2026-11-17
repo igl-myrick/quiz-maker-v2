@@ -3,6 +3,7 @@ import { QuizDetailsDialog } from '../components/QuizDetailsDialog'
 import { SearchForm } from '../components/SearchForm'
 import { useQuizSearch } from '../hooks/useQuizSearch'
 import { useShowMore } from '../hooks/useShowMore'
+import '../styles/search.css'
 
 type SearchPageProps = {
   q: string | undefined
@@ -37,10 +38,11 @@ export function SearchPage({ q, quizId }: SearchPageProps) {
       <h1 tabIndex={-1}>Find a quiz</h1>
       <SearchForm q={q} />
 
-      <h2>{q ? `Results for "${q}"` : 'All quizzes'}</h2>
-
-      {/* Always on the page, so the outcome is announced once results load. */}
-      <p role="status">{status}</p>
+      <div className="results-head">
+        <h2>{q ? `Results for "${q}"` : 'All quizzes'}</h2>
+        {/* Always on the page, so the outcome is announced once results load. */}
+        <p role="status">{status}</p>
+      </div>
 
       {search.isError && (
         <button type="button" className="btn" onClick={() => void search.refetch()}>
@@ -53,7 +55,7 @@ export function SearchPage({ q, quizId }: SearchPageProps) {
       )}
 
       {quizzes.length > 0 && (
-        <ul className="flat-list">
+        <ul className="flat-list quiz-grid">
           {quizzes.map((quiz) => (
             <li key={quiz.id} ref={rowRef(quiz.id)}>
               <QuizCard quiz={quiz} />
