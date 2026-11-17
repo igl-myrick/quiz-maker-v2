@@ -205,14 +205,16 @@
    The purple strip beside the outcome; it steps aside when the card is narrow (rem in
    the container query follows the text-size setting). */
 .outcome-card {
-  display: grid;
-  grid-template-columns: 5rem 1fr;
   margin: 1rem 0;
   overflow: hidden;
   border: 1px solid var(--ply-border-color);
   border-radius: var(--qm-radius-card);
   background: var(--ply-bg-surface);
   container-type: inline-size;
+}
+.outcome-layout {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
 }
 .outcome-strip {
   padding: 1rem 0.75rem;
@@ -232,7 +234,7 @@
   font-size: 1rem;
 }
 @container (max-width: 24rem) {
-  .outcome-card {
+  .outcome-layout {
     grid-template-columns: 1fr;
   }
   .outcome-strip {
