@@ -16,6 +16,7 @@ type Page<T> = { items: T[]; next_cursor: { created_at: string; id: string } | n
 const mocks = vi.hoisted(() => ({
   listResults: vi.fn(),
   listQuizzes: vi.fn(),
+  summary: vi.fn(),
   deleteSelect: vi.fn(),
   listener: null as AuthListener | null,
 }))
@@ -25,6 +26,7 @@ vi.mock('../lib/supabase', () => ({
     rpc: (name: string, args: { p_cursor?: unknown }) => {
       if (name === 'list_my_results') return mocks.listResults(args)
       if (name === 'list_my_quizzes') return mocks.listQuizzes(args)
+      if (name === 'get_my_dashboard_summary') return mocks.summary()
       return Promise.resolve({
         data: { mode: 'browse', total: 0, items: [], next_cursor: null },
         error: null,
@@ -128,6 +130,10 @@ describe('DashboardPage', () => {
     useAnnouncerStore.setState({ message: '' })
     mocks.listResults.mockReset().mockImplementation(() => page([]))
     mocks.listQuizzes.mockReset().mockImplementation(() => page([]))
+    mocks.summary.mockReset().mockResolvedValue({
+      data: { results_saved: 3, quizzes_made: 1, average_trivia_score: 0.6667 },
+      error: null,
+    })
     mocks.deleteSelect.mockReset().mockResolvedValue({ data: [{ id: id(1) }], error: null })
   })
 
@@ -205,6 +211,38 @@ describe('DashboardPage', () => {
     expect(deleted).toHaveTextContent('0 / 3')
     expect(deleted).toHaveTextContent('Quiz deleted')
     expect(within(deleted as HTMLElement).getAllByRole('link')).toHaveLength(1)
+  })
+
+  it('shows the summary tiles', async () => {
+    await renderDashboard()
+
+    const saved = await main().findByText('Results saved')
+    expect(saved.tagName).toBe('DT')
+    expect(saved.nextElementSibling).toHaveTextContent('3')
+    expect(main().getByText('Quizzes made').nextElementSibling).toHaveTextContent('1')
+    expect(main().getByText('Average trivia score').nextElementSibling).toHaveTextContent('67%')
+  })
+
+  it('shows a dash when there are no trivia results', async () => {
+    mocks.summary.mockResolvedValue({
+      data: { results_saved: 0, quizzes_made: 0, average_trivia_score: null },
+      error: null,
+    })
+    await renderDashboard()
+
+    expect((await main().findByText('Average trivia score')).nextElementSibling).toHaveTextContent(
+      '—',
+    )
+  })
+
+  it('keeps the lists when the summary fails, with its own retry', async () => {
+    mocks.summary.mockResolvedValue({ data: null, error: new Error('boom') })
+    await renderDashboard()
+
+    expect(await main().findByText("Couldn't load your summary.")).toBeInTheDocument()
+    expect(main().getByRole('button', { name: 'Try loading summary again' })).toBeInTheDocument()
+    expect(main().getByRole('region', { name: 'My results' })).toBeInTheDocument()
+    expect(main().getByRole('region', { name: 'My quizzes' })).toBeInTheDocument()
   })
 
   it('shows each quiz card with Edit and Delete named by its title', async () => {

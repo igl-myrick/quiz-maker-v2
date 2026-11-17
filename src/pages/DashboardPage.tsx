@@ -1,6 +1,8 @@
 import { MyQuizzesSection } from '../components/dashboard/MyQuizzesSection'
 import { MyResultsSection } from '../components/dashboard/MyResultsSection'
+import { SummaryTiles } from '../components/dashboard/SummaryTiles'
 import { useAuthStatus, useSession } from '../stores/authStore'
+import '../styles/dashboard.css'
 
 // Members see their saved results and their quizzes. Anonymous visitors are pointed at the
 // header's Log in button, which stays mounted, so after logging in focus returns to it and
@@ -15,6 +17,7 @@ export function DashboardPage() {
       {status === 'ready' &&
         (session ? (
           <>
+            <SummaryTiles />
             <MyResultsSection />
             <MyQuizzesSection />
           </>

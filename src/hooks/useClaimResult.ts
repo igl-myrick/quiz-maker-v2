@@ -21,7 +21,11 @@ export function useClaimResult(resultId: string) {
     onSuccess: (saved) => {
       removeClaimToken(resultId)
       void queryClient.invalidateQueries({ queryKey: ['result', resultId] })
-      if (saved) void queryClient.invalidateQueries({ queryKey: ['me', 'results'] })
+      if (saved) {
+        void queryClient.invalidateQueries({ queryKey: ['me', 'results'] })
+        // The dashboard's Results saved tile counts it too.
+        void queryClient.invalidateQueries({ queryKey: ['me', 'summary'] })
+      }
     },
   })
 }

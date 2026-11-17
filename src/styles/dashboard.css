@@ -1,0 +1,27 @@
+/* The dashboard (specs/07-ui-redesign.md, Phase 5). */
+
+/* ---- Summary tiles (P5.3) -------------------------------------------------------- */
+.summary-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 1rem;
+  margin: 1rem 0 1.5rem;
+}
+.summary-tile {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-card);
+  background: var(--ply-bg-surface);
+}
+.summary-tile dt {
+  color: var(--ply-color-secondary);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+.summary-tile dd {
+  margin: 0.25rem 0 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
