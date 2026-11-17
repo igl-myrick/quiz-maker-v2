@@ -200,3 +200,42 @@
 .result-question ul {
   margin: 0;
 }
+
+/* ---- Personality outcome card (P4.3) ---------------------------------------------
+   The purple strip beside the outcome; it steps aside when the card is narrow (rem in
+   the container query follows the text-size setting). */
+.outcome-card {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  margin: 1rem 0;
+  overflow: hidden;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-card);
+  background: var(--ply-bg-surface);
+  container-type: inline-size;
+}
+.outcome-strip {
+  padding: 1rem 0.75rem;
+  background: var(--qm-personality);
+}
+.outcome-body {
+  min-width: 0;
+  padding: 1.25rem 1.5rem;
+}
+.outcome-body h1 {
+  margin: 0 0 0.5rem;
+  overflow-wrap: anywhere;
+}
+.outcome-body h2 {
+  margin: 0.75rem 0 0;
+  color: var(--ply-color-secondary);
+  font-size: 1rem;
+}
+@container (max-width: 24rem) {
+  .outcome-card {
+    grid-template-columns: 1fr;
+  }
+  .outcome-strip {
+    display: none;
+  }
+}

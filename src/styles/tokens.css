@@ -131,6 +131,8 @@
   --ply-color-link-hover: var(--qm-personality-hover);
   --ply-color-focus: var(--qm-personality-focus);
   --ply-color-accent: var(--qm-personality-text);
+  /* Ply fixes the ghost button colour in dark mode, so set it here too. */
+  --ply-btn-ghost-color: var(--qm-personality-text);
 }
 
 /* ---- Radio buttons and checkboxes (P1.3) ---------------------------------------

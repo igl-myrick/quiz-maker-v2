@@ -184,6 +184,22 @@ describe('ResultPage', () => {
     expect(main().queryByText(/Finished in/)).not.toBeInTheDocument()
   })
 
+  it('shows the outcome card with the strip and actions, in the personality highlight', async () => {
+    await renderResult(personality())
+
+    const card = main()
+      .getByRole('heading', { level: 1, name: "You're Winter" })
+      .closest('.outcome-card')
+    expect(card?.querySelector('svg.strip-art')).toHaveAttribute('aria-hidden', 'true')
+    expect(card?.contains(main().getByRole('button', { name: 'Copy link' }))).toBe(true)
+    expect(screen.getByRole('main')).toHaveAttribute('data-kind', 'personality')
+  })
+
+  it('leaves trivia results outside the personality highlight', async () => {
+    await renderResult(trivia())
+    expect(screen.getByRole('main')).not.toHaveAttribute('data-kind')
+  })
+
   it('shows the updated, deleted and expiry notices', async () => {
     const updated = trivia({ quiz_updated: true })
     updated.result.expires_at = '2026-11-13T10:00:00Z'

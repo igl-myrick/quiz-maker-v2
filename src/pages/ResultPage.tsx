@@ -56,13 +56,19 @@ export function ResultPage({ resultId }: { resultId: string }) {
         </TriviaResult>
       ) : (
         <>
-          <PersonalityResult result={data.result} />
-          <div className="result-actions">{actions}</div>
+          <PersonalityResult result={data.result} actions={actions} />
           <ResultNotices data={data} />
           <SaveResultSection data={data} />
         </>
       )
   }
 
-  return <main className="units-container">{content}</main>
+  // A personality result turns the page's buttons, links and focus purple, including the
+  // Log in popup opened from Save to my account.
+  const isPersonality = data?.status === 'ok' && data.result.quiz_kind === 'personality'
+  return (
+    <main className="units-container" data-kind={isPersonality ? 'personality' : undefined}>
+      {content}
+    </main>
+  )
 }
