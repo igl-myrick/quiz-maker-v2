@@ -4,6 +4,10 @@ import './styles/app.css'
 import '@fontsource/lexend/400.css'
 import '@fontsource/lexend/700.css'
 import './styles/settings.css'
+// The redesign's colour and shape tokens, and the personality highlight.
+import './styles/tokens.css'
+// The shared components, dialog shell and quiz card.
+import './styles/ui.css'
 // Applies the saved settings as soon as the app loads (see settingsStore).
 import './stores/settingsStore'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
