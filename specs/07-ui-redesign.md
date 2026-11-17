@@ -130,6 +130,7 @@ None. The narrow-screen personality answers table was decided by the owner on 20
 
 - Status badges keep today's words ("Partly correct", not "Partly"), per G10.
 - Popups opened from inside a personality page share its purple scope; the navbar and Settings stay blue (P1.2).
+- Every confirm button is red, including the ones that don't delete anything ("Start over?", "Switch to Personality / Trivia", "Save mine over it"), because each throws work away. Confirmed by the owner on 2026-11-17 (P3.4).
 
 ## Left to the builder
 
