@@ -1,11 +1,12 @@
 import { Link, Navigate, useNavigate } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { LoginButton } from '../components/LoginButton'
 import { StartQuizControls } from '../components/StartQuizControls'
 import { Countdown } from '../components/take/Countdown'
 import { ErrorSummary, type MissingItem } from '../components/take/ErrorSummary'
 import { PageNav } from '../components/take/PageNav'
 import { QuestionFieldset, firstInputId } from '../components/take/QuestionFieldset'
+import { KindChip } from '../components/ui/KindChip'
 import { useQuizDetails } from '../hooks/useQuizDetails'
 import { SubmitError, useSubmitQuiz } from '../hooks/useSubmitQuiz'
 import { saveClaimToken } from '../lib/claimTokens'
@@ -30,7 +31,11 @@ export function TakePage({ quizId, page }: TakePageProps) {
   const take = useTakeForQuiz(quizId)
 
   return (
-    <main className="units-container">
+    // Personality takes turn the page's buttons, controls and focus purple.
+    <main
+      className="units-container"
+      data-kind={take?.quiz.kind === 'personality' ? 'personality' : undefined}
+    >
       {take ? <TakeInProgress take={take} page={page} /> : <NotStarted quizId={quizId} />}
     </main>
   )
@@ -87,6 +92,7 @@ function TakeInProgress({ take, page }: { take: Take; page: number }) {
   const clearTake = useTakeStore((state) => state.clear)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const summaryRef = useRef<HTMLDivElement>(null)
+  const answeredId = useId()
 
   // A page past the end (say, after a typo in the URL) shows the last page.
   if (page > totalPages) return <Navigate to="." search={{ page: totalPages }} replace />
@@ -225,13 +231,18 @@ function TakeInProgress({ take, page }: { take: Take; page: number }) {
 
   return (
     <>
-      <h1 tabIndex={-1}>{take.quiz.title}</h1>
-      <p className="text-secondary">
-        {answeredCount} of {questions.length} answered
-      </p>
-      {take.timed && take.startedAt !== null && take.quiz.suggested_time_seconds !== null && (
-        <Countdown startedAt={take.startedAt} suggestedSeconds={take.quiz.suggested_time_seconds} />
-      )}
+      <div className="take-head">
+        <div>
+          <KindChip kind={take.quiz.kind} />
+          <h1 tabIndex={-1}>{take.quiz.title}</h1>
+        </div>
+        {take.timed && take.startedAt !== null && take.quiz.suggested_time_seconds !== null && (
+          <Countdown
+            startedAt={take.startedAt}
+            suggestedSeconds={take.quiz.suggested_time_seconds}
+          />
+        )}
+      </div>
 
       {(missingItems.length > 0 || serverMessage) && (
         <ErrorSummary
@@ -244,9 +255,16 @@ function TakeInProgress({ take, page }: { take: Take; page: number }) {
         </ErrorSummary>
       )}
 
-      <h2 ref={headingRef} tabIndex={-1}>
+      <h2 ref={headingRef} tabIndex={-1} className="take-page-heading">
         Page {page} of {totalPages}
       </h2>
+      {/* Answered questions, not pages: the heading already says the page. */}
+      <div className="take-progress">
+        <p id={answeredId}>
+          {answeredCount} of {questions.length} answered
+        </p>
+        <progress max={questions.length} value={answeredCount} aria-labelledby={answeredId} />
+      </div>
 
       {pageQuestions.map((question) => (
         <QuestionFieldset

@@ -11,7 +11,7 @@ export function Countdown({ startedAt, suggestedSeconds }: CountdownProps) {
   const secondsLeft = useCountdown(startedAt, suggestedSeconds)
 
   return (
-    <p className="border padding">
+    <p className="countdown-pill">
       {secondsLeft > 0
         ? `Time left: ${formatClock(secondsLeft)}`
         : `Over time: ${formatClock(secondsLeft)}`}

@@ -1,0 +1,45 @@
+/* The take page and the result pages (specs/07-ui-redesign.md, Phase 4). Loaded after
+   popups.css. */
+
+/* ---- Take page header (P4.1) ---------------------------------------------------- */
+.take-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin: 1rem 0 0.5rem;
+}
+.take-head h1 {
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+}
+.countdown-pill {
+  margin: 0;
+  padding: 0.3rem 0.85rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: 999px;
+  background: var(--ply-bg-surface-alt);
+  font-size: 0.875rem;
+}
+.take-progress {
+  margin: 0 0 1rem;
+}
+.take-progress p {
+  margin: 0 0 0.35rem;
+  color: var(--ply-color-secondary);
+  font-size: 0.875rem;
+}
+.take-progress progress {
+  display: block;
+  width: 100%;
+  height: 0.5rem;
+  border-radius: 999px;
+  accent-color: var(--ply-btn-default-bg);
+}
+/* "Page N of M": still the heading that gets focus on a page change, just small, as the
+   label over the progress bar. */
+.take-page-heading {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 1rem;
+}

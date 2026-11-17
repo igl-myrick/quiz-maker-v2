@@ -10,6 +10,8 @@ import './styles/tokens.css'
 import './styles/ui.css'
 // The redesigned popups (details, Settings, Log in, confirms).
 import './styles/popups.css'
+// The take page and the result pages.
+import './styles/quiz-pages.css'
 // Applies the saved settings as soon as the app loads (see settingsStore).
 import './stores/settingsStore'
 import { createRouter, RouterProvider } from '@tanstack/react-router'

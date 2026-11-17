@@ -146,6 +146,25 @@ describe('TakePage', () => {
     expect(main().getByText('1 of 12 answered')).toBeInTheDocument()
   })
 
+  it('shows the kind, the page heading and an answered-progress bar', async () => {
+    seedTake()
+    await renderApp(`/quizzes/${QUIZ_ID}/take`)
+
+    expect(main().getByText('Trivia')).toBeInTheDocument()
+    const progress = main().getByRole('progressbar', { name: '0 of 12 answered' })
+    expect(progress).toHaveAttribute('max', '12')
+    expect(progress).toHaveAttribute('value', '0')
+    expect(screen.getByRole('main')).not.toHaveAttribute('data-kind')
+  })
+
+  it('turns on the personality highlight for personality takes', async () => {
+    seedTake({ quiz: { ...takeQuiz(), kind: 'personality' } })
+    await renderApp(`/quizzes/${QUIZ_ID}/take`)
+
+    expect(main().getByText('Personality')).toBeInTheDocument()
+    expect(screen.getByRole('main')).toHaveAttribute('data-kind', 'personality')
+  })
+
   it('needs every question on a page answered before moving on, then focuses and announces the next page', async () => {
     seedTake()
     const { router } = await renderApp(`/quizzes/${QUIZ_ID}/take`)

@@ -54,7 +54,7 @@ export function StartQuizControls({
         </p>
       )}
 
-      <div className="start-controls">
+      <div className="start-controls" data-variant={variant}>
         {hasTimer ? (
           <div className="start-controls-timer">
             <Switch
