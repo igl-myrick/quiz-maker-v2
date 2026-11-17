@@ -50,6 +50,13 @@ describe('QuizCard', () => {
     expect(screen.getByText('Suggested time: 5 min')).toBeInTheDocument()
   })
 
+  it('puts the kind after the heading, so jumping to the heading still reaches it', () => {
+    render(<QuizCard quiz={quiz} />)
+    const heading = screen.getByRole('heading', { name: 'World Capitals' })
+    const chip = screen.getByText('Trivia')
+    expect(heading.compareDocumentPosition(chip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
   it('renders no description paragraph when there is none', () => {
     const { container } = render(<QuizCard quiz={{ ...quiz, description: '' }} />)
     expect(container.querySelector('.quiz-card-description')).toBeNull()

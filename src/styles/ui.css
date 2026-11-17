@@ -142,9 +142,13 @@
   color: #ffffff;
   font-weight: 700;
 }
+/* Inset, because the rounded box clips anything outside it. Two tones (a surface-coloured
+   ring inside a focus-coloured one) so it shows on the filled pill too, whose fill can be
+   the same colour as the focus ring. */
 .pill-group label:has(> input:focus-visible) {
-  outline: 2px solid var(--ply-color-focus);
-  outline-offset: -4px;
+  box-shadow:
+    inset 0 0 0 2px var(--ply-color-focus),
+    inset 0 0 0 4px var(--ply-bg-surface);
 }
 
 /* ---- StepPills -----------------------------------------------------------------
@@ -245,4 +249,8 @@ dialog .dialog-close {
 .quiz-card-actions {
   position: relative;
   z-index: 1;
+}
+/* The chip comes after the title in the page, for screen readers, but shows first. */
+.quiz-card .kind-chip {
+  order: -1;
 }

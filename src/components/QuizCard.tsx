@@ -33,7 +33,6 @@ export function QuizCard({ quiz, actions }: QuizCardProps) {
     // The title link is stretched over the whole card in CSS, so clicking anywhere on the
     // card opens the quiz while it stays one link and one tab stop. Actions sit above it.
     <article className="quiz-card">
-      <KindChip kind={quiz.kind} />
       <h3>
         {/* Opens the details popup on top of the current search, keeping q. On the
             search page itself, the results behind the popup stay where they were
@@ -48,6 +47,8 @@ export function QuizCard({ quiz, actions }: QuizCardProps) {
           {quiz.title}
         </Link>
       </h3>
+      {/* After the heading, so jumping to the heading still reaches it; CSS shows it first. */}
+      <KindChip kind={quiz.kind} />
       {quiz.description && <p className="quiz-card-description">{quiz.description}</p>}
       <QuizMeta
         questionCount={quiz.question_count}
