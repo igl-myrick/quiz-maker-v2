@@ -198,19 +198,38 @@ describe('DashboardPage', () => {
       'href',
       `/results/${result(1).id}`,
     )
-    expect(trivia).toHaveTextContent('Trivia 3.5 / 4')
+    // Each result is a card: strip, kind chip, score, date and any status tag.
+    expect(trivia?.querySelector('.result-card')).not.toBeNull()
+    expect(within(trivia as HTMLElement).getByText('Trivia')).toBeInTheDocument()
+    expect(trivia).toHaveTextContent('3.5 / 4')
+    expect(trivia?.querySelector('svg.strip-art')).toHaveAttribute('aria-hidden', 'true')
     expect(trivia?.querySelector('time')).toHaveAttribute('datetime', '2026-11-12T10:00:00Z')
 
     const personality = results
       .getByRole('link', { name: 'Which Season Matches You?' })
       .closest('li')
-    expect(personality).toHaveTextContent('Personality Winter')
-    expect(personality).toHaveTextContent('Quiz updated')
+    expect(within(personality as HTMLElement).getByText('Personality')).toBeInTheDocument()
+    expect(personality).toHaveTextContent('Winter')
+    expect(within(personality as HTMLElement).getByText('Quiz updated')).toHaveClass('status-tag')
 
     const deleted = results.getByRole('link', { name: 'Gone Quiz' }).closest('li')
     expect(deleted).toHaveTextContent('0 / 3')
     expect(deleted).toHaveTextContent('Quiz deleted')
     expect(within(deleted as HTMLElement).getAllByRole('link')).toHaveLength(1)
+  })
+
+  it('lays both lists out in the card grid, with Create quiz as the primary button', async () => {
+    mocks.listResults.mockImplementation(() => page([result(1)]))
+    mocks.listQuizzes.mockImplementation(() => page([worldCapitals()]))
+    await renderDashboard()
+
+    await section('My results').findByRole('link', { name: 'Result 1' })
+    expect(section('My results').getByRole('list')).toHaveClass('quiz-grid')
+    await section('My quizzes').findByRole('link', { name: 'World Capitals' })
+    expect(section('My quizzes').getByRole('list')).toHaveClass('quiz-grid')
+    expect(section('My quizzes').getByRole('link', { name: '+ Create quiz' })).toHaveClass(
+      'btn-primary',
+    )
   })
 
   it('shows the summary tiles', async () => {

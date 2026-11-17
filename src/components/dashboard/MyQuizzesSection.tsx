@@ -65,7 +65,7 @@ export function MyQuizzesSection() {
   } else {
     content = (
       <>
-        <ul className="flat-list">
+        <ul className="flat-list quiz-grid">
           {quizzes.map((quiz) => (
             <li key={quiz.id} ref={rowRef(quiz.id)}>
               <QuizCard
@@ -110,7 +110,7 @@ export function MyQuizzesSection() {
         <h2 id="my-quizzes-heading" ref={headingRef} tabIndex={-1}>
           My quizzes
         </h2>
-        <Link to="/quizzes/new" className="btn">
+        <Link to="/quizzes/new" className="btn btn-primary">
           + Create quiz
         </Link>
       </div>
