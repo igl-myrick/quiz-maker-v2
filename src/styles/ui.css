@@ -1,2 +1,40 @@
 /* Styles for the shared redesign components in src/components/ui/, the dialog shell and
    the quiz card (specs/07-ui-redesign.md, Phase 1). Loaded after tokens.css. */
+
+/* ---- KindChip ------------------------------------------------------------------
+   White text on the kind colour: at least 5:1 in every theme (see tokens.css). */
+.kind-chip {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--qm-trivia);
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+.kind-chip[data-chip-kind='personality'] {
+  background: var(--qm-personality);
+}
+
+/* ---- QuizMeta ------------------------------------------------------------------ */
+.quiz-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  color: var(--ply-color-secondary);
+  font-size: 0.875rem;
+}
+.quiz-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.quiz-meta svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+}
