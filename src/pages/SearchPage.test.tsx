@@ -81,7 +81,8 @@ describe('SearchPage', () => {
     const cards = within(screen.getByRole('main')).getAllByRole('listitem')
     expect(within(cards[0]).getByRole('link', { name: 'World Capitals' })).toBeInTheDocument()
     expect(within(cards[0]).getByText('Trivia')).toBeInTheDocument()
-    expect(within(cards[0]).getByText(/4 questions · Suggested time: 5 min/)).toBeInTheDocument()
+    expect(within(cards[0]).getByText('4 questions')).toBeInTheDocument()
+    expect(within(cards[0]).getByText('Suggested time: 5 min')).toBeInTheDocument()
     expect(within(cards[0]).getByText('Capital cities.')).toBeInTheDocument()
 
     expect(within(cards[1]).getByText('Personality')).toBeInTheDocument()

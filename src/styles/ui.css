@@ -197,3 +197,52 @@ dialog .dialog-close {
   border-radius: 50%;
   line-height: 1;
 }
+
+/* ---- Quiz card (P1.6) ----------------------------------------------------------
+   Never inside the personality highlight: only its chip shows the kind colour. */
+.quiz-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-card);
+  background: var(--ply-bg-surface);
+}
+.quiz-card:hover {
+  border-color: var(--ply-border-strong);
+}
+.quiz-card h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  overflow-wrap: anywhere;
+}
+.quiz-card p {
+  margin: 0;
+}
+.quiz-card .quiz-meta {
+  margin-top: auto;
+}
+/* The title link covers the whole card. */
+.quiz-card h3 a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+/* Keyboard focus outlines the whole card instead of just the title. */
+.quiz-card:has(h3 a:focus-visible) {
+  outline: 2px solid var(--ply-color-focus);
+  outline-offset: 2px;
+}
+.quiz-card h3 a:focus-visible {
+  outline: none;
+}
+/* Actions sit above the stretched link, so they stay separately clickable. */
+.quiz-card-actions {
+  position: relative;
+  z-index: 1;
+}

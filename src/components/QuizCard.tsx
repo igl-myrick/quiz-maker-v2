@@ -1,9 +1,10 @@
 import { Link, useLocation, useRouter } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
-import { formatSuggestedTime } from '../lib/formatSuggestedTime'
 import { rememberReturnFocus } from '../lib/returnFocus'
 import type { QuizSummary } from '../schemas/searchResult'
 import '../styles/search.css'
+import { KindChip } from './ui/KindChip'
+import { QuizMeta } from './ui/QuizMeta'
 
 type QuizCardProps = {
   quiz: QuizSummary
@@ -29,7 +30,10 @@ export function QuizCard({ quiz, actions }: QuizCardProps) {
   }
 
   return (
-    <article className="border padding margin-bottom">
+    // The title link is stretched over the whole card in CSS, so clicking anywhere on the
+    // card opens the quiz while it stays one link and one tab stop. Actions sit above it.
+    <article className="quiz-card">
+      <KindChip kind={quiz.kind} />
       <h3>
         {/* Opens the details popup on top of the current search, keeping q. On the
             search page itself, the results behind the popup stay where they were
@@ -44,16 +48,12 @@ export function QuizCard({ quiz, actions }: QuizCardProps) {
           {quiz.title}
         </Link>
       </h3>
-      <p>
-        <span className="label">{quiz.kind === 'trivia' ? 'Trivia' : 'Personality'}</span>{' '}
-        <span className="text-secondary">
-          {quiz.question_count} questions
-          {quiz.suggested_time_seconds !== null &&
-            ` · ${formatSuggestedTime(quiz.suggested_time_seconds)}`}
-        </span>
-      </p>
       {quiz.description && <p className="quiz-card-description">{quiz.description}</p>}
-      {actions}
+      <QuizMeta
+        questionCount={quiz.question_count}
+        suggestedTimeSeconds={quiz.suggested_time_seconds}
+      />
+      {actions && <div className="quiz-card-actions">{actions}</div>}
     </article>
   )
 }
