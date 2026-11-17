@@ -38,3 +38,56 @@
   height: 0.875rem;
   flex-shrink: 0;
 }
+
+/* ---- Switch --------------------------------------------------------------------
+   A plain button with a track and knob. The track has a border in every state, so on
+   and off differ in knob position too, not only in colour. */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: max(24px, 1.5rem);
+  padding: 0.125rem 0.25rem;
+  border: 0;
+  border-radius: var(--qm-radius-input);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.switch:focus-visible {
+  outline: 2px solid var(--ply-color-focus);
+  outline-offset: 2px;
+}
+.switch-track {
+  position: relative;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--ply-border-strong);
+  border-radius: 999px;
+  background: var(--ply-bg-surface-alt);
+}
+.switch-knob {
+  position: absolute;
+  top: 50%;
+  left: 0.125rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--ply-border-strong);
+  transform: translateY(-50%);
+}
+.switch[aria-checked='true'] .switch-track {
+  border-color: var(--ply-btn-default-bg);
+  background: var(--ply-btn-default-bg);
+}
+.switch[aria-checked='true'] .switch-knob {
+  left: calc(100% - 0.875rem);
+  background: #ffffff;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .switch-knob {
+    transition: left 0.15s ease;
+  }
+}
