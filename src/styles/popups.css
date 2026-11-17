@@ -208,3 +208,34 @@
   margin: 0 0 0.75rem;
   font-size: 1rem;
 }
+
+/* ---- Log in popup (P3.3) -------------------------------------------------------- */
+/* A soft tint of the button colour: Ply's alternate surface is the same grey as the
+   popup in dark mode, so it wouldn't show. */
+.login-status:not(:empty) {
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-input);
+  background: color-mix(in srgb, var(--ply-btn-default-bg) 14%, transparent);
+}
+.login-status:empty {
+  margin: 0;
+}
+.dialog-sm .form input {
+  border-radius: var(--qm-radius-input);
+}
+.form .login-submit {
+  width: 100%;
+  margin-top: 1rem;
+}
+.login-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1rem;
+  margin-top: 0.5rem;
+}
+.form .login-links .btn {
+  min-height: max(24px, 1.5rem);
+  margin: 0;
+}
