@@ -26,10 +26,17 @@ export function SearchForm({ q }: SearchFormProps) {
   return (
     <form role="search" className="form" onSubmit={form.handleSubmit(handleSearch)}>
       <label htmlFor={inputId}>Search quizzes</label>
-      <input id={inputId} type="search" maxLength={MAX_QUERY_LENGTH} {...form.register('q')} />
-      <button type="submit" className="btn btn-primary">
-        Search
-      </button>
+      {/* One rounded field holding the icon, the box and the button. */}
+      <div className="search-field">
+        <svg className="search-icon" aria-hidden="true" focusable="false" viewBox="0 0 16 16">
+          <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M11 11l3.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+        <input id={inputId} type="search" maxLength={MAX_QUERY_LENGTH} {...form.register('q')} />
+        <button type="submit" className="btn btn-primary">
+          Search
+        </button>
+      </div>
     </form>
   )
 }

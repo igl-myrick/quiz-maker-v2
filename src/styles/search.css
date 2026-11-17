@@ -6,3 +6,44 @@
   line-clamp: 2;
   overflow: hidden;
 }
+
+/* ---- Search field (specs/07-ui-redesign.md, P2.2) -------------------------------
+   One pill holding the icon, the box and the button. The ring goes round the whole
+   pill when the box has keyboard focus; the box's own outline is removed only then. */
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 34rem;
+  padding: 0.25rem 0.25rem 0.25rem 1rem;
+  border: 1px solid var(--ply-border-strong);
+  border-radius: 999px;
+  background: var(--ply-bg-surface-alt);
+}
+.search-field:has(input:focus-visible) {
+  outline: 2px solid var(--ply-color-focus);
+  outline-offset: 2px;
+}
+.form .search-field input {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding-inline: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.search-field:has(input:focus-visible) input {
+  outline: none;
+}
+.form .search-field .btn {
+  flex-shrink: 0;
+  margin: 0;
+  border-radius: 999px;
+}
+.search-icon {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  color: var(--ply-color-secondary);
+}
