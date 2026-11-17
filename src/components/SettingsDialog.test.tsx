@@ -93,7 +93,7 @@ describe('SettingsDialog', () => {
     expect(useSettingsStore.getState().highContrast).toBe('on')
     expect(html).toHaveAttribute('data-contrast', 'on')
 
-    const font = dialog.getByRole('checkbox', {
+    const font = dialog.getByRole('switch', {
       name: 'Use Lexend, a font designed for easier reading',
     })
     fireEvent.click(font)
@@ -111,6 +111,30 @@ describe('SettingsDialog', () => {
     }
     expect(dialog.getByRole('radio', { name: 'Follow system' })).toBeChecked()
     expect(dialog.getByRole('radio', { name: 'Default' })).toBeChecked()
+  })
+
+  it('draws the theme as tiles that are still radios, and Lexend as a switch', async () => {
+    await renderApp(null)
+    const dialog = openSettings()
+
+    expect(
+      within(dialog).getByRole('group', { name: 'Theme' }).querySelector('.theme-tiles'),
+    ).not.toBeNull()
+    expect(within(dialog).getByRole('radio', { name: 'Dark' })).toBeInTheDocument()
+    const font = within(dialog).getByRole('switch', {
+      name: 'Use Lexend, a font designed for easier reading',
+    })
+    expect(font).not.toBeChecked()
+    fireEvent.click(font)
+    expect(font).toBeChecked()
+  })
+
+  it('shows text size and high contrast as pill groups', async () => {
+    await renderApp(null)
+    const dialog = openSettings()
+    for (const name of ['Text size', 'High contrast']) {
+      expect(within(dialog).getByRole('group', { name })).toHaveClass('pill-group')
+    }
   })
 
   it('closes with Escape and with the close button', async () => {

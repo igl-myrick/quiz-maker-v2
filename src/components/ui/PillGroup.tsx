@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react'
 
-type PillOption = { value: string; label: ReactNode }
+type PillOption<T extends string> = { value: T; label: ReactNode }
 
-type PillGroupProps = {
+type PillGroupProps<T extends string> = {
   legend: string
   name: string
-  options: PillOption[]
-  value: string
-  onChange: (value: string) => void
+  options: PillOption<T>[]
+  value: T
+  onChange: (value: T) => void
   // Keeps the legend for screen readers but hides it on screen, for when a visible
   // heading already says the same thing (the editor's Points column).
   hideLegend?: boolean
@@ -15,7 +15,14 @@ type PillGroupProps = {
 
 // A row of joined pills that are real radio buttons, so arrow keys and screen readers
 // treat it as an ordinary radio group. Fully controlled by value and onChange.
-export function PillGroup({ legend, name, options, value, onChange, hideLegend }: PillGroupProps) {
+export function PillGroup<T extends string>({
+  legend,
+  name,
+  options,
+  value,
+  onChange,
+  hideLegend,
+}: PillGroupProps<T>) {
   return (
     <fieldset className="pill-group">
       <legend className={hideLegend ? 'sr-only' : undefined}>{legend}</legend>

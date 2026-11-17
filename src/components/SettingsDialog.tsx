@@ -1,57 +1,24 @@
-import { useId, useRef, type RefObject } from 'react'
+import { useId, useRef, type ReactNode, type RefObject } from 'react'
 import type { ContrastPref, TextSize, Theme } from '../schemas/settings'
 import { useSession } from '../stores/authStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { DeleteAccountDialog, openDeleteAccountDialog } from './DeleteAccountDialog'
+import { PillGroup } from './ui/PillGroup'
 
-type Choice<T extends string> = { value: T; label: string; className?: string }
+type Choice<T extends string> = { value: T; label: ReactNode }
 
-type RadioGroupProps<T extends string> = {
-  legend: string
-  name: string
-  choices: Choice<T>[]
-  value: T
-  onChange: (value: T) => void
-}
-
-// One setting as real radio buttons in a fieldset. Controlled by the settings store.
-function RadioGroup<T extends string>({
-  legend,
-  name,
-  choices,
-  value,
-  onChange,
-}: RadioGroupProps<T>) {
-  return (
-    <fieldset>
-      <legend>{legend}</legend>
-      {choices.map((choice) => (
-        <label key={choice.value} className={choice.className}>
-          <input
-            type="radio"
-            name={name}
-            value={choice.value}
-            checked={value === choice.value}
-            onChange={() => onChange(choice.value)}
-          />
-          {choice.label}
-        </label>
-      ))}
-    </fieldset>
-  )
-}
-
-const themeChoices: Choice<Theme>[] = [
+const themeChoices: { value: Theme; label: string }[] = [
   { value: 'system', label: 'System' },
   { value: 'light', label: 'Light' },
   { value: 'dark', label: 'Dark' },
 ]
 
+// Each text size option is shown at its own size, relative to the others.
 const textSizeChoices: Choice<TextSize>[] = [
   { value: 'default', label: 'Default' },
-  { value: 'large', label: 'Large', className: 'text-size-large' },
-  { value: 'larger', label: 'Larger', className: 'text-size-larger' },
-  { value: 'largest', label: 'Largest', className: 'text-size-largest' },
+  { value: 'large', label: <span className="text-size-large">Large</span> },
+  { value: 'larger', label: <span className="text-size-larger">Larger</span> },
+  { value: 'largest', label: <span className="text-size-largest">Largest</span> },
 ]
 
 const contrastChoices: Choice<ContrastPref>[] = [
@@ -93,32 +60,47 @@ export function SettingsDialog({ dialogRef }: SettingsDialogProps) {
       </div>
 
       <div className="dialog-body">
-        <RadioGroup
-          legend="Theme"
-          name="theme"
-          choices={themeChoices}
-          value={settings.theme}
-          onChange={settings.setTheme}
-        />
-        <RadioGroup
+        {/* Real radios, drawn as small previews of each theme. */}
+        <fieldset>
+          <legend>Theme</legend>
+          <div className="theme-tiles">
+            {themeChoices.map((choice) => (
+              <label key={choice.value}>
+                <input
+                  type="radio"
+                  name="theme"
+                  value={choice.value}
+                  checked={settings.theme === choice.value}
+                  onChange={() => settings.setTheme(choice.value)}
+                />
+                <span className="theme-preview" data-preview={choice.value} aria-hidden="true" />
+                {choice.label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <PillGroup
           legend="Text size"
           name="text-size"
-          choices={textSizeChoices}
+          options={textSizeChoices}
           value={settings.textSize}
           onChange={settings.setTextSize}
         />
-        <RadioGroup
+        <PillGroup
           legend="High contrast"
           name="high-contrast"
-          choices={contrastChoices}
+          options={contrastChoices}
           value={settings.highContrast}
           onChange={settings.setHighContrast}
         />
         <fieldset>
           <legend>Font</legend>
+          {/* Still a checkbox, drawn and announced as an on/off switch. */}
           <label>
             <input
               type="checkbox"
+              role="switch"
+              className="font-switch"
               checked={settings.dyslexiaFont}
               onChange={(event) => settings.setDyslexiaFont(event.target.checked)}
             />
@@ -127,7 +109,7 @@ export function SettingsDialog({ dialogRef }: SettingsDialogProps) {
         </fieldset>
 
         {session && (
-          <section aria-labelledby={accountHeadingId}>
+          <section className="settings-account" aria-labelledby={accountHeadingId}>
             <h3 id={accountHeadingId}>Account</h3>
             <button
               type="button"
