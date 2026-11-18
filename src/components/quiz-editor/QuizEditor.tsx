@@ -2,7 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, Navigate, useNavigate } from '@tanstack/react-router'
 import { useRef, useState, type FormEvent } from 'react'
-import { FormProvider, useForm, useWatch, type FieldPath } from 'react-hook-form'
+import { FormProvider, useForm, useWatch } from 'react-hook-form'
+import { usePagedForm } from '../../hooks/usePagedForm'
 import { quizForEditQuery } from '../../hooks/useQuizForEdit'
 import {
   quizDraftKey,
@@ -15,20 +16,23 @@ import {
   emptyQuizValues,
   fromSavedQuiz,
   quizFormSchema,
+  quizStepSchema,
   toSavePayload,
   type EditorPart,
   type QuizFormInput,
   type QuizFormValues,
   type SavedQuiz,
+  type ValidationStage,
 } from '../../schemas/quiz'
 import { announce } from '../../stores/announcerStore'
 import { useConfirmDialog } from '../ConfirmDialog'
-import { BasicsPart } from './BasicsPart'
-import { ErrorSummary, summaryItems, type SummaryItem } from './ErrorSummary'
-import { OutcomesPart } from './OutcomesPart'
-import { fieldDomId } from './FieldError'
-import { QuestionsPart } from './QuestionsPart'
+import { ErrorSummary } from '../ui/ErrorSummary'
 import { StepPills } from '../ui/StepPills'
+import { BasicsPart } from './BasicsPart'
+import { fieldDomId } from './FieldError'
+import { OutcomesPart } from './OutcomesPart'
+import { QuestionsPart } from './QuestionsPart'
+import { partOf, summaryItems } from './summaryItems'
 import '../../styles/editor.css'
 
 const PART_LABELS: Record<EditorPart, string> = {
@@ -37,18 +41,9 @@ const PART_LABELS: Record<EditorPart, string> = {
   questions: 'Questions',
 }
 
-// The fields "Next" checks before leaving each part. For outcomes that is each name and
-// description, but not whether an answer leads there yet (Publish checks that).
-function partFields(part: EditorPart, values: QuizFormInput): FieldPath<QuizFormInput>[] {
-  if (part === 'basics') return ['title', 'description', 'kind']
-  if (part === 'outcomes') {
-    return values.outcomes.flatMap((_, i) => [
-      `outcomes.${i}.title` as const,
-      `outcomes.${i}.description` as const,
-    ])
-  }
-  return ['questions', 'hasSuggestedTime', 'suggestedMinutes']
-}
+// Next validates the whole form with the step rules; Publish with every rule.
+const stepResolver = zodResolver(quizStepSchema)
+const finishResolver = zodResolver(quizFormSchema)
 
 type QuizEditorProps = {
   // The saved quiz when editing, or null for a new one.
@@ -67,26 +62,32 @@ export function QuizEditor({ savedQuiz, part, onRestart, onLoadLatest }: QuizEdi
   // The version this work started from. Sent as expected_version when editing.
   const baseVersion = draft?.baseVersion ?? savedQuiz?.version ?? null
 
+  // Which rules the resolver applies. 'step' only while Next checks the form.
+  const stage = useRef<ValidationStage>('finish')
+
   // The one form for the whole quiz. Every part reads it through useFormContext.
   const form = useForm<QuizFormInput, unknown, QuizFormValues>({
-    resolver: zodResolver(quizFormSchema),
+    resolver: (values, context, options) =>
+      (stage.current === 'step' ? stepResolver : finishResolver)(values, context, options),
     defaultValues: draft?.values ?? (savedQuiz ? fromSavedQuiz(savedQuiz) : emptyQuizValues()),
     shouldFocusError: false,
   })
   useQuizDraftWriter(form, draftKey, baseVersion, draft !== null)
 
-  // Whether to show the error summary: set when Next or Publish finds problems.
-  const [showSummary, setShowSummary] = useState(false)
   const save = useSaveQuiz()
   const { confirm, dialog } = useConfirmDialog()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const headingRef = useRef<HTMLHeadingElement>(null)
-  const summaryRef = useRef<HTMLDivElement>(null)
   const kind = useWatch({ control: form.control, name: 'kind' })
 
   const parts: EditorPart[] =
     kind === 'personality' ? ['basics', 'outcomes', 'questions'] : ['basics', 'questions']
+  const { headingRef, summaryRef, ...paged } = usePagedForm({
+    steps: parts,
+    current: part,
+    goToStep: (next) => navigate({ to: '.', search: (prev) => ({ ...prev, part: next }) }),
+    describeStep: (p, index, total) => `Part ${index + 1} of ${total}: ${PART_LABELS[p]}`,
+  })
 
   // The outcomes part only exists for personality quizzes, for a pasted URL too.
   if (part === 'outcomes' && kind === 'trivia') {
@@ -99,32 +100,30 @@ export function QuizEditor({ savedQuiz, part, onRestart, onLoadLatest }: QuizEdi
     (savedQuiz !== null && baseVersion !== null && baseVersion < savedQuiz.version) ||
     saveError?.code === 'stale_version'
 
-  function showSummaryAndFocus() {
-    setShowSummary(true)
-    // After the summary has rendered.
-    setTimeout(() => summaryRef.current?.focus(), 0)
-  }
-
-  async function goToPart(next: EditorPart) {
-    await navigate({ to: '.', search: (prev) => ({ ...prev, part: next }) })
-    headingRef.current?.focus()
-    announce(`Part ${parts.indexOf(next) + 1} of ${parts.length}: ${PART_LABELS[next]}`)
-  }
-
-  async function handleNext() {
-    const valid = await form.trigger(partFields(part, form.getValues()))
-    if (!valid) {
-      showSummaryAndFocus()
-      return
+  // Next's check: validate the whole form with the step rules, and pass if nothing is
+  // wrong on this part. Problems on later parts wait until the person gets there.
+  async function partIsValid() {
+    const result = quizStepSchema.safeParse(form.getValues())
+    const valid =
+      result.success || !result.error.issues.some((issue) => partOf(issue.path) === part)
+    if (valid) {
+      // This part is clean, so this only clears later parts' errors: the next part
+      // shouldn't open already showing errors for fields the person hasn't reached.
+      form.clearErrors()
+      return true
     }
-    await goToPart(parts[partIndex + 1])
+    // Show the inline errors, with the step rules.
+    stage.current = 'step'
+    try {
+      await form.trigger()
+    } finally {
+      stage.current = 'finish'
+    }
+    return false
   }
 
-  async function handleSummarySelect(item: SummaryItem) {
-    if (item.part !== part)
-      await navigate({ to: '.', search: (prev) => ({ ...prev, part: item.part }) })
-    // After the part with the field has rendered.
-    setTimeout(() => document.getElementById(item.targetId)?.focus(), 0)
+  function showFinishSummary() {
+    paged.showSummary('finish')
   }
 
   function publish(values: QuizFormValues, expectedVersion: number | null) {
@@ -153,22 +152,22 @@ export function QuizEditor({ savedQuiz, part, onRestart, onLoadLatest }: QuizEdi
             message: `You already have a quiz called "${values.title}".`,
           })
           // The summary shows the link to the existing quiz; focus goes to the title field.
-          setShowSummary(true)
-          void handleSummarySelect({
+          paged.showSummary('finish')
+          void paged.selectItem({
             key: 'title',
             text: '',
-            part: 'basics',
+            step: 'basics',
             targetId: fieldDomId('title'),
           })
           return
         }
-        showSummaryAndFocus()
+        showFinishSummary()
       },
     })
   }
 
   function handlePublish(event: FormEvent<HTMLFormElement>) {
-    void form.handleSubmit((values) => publish(values, baseVersion), showSummaryAndFocus)(event)
+    void form.handleSubmit((values) => publish(values, baseVersion), showFinishSummary)(event)
   }
 
   async function handleSaveMine() {
@@ -181,7 +180,7 @@ export function QuizEditor({ savedQuiz, part, onRestart, onLoadLatest }: QuizEdi
     if (!confirmed) return
     const latest = await queryClient.fetchQuery({ ...quizForEditQuery(savedQuiz.id), staleTime: 0 })
     const latestVersion = latest.status === 'ok' ? latest.quiz.version : baseVersion
-    void form.handleSubmit((values) => publish(values, latestVersion), showSummaryAndFocus)()
+    void form.handleSubmit((values) => publish(values, latestVersion), showFinishSummary)()
   }
 
   async function handleLoadLatest() {
@@ -227,10 +226,10 @@ export function QuizEditor({ savedQuiz, part, onRestart, onLoadLatest }: QuizEdi
   }
 
   // The duplicate-title message is already in the summary with its link, so skip the
-  // title field's copy of it.
-  const items = summaryItems(form.formState.errors).filter(
-    (item) => !(saveError?.code === 'duplicate_title' && item.key === 'title'),
-  )
+  // title field's copy of it. After Next, only this part's problems are listed.
+  const items = summaryItems(form.formState.errors)
+    .filter((item) => !(saveError?.code === 'duplicate_title' && item.key === 'title'))
+    .filter((item) => paged.lastCheck !== 'step' || item.step === part)
   const hasDraft = draft !== null || form.formState.isDirty
 
   return (
@@ -253,19 +252,22 @@ export function QuizEditor({ savedQuiz, part, onRestart, onLoadLatest }: QuizEdi
             </div>
           )}
 
-          {showSummary && (items.length > 0 || serverMessage) && (
+          {paged.lastCheck !== null && (items.length > 0 || serverMessage) && (
             <ErrorSummary
               summaryRef={summaryRef}
+              heading="Fix these before publishing"
+              headingLevel={3}
               items={items}
-              serverMessage={serverMessage}
-              onSelect={(item) => void handleSummarySelect(item)}
-            />
+              onSelect={(item) => void paged.selectItem(item)}
+            >
+              {serverMessage && <p>{serverMessage}</p>}
+            </ErrorSummary>
           )}
 
           {/* Decorative; the heading below is what screen readers use. */}
           <StepPills steps={parts.map((p) => PART_LABELS[p])} current={partIndex + 1} />
           <h2 ref={headingRef} tabIndex={-1}>
-            Part {partIndex + 1} of {parts.length}: {PART_LABELS[part]}
+            {paged.stepHeading}
           </h2>
 
           {part === 'basics' && <BasicsPart isEditing={savedQuiz !== null} />}
@@ -276,11 +278,7 @@ export function QuizEditor({ savedQuiz, part, onRestart, onLoadLatest }: QuizEdi
           <div className="editor-nav">
             <div className="editor-nav-start">
               {partIndex > 0 && (
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => void goToPart(parts[partIndex - 1])}
-                >
+                <button type="button" className="btn" onClick={() => void paged.back()}>
                   Back
                 </button>
               )}
@@ -292,7 +290,7 @@ export function QuizEditor({ savedQuiz, part, onRestart, onLoadLatest }: QuizEdi
             </div>
             <div className="editor-nav-end">
               {partIndex < parts.length - 1 && (
-                <button type="button" className="btn" onClick={() => void handleNext()}>
+                <button type="button" className="btn" onClick={() => void paged.next(partIsValid)}>
                   Next
                 </button>
               )}

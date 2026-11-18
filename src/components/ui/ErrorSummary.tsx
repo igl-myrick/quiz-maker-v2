@@ -1,29 +1,30 @@
 import { useId, type ReactNode, type RefObject } from 'react'
 
-export type MissingItem = {
-  questionId: string
-  text: string
-  targetId: string
-}
+type Item = { key: string; targetId: string; text: string }
 
-type ErrorSummaryProps = {
+type ErrorSummaryProps<T extends Item> = {
   summaryRef: RefObject<HTMLDivElement | null>
   heading: string
-  items: MissingItem[]
-  onSelect: (item: MissingItem) => void
-  // A message from the server, with any action that goes with it.
+  // The level that fits the page's outline: 2 on the take, 3 inside an editor part.
+  headingLevel: 2 | 3
+  items: T[]
+  onSelect: (item: T) => void
+  // A message from the server, with any action that goes with it. Shown above the list.
   children?: ReactNode
 }
 
-// Shown above the questions when Next page or Submit can't go ahead. It receives focus.
-export function ErrorSummary({
+// Shown when Next, Submit or Publish can't go ahead. It receives focus, and each item
+// links to the field to fix.
+export function ErrorSummary<T extends Item>({
   summaryRef,
   heading,
+  headingLevel,
   items,
   onSelect,
   children,
-}: ErrorSummaryProps) {
+}: ErrorSummaryProps<T>) {
   const headingId = useId()
+  const Heading = headingLevel === 2 ? 'h2' : 'h3'
 
   return (
     <div
@@ -33,14 +34,14 @@ export function ErrorSummary({
       aria-labelledby={headingId}
       className="border padding margin-bottom"
     >
-      <h2 id={headingId} className="error">
+      <Heading id={headingId} className="error">
         {heading}
-      </h2>
+      </Heading>
       {children}
       {items.length > 0 && (
         <ul>
           {items.map((item) => (
-            <li key={item.questionId}>
+            <li key={item.key}>
               <a
                 href={`#${item.targetId}`}
                 onClick={(event) => {

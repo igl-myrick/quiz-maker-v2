@@ -92,9 +92,13 @@ const sharedFields = {
 
 type Issue = { path: (string | number)[]; message: string }
 
+// When the editor checks: 'step' for Next (one part at a time), 'finish' for Publish.
+// A few rules only make sense once the whole quiz is written, so they run at 'finish' only.
+export type ValidationStage = 'step' | 'finish'
+
 // Rules that span several fields. Each error is attached to a field the form shows,
 // so the inline message and the error summary can both find it.
-function crossFieldIssues(values: z.output<typeof quizShape>): Issue[] {
+function crossFieldIssues(values: z.output<typeof quizShape>, stage: ValidationStage): Issue[] {
   const issues: Issue[] = []
   const add = (path: (string | number)[], message: string) => issues.push({ path, message })
 
@@ -137,12 +141,13 @@ function crossFieldIssues(values: z.output<typeof quizShape>): Issue[] {
         else add(['questions', q, 'options', o, 'outcomeKey'], 'Choose an outcome.')
       })
     })
-    // On the hidden key, not the name, so "Next" from the outcomes part (which only checks
-    // names and descriptions) isn't blocked before any questions exist. Publish checks it.
-    values.outcomes.forEach((outcome, i) => {
-      if (!used.has(outcome.key))
-        add(['outcomes', i, 'key'], 'No answer leads to this outcome yet.')
-    })
+    // Finish only: Next from the outcomes part comes before any questions exist.
+    if (stage === 'finish') {
+      values.outcomes.forEach((outcome, i) => {
+        if (!used.has(outcome.key))
+          add(['outcomes', i, 'title'], 'No answer leads to this outcome yet.')
+      })
+    }
     return issues
   }
 
@@ -180,11 +185,18 @@ const quizShape = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('personality'), ...sharedFields }),
 ])
 
-export const quizFormSchema = quizShape.superRefine((values, ctx) => {
-  for (const issue of crossFieldIssues(values)) {
-    ctx.addIssue({ code: 'custom', path: issue.path, message: issue.message })
-  }
-})
+function withRules(stage: ValidationStage) {
+  return quizShape.superRefine((values, ctx) => {
+    for (const issue of crossFieldIssues(values, stage)) {
+      ctx.addIssue({ code: 'custom', path: issue.path, message: issue.message })
+    }
+  })
+}
+
+// Every rule: what Publish checks.
+export const quizFormSchema = withRules('finish')
+// Every rule except the finish-only ones: what Next checks.
+export const quizStepSchema = withRules('step')
 
 export type QuizFormInput = z.input<typeof quizFormSchema>
 export type QuizFormValues = z.output<typeof quizFormSchema>
