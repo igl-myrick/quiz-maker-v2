@@ -206,6 +206,126 @@ describe('QuizEditorPage', () => {
     expect(main().getByRole('heading', { name: 'Part 1 of 3: Basics' })).toBeInTheDocument()
   })
 
+  it('shows step pills and turns purple once Personality is picked', async () => {
+    await renderApp('/quizzes/new')
+    await main().findByRole('heading', { name: 'Part 1 of 2: Basics' })
+
+    const frame = document.querySelector('.editor-frame')
+    expect(frame).not.toHaveAttribute('data-kind')
+    expect(document.querySelector('.step-pills')).toHaveAttribute('aria-hidden', 'true')
+    expect(document.querySelectorAll('.step-pills li')).toHaveLength(2)
+
+    // A fresh form has no kind-specific work, so there's no confirm.
+    fireEvent.click(main().getByRole('radio', { name: /Personality/ }))
+    await waitFor(() => expect(frame).toHaveAttribute('data-kind', 'personality'))
+    expect(document.querySelectorAll('.step-pills li')).toHaveLength(3)
+  })
+
+  it('puts Back and Discard on the left, Next and Publish on the right', async () => {
+    saveDraft('quiz-draft:new', personality())
+    await renderApp('/quizzes/new?part=outcomes')
+    await main().findByRole('heading', { name: 'Part 2 of 3: Outcomes' })
+
+    expect(document.querySelector('.editor-nav-start')).toHaveTextContent(/Back.*Discard draft/)
+    expect(document.querySelector('.editor-nav-end')).toHaveTextContent(/Next.*Publish/)
+  })
+
+  it('puts Kind and Suggested time in matching panels, and counts beside the labels', async () => {
+    const { unmount } = await renderApp('/quizzes/new')
+    await main().findByRole('heading', { name: 'Part 1 of 2: Basics' })
+
+    expect(main().getByRole('group', { name: 'Kind' })).toHaveClass('option-panel')
+    const titleRow = main().getByText('Title', { selector: 'label' }).closest('.label-row')
+    expect(titleRow).toHaveTextContent(/Title.*0\/75/)
+    unmount()
+
+    await renderApp('/quizzes/new?part=questions')
+    await main().findByRole('heading', { name: 'Part 2 of 2: Questions' })
+    expect(main().getByRole('group', { name: 'Suggested time' })).toHaveClass('option-panel')
+  })
+
+  it('shows each question as an outlined block with its tools in the header', async () => {
+    await renderApp('/quizzes/new?part=questions')
+    await main().findByRole('heading', { name: 'Part 2 of 2: Questions' })
+
+    const block = main().getByRole('group', { name: 'Question 1' })
+    expect(block).toHaveClass('editor-block')
+    const moveUp = within(block).getByRole('button', { name: 'Move up: question 1' })
+    expect(block.querySelector('.editor-block-tools')?.contains(moveUp)).toBe(true)
+    expect(moveUp).toHaveAttribute('aria-disabled', 'true')
+    expect(main().getByRole('button', { name: 'Add question' })).toHaveClass('add-slot')
+  })
+
+  it('shows each outcome as an outlined block, with Add outcome as a slot', async () => {
+    saveDraft('quiz-draft:new', personality())
+    await renderApp('/quizzes/new?part=outcomes')
+    await main().findByRole('heading', { name: 'Part 2 of 3: Outcomes' })
+
+    const block = main().getByRole('group', { name: 'Outcome 2' })
+    expect(block).toHaveClass('editor-block')
+    const moveDown = within(block).getByRole('button', { name: 'Move down: outcome 2' })
+    expect(block.querySelector('.editor-block-tools')?.contains(moveDown)).toBe(true)
+    expect(moveDown).toHaveAttribute('aria-disabled', 'true')
+    expect(main().getByRole('button', { name: 'Add outcome' })).toHaveClass('add-slot')
+  })
+
+  it('lays personality answers out as a table with 1-2-3 points pills', async () => {
+    saveDraft('quiz-draft:new', personality())
+    await renderApp('/quizzes/new?part=questions')
+    await main().findByRole('heading', { name: 'Part 3 of 3: Questions' })
+
+    const answers = main().getByRole('group', { name: 'Answers to question 1' })
+    expect(answers.querySelector('.answer-table-head')).toHaveAttribute('aria-hidden', 'true')
+    expect(within(answers).getByLabelText('Answer 1 text')).toHaveValue('Nap')
+    expect(within(answers).getByLabelText('Answer 1 leads to')).toHaveValue('cat')
+    const points = within(answers).getByRole('group', { name: 'Answer 1 points' })
+    expect(within(points).getByRole('radio', { name: '1' })).toBeChecked()
+    fireEvent.click(within(points).getByRole('radio', { name: '3' }))
+    expect(within(points).getByRole('radio', { name: '3' })).toBeChecked()
+  })
+
+  it("hides the table's per-answer labels with Ply's sr-only class in the wide layout", async () => {
+    saveDraft('quiz-draft:new', personality())
+    await renderApp('/quizzes/new?part=questions')
+    await main().findByRole('heading', { name: 'Part 3 of 3: Questions' })
+
+    expect(main().getByText('Answer 1 text', { selector: 'label' })).toHaveClass('sr-only')
+    expect(main().getByText('Answer 1 leads to', { selector: 'label' })).toHaveClass('sr-only')
+  })
+
+  it('publishes the chosen points', async () => {
+    const quiz = personality()
+    quiz.questions = [1, 2, 3].map((n) => ({ ...quiz.questions[0], prompt: `Pick ${n}` }))
+    saveDraft('quiz-draft:new', quiz)
+    await renderApp('/quizzes/new?part=questions')
+    await main().findByRole('heading', { name: 'Part 3 of 3: Questions' })
+
+    const answers = main().getByRole('group', { name: 'Answers to question 1' })
+    const points = within(answers).getByRole('group', { name: 'Answer 1 points' })
+    fireEvent.click(within(points).getByRole('radio', { name: '3' }))
+    fireEvent.click(main().getByRole('button', { name: 'Publish' }))
+
+    await waitFor(() =>
+      expect(mocks.rpc.mock.calls.some(([name]) => name === 'save_quiz')).toBe(true),
+    )
+    const [, args] = mocks.rpc.mock.calls.find(([name]) => name === 'save_quiz') ?? []
+    expect(args.p_quiz.questions[0].options[0]).toMatchObject({ points: 3 })
+    expect(args.p_quiz.questions[0].options[1]).toMatchObject({ points: 1 })
+  })
+
+  it('links the summary to an answer outcome inside the table', async () => {
+    const quiz = personality()
+    quiz.questions[0].options[0].outcomeKey = ''
+    saveDraft('quiz-draft:new', quiz)
+    await renderApp('/quizzes/new?part=questions')
+    await main().findByRole('heading', { name: 'Part 3 of 3: Questions' })
+
+    fireEvent.click(main().getByRole('button', { name: 'Publish' }))
+    const summary = await main().findByRole('group', { name: 'Fix these before publishing' })
+    fireEvent.click(within(summary).getByRole('link', { name: /answer 1: Choose an outcome/ }))
+    await waitFor(() => expect(main().getByLabelText('Answer 1 leads to')).toHaveFocus())
+  })
+
   it('adds, moves and removes questions, keeping focus and announcing each change', async () => {
     await renderApp('/quizzes/new?part=questions')
     await main().findByRole('heading', { name: 'Part 2 of 2: Questions' })

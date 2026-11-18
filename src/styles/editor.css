@@ -1,6 +1,186 @@
-/* Ply only dims buttons with the disabled attribute. Move up and Move down use
-   aria-disabled instead, so they keep focus after a move; dim them the same way. */
-.btn[aria-disabled='true'] {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* The quiz editor (specs/07-ui-redesign.md, Phase 6). */
+
+/* ---- Button row (P6.6) ------------------------------------------------------------ */
+.editor-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+.editor-nav-start,
+.editor-nav-end {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.editor-nav-end {
+  margin-left: auto;
+}
+
+/* ---- Basics (P6.2, P6.3) ---------------------------------------------------------- */
+/* The character count sits at the right of its label. */
+.label-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 1rem;
+}
+.form .label-row label {
+  width: auto;
+  margin-top: 0;
+}
+/* Kind and Suggested time: the same padded, rounded panel. */
+.option-panel {
+  min-width: 0;
+  padding: 0.85rem 1rem 0.5rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-card);
+  background: var(--ply-bg-surface-alt);
+}
+.option-panel > legend {
+  font-weight: 700;
+}
+/* Fields in the editor get the medium radius. */
+.editor-frame input:not([type='radio'], [type='checkbox']),
+.editor-frame textarea,
+.editor-frame select {
+  border-radius: var(--qm-radius-input);
+}
+
+/* ---- Question and outcome blocks (P6.4) --------------------------------------------
+   A thin rounded outline. The legend stays first (it names the block and takes focus
+   after a move); the tools sit beside it, because a flex container starts a new block
+   formatting context and so fits next to the floated legend. */
+.editor-block {
+  min-width: 0;
+  margin: 0 0 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-card);
+}
+.editor-block > legend {
+  width: auto;
+  margin: 0.3rem 1rem 0.75rem 0;
+  font-weight: 700;
+}
+.editor-block > legend + .editor-block-tools {
+  clear: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+.editor-block-tools + * {
+  clear: both;
+}
+/* The answers group inside a block: no second box (Ply pads every fieldset), so the
+   answers keep their room on phones and at large text sizes. */
+.editor-block fieldset {
+  min-width: 0;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  border: 0;
+}
+.editor-block fieldset > legend {
+  font-weight: 700;
+}
+.editor-block-tools .btn {
+  min-height: max(24px, 1.75rem);
+  padding: 0.2rem 0.7rem;
+  font-size: 0.8125rem;
+}
+
+/* "Add question" and "Add outcome": dashed full-width slots. Still buttons. */
+.form .add-slot {
+  display: block;
+  width: 100%;
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  border: 1.5px dashed var(--ply-border-strong);
+  border-radius: var(--qm-radius-card);
+  background: transparent;
+  color: var(--ply-color-link);
+}
+/* Ply's button:hover / :active / :focus-visible rule switches the text to the inverse
+   colour (white in light mode, black in dark) and scales the button up. The slot keeps
+   its link-coloured text in every state instead, on a soft tint, and doesn't grow. */
+.form .add-slot:is(:hover, :active, :focus-visible):not(:disabled) {
+  background: var(--ply-bg-surface-alt);
+  color: var(--ply-color-link);
+  transform: none;
+}
+.form .add-slot:focus-visible {
+  outline: 2px solid var(--ply-color-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Personality answers table (P6.5) ----------------------------------------------
+   Wide: one row per answer under Answer / Leads to / Points. The headings are visual
+   only, and each control's own label is hidden with Ply's .sr-only but still read.
+   Narrow (the list under 34rem, so larger text sizes switch too): the headings hide and
+   each answer stacks into a block with its labels showing. Same controls, same order. */
+.answer-table {
+  container-type: inline-size;
+}
+.answer-table-head,
+.answer-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+.answer-table-head {
+  margin-bottom: 0.35rem;
+  color: var(--ply-color-secondary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.answer-row {
+  padding: 0.35rem 0;
+}
+.answer-cell {
+  min-width: 0;
+}
+.form .answer-cell input,
+.form .answer-cell select {
+  margin: 0;
+}
+@container (max-width: 34rem) {
+  .answer-table-head {
+    display: none;
+  }
+  .answer-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--ply-border-color);
+  }
+  .answer-row:first-of-type {
+    border-top: 0;
+  }
+  /* The labels carry Ply's .sr-only in the wide layout; here they show. */
+  .form .answer-table .cell-label {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0 0 0.25rem;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+  /* The points legend: hidden in the wide layout (the column heading says it), shown
+     here. Only inside the table, so other pill groups keep their own setting. */
+  .answer-row .pill-group > legend.sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0 0 0.35rem;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    font-weight: 400;
+  }
 }

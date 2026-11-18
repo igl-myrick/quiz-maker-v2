@@ -89,20 +89,24 @@ export function BasicsPart({ isEditing }: BasicsPartProps) {
   return (
     <>
       <div className="margin-bottom">
-        <label htmlFor={fieldDomId('title')}>Title</label>
+        <div className="label-row">
+          <label htmlFor={fieldDomId('title')}>Title</label>
+          <CharacterCount name="title" max={QUIZ_LIMITS.titleMax} />
+        </div>
         <input type="text" {...fieldProps('title', titleError)} {...register('title')} />
-        <CharacterCount name="title" max={QUIZ_LIMITS.titleMax} />
         <FieldError id={`${fieldDomId('title')}-error`} message={titleError} />
       </div>
 
       <div className="margin-bottom">
-        <label htmlFor={fieldDomId('description')}>Description (optional)</label>
+        <div className="label-row">
+          <label htmlFor={fieldDomId('description')}>Description (optional)</label>
+          <CharacterCount name="description" max={QUIZ_LIMITS.descriptionMax} />
+        </div>
         <textarea
           rows={3}
           {...fieldProps('description', descriptionError)}
           {...register('description')}
         />
-        <CharacterCount name="description" max={QUIZ_LIMITS.descriptionMax} />
         <FieldError id={`${fieldDomId('description')}-error`} message={descriptionError} />
       </div>
 
@@ -112,7 +116,7 @@ export function BasicsPart({ isEditing }: BasicsPartProps) {
           publishing.
         </p>
       ) : (
-        <fieldset>
+        <fieldset className="option-panel">
           <legend>Kind</legend>
           <label>
             <input

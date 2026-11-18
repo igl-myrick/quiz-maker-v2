@@ -75,7 +75,7 @@ export function QuestionsPart() {
         <button
           id={ADD_QUESTION_ID}
           type="button"
-          className="btn"
+          className="btn add-slot"
           disabled={fields.length >= QUIZ_LIMITS.questionsMax}
           onClick={addQuestion}
         >

@@ -80,10 +80,40 @@ export function OutcomesPart() {
         const isLast = index === fields.length - 1
 
         return (
-          <fieldset key={field.id} className="border padding margin-bottom">
+          <fieldset key={field.id} className="editor-block">
             <legend id={outcomeElementId(field.id, 'legend')} tabIndex={-1}>
               Outcome {index + 1}
             </legend>
+            {/* aria-disabled, not disabled, so a button never loses focus after a move. */}
+            <div className="editor-block-tools">
+              <button
+                id={outcomeElementId(field.id, 'up')}
+                type="button"
+                className="btn"
+                aria-disabled={isFirst}
+                onClick={() => !isFirst && moveOutcome(index, index - 1, 'up')}
+              >
+                Move up<span className="sr-only">: outcome {index + 1}</span>
+              </button>
+              <button
+                id={outcomeElementId(field.id, 'down')}
+                type="button"
+                className="btn"
+                aria-disabled={isLast}
+                onClick={() => !isLast && moveOutcome(index, index + 1, 'down')}
+              >
+                Move down<span className="sr-only">: outcome {index + 1}</span>
+              </button>
+              <button
+                type="button"
+                className="btn"
+                disabled={fields.length <= QUIZ_LIMITS.outcomesMin}
+                onClick={() => void removeOutcome(index)}
+              >
+                Remove <span className="sr-only">outcome {index + 1}</span>
+              </button>
+            </div>
+
             <div className="margin-bottom">
               <label htmlFor={fieldDomId(nameName)}>Outcome {index + 1} name</label>
               <input type="text" {...fieldProps(nameName, nameError)} {...register(nameName)} />
@@ -100,33 +130,6 @@ export function OutcomesPart() {
               />
               <FieldError id={`${fieldDomId(descriptionName)}-error`} message={descriptionError} />
             </div>
-            {/* aria-disabled, not disabled, so a button never loses focus after a move. */}
-            <button
-              id={outcomeElementId(field.id, 'up')}
-              type="button"
-              className="btn"
-              aria-disabled={isFirst}
-              onClick={() => !isFirst && moveOutcome(index, index - 1, 'up')}
-            >
-              Move up<span className="sr-only">: outcome {index + 1}</span>
-            </button>{' '}
-            <button
-              id={outcomeElementId(field.id, 'down')}
-              type="button"
-              className="btn"
-              aria-disabled={isLast}
-              onClick={() => !isLast && moveOutcome(index, index + 1, 'down')}
-            >
-              Move down<span className="sr-only">: outcome {index + 1}</span>
-            </button>{' '}
-            <button
-              type="button"
-              className="btn"
-              disabled={fields.length <= QUIZ_LIMITS.outcomesMin}
-              onClick={() => void removeOutcome(index)}
-            >
-              Remove <span className="sr-only">outcome {index + 1}</span>
-            </button>
           </fieldset>
         )
       })}
@@ -134,7 +137,7 @@ export function OutcomesPart() {
       <button
         id={ADD_OUTCOME_ID}
         type="button"
-        className="btn"
+        className="btn add-slot"
         disabled={fields.length >= QUIZ_LIMITS.outcomesMax}
         onClick={() => append(emptyOutcome(), { focusName: `outcomes.${fields.length}.title` })}
       >

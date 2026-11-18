@@ -1,0 +1,147 @@
+/* Redesign tokens (specs/07-ui-redesign.md, P1.1–P1.3). Loaded after settings.css.
+   Colours are checked for WCAG 2.2 AA in light, dark and high contrast; the ratios are
+   in docs/superpowers/plans/2026-11-17-ui-redesign-phase-1.md. */
+
+/* ---- Light (the default) ------------------------------------------------------ */
+:root {
+  --qm-trivia: #0353e9;
+  --qm-personality: #8a3ffc;
+  --qm-personality-hover: #7c32e8;
+  --qm-personality-active: #6929c4;
+  --qm-personality-text: #7c32e8;
+  --qm-personality-focus: #8a3ffc;
+  --qm-correct: #198038;
+  --qm-partly: #8e6a00;
+  --qm-wrong: #da1e28;
+  /* Lines drawn on top of the kind colour in the artwork. */
+  --qm-art-ink: #0b0b0b;
+  --qm-radius-card: var(--ply-radius-xl);
+  --qm-radius-input: 0.6rem;
+}
+
+/* ---- Dark, chosen or followed from the system --------------------------------- */
+:root[data-theme='dark'] {
+  --qm-trivia: #0f62fe;
+  --qm-personality-hover: #a56eff;
+  --qm-personality-active: #be95ff;
+  --qm-personality-text: #be95ff;
+  --qm-personality-focus: #be95ff;
+  --qm-correct: #42be65;
+  --qm-partly: #f1c21b;
+  --qm-wrong: #ff8389;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --qm-trivia: #0f62fe;
+    --qm-personality-hover: #a56eff;
+    --qm-personality-active: #be95ff;
+    --qm-personality-text: #be95ff;
+    --qm-personality-focus: #be95ff;
+    --qm-correct: #42be65;
+    --qm-partly: #f1c21b;
+    --qm-wrong: #ff8389;
+  }
+}
+
+/* ---- High contrast, light ------------------------------------------------------
+   "On", or "Follow system" with the system asking for more contrast. Focus rings stay
+   black, as settings.css sets them, even inside the personality scope. */
+:root[data-contrast='on'] {
+  --qm-personality: #6929c4;
+  --qm-personality-hover: #5a22aa;
+  --qm-personality-active: #491d8b;
+  --qm-personality-text: #6929c4;
+  --qm-personality-focus: #000000;
+  --qm-correct: #0e6027;
+  --qm-partly: #684e00;
+  --qm-wrong: #a2191f;
+  --qm-art-ink: #000000;
+}
+@media (prefers-contrast: more) {
+  :root:not([data-contrast='off']) {
+    --qm-personality: #6929c4;
+    --qm-personality-hover: #5a22aa;
+    --qm-personality-active: #491d8b;
+    --qm-personality-text: #6929c4;
+    --qm-personality-focus: #000000;
+    --qm-correct: #0e6027;
+    --qm-partly: #684e00;
+    --qm-wrong: #a2191f;
+    --qm-art-ink: #000000;
+  }
+}
+
+/* ---- High contrast, dark ------------------------------------------------------- */
+:root[data-contrast='on'][data-theme='dark'] {
+  --qm-personality: #8a3ffc;
+  --qm-personality-hover: #a56eff;
+  --qm-personality-active: #be95ff;
+  --qm-personality-text: #d4bbff;
+  --qm-personality-focus: #ffffff;
+  --qm-correct: #42be65;
+  --qm-partly: #f1c21b;
+  --qm-wrong: #ff8389;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-contrast='on']:not([data-theme]) {
+    --qm-personality: #8a3ffc;
+    --qm-personality-hover: #a56eff;
+    --qm-personality-active: #be95ff;
+    --qm-personality-text: #d4bbff;
+    --qm-personality-focus: #ffffff;
+    --qm-correct: #42be65;
+    --qm-partly: #f1c21b;
+    --qm-wrong: #ff8389;
+  }
+}
+@media (prefers-contrast: more) {
+  :root[data-theme='dark']:not([data-contrast='off']) {
+    --qm-personality: #8a3ffc;
+    --qm-personality-hover: #a56eff;
+    --qm-personality-active: #be95ff;
+    --qm-personality-text: #d4bbff;
+    --qm-personality-focus: #ffffff;
+    --qm-correct: #42be65;
+    --qm-partly: #f1c21b;
+    --qm-wrong: #ff8389;
+  }
+}
+@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
+  :root:not([data-contrast='off']):not([data-theme]) {
+    --qm-personality: #8a3ffc;
+    --qm-personality-hover: #a56eff;
+    --qm-personality-active: #be95ff;
+    --qm-personality-text: #d4bbff;
+    --qm-personality-focus: #ffffff;
+    --qm-correct: #42be65;
+    --qm-partly: #f1c21b;
+    --qm-wrong: #ff8389;
+  }
+}
+
+/* ---- Personality highlight (P1.2) ----------------------------------------------
+   Put on the content of a page or popup that shows one personality quiz, never on the
+   navbar or the Settings popup. Every Ply button, link, focus ring and checked control
+   inside it turns purple. Trivia needs no attribute. */
+[data-kind='personality'] {
+  --ply-btn-default-bg: var(--qm-personality);
+  --ply-btn-default-bg-hover: var(--qm-personality-hover);
+  --ply-btn-default-bg-active: var(--qm-personality-active);
+  --ply-color-link: var(--qm-personality-text);
+  --ply-color-link-hover: var(--qm-personality-hover);
+  --ply-color-focus: var(--qm-personality-focus);
+  --ply-color-accent: var(--qm-personality-text);
+  /* Ply fixes the ghost button colour in dark mode, so set it here too. */
+  --ply-btn-ghost-color: var(--qm-personality-text);
+}
+
+/* ---- Radio buttons and checkboxes (P1.3) ---------------------------------------
+   One size site-wide, in the button colour, so they follow the personality highlight.
+   Radios hidden with Ply's .sr-only (pill groups, theme tiles) are left alone; :where
+   keeps this rule's specificity as it was. */
+input[type='radio']:not(:where(.sr-only)),
+input[type='checkbox']:not(:where(.sr-only)) {
+  width: 1.0625rem;
+  height: 1.0625rem;
+  accent-color: var(--ply-btn-default-bg);
+}

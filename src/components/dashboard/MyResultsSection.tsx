@@ -31,7 +31,7 @@ export function MyResultsSection() {
   } else {
     content = (
       <>
-        <ul className="flat-list">
+        <ul className="flat-list quiz-grid">
           {results.map((result) => (
             <li key={result.id} ref={rowRef(result.id)}>
               <ResultRow result={result} />

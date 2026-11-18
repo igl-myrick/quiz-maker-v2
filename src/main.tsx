@@ -1,8 +1,17 @@
 import 'ply-css/dist/css/ply.min.css'
+import './styles/app.css'
 // Lexend for the dyslexia-friendly font setting, bundled and served from our own domain.
 import '@fontsource/lexend/400.css'
 import '@fontsource/lexend/700.css'
 import './styles/settings.css'
+// The redesign's colour and shape tokens, and the personality highlight.
+import './styles/tokens.css'
+// The shared components, dialog shell and quiz card.
+import './styles/ui.css'
+// The redesigned popups (details, Settings, Log in, confirms).
+import './styles/popups.css'
+// The take page and the result pages.
+import './styles/quiz-pages.css'
 // Applies the saved settings as soon as the app loads (see settingsStore).
 import './stores/settingsStore'
 import { createRouter, RouterProvider } from '@tanstack/react-router'

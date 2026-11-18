@@ -39,24 +39,36 @@ export function ResultPage({ resultId }: { resultId: string }) {
       </>
     )
   } else {
-    content = (
+    // Shown inside the score or outcome card.
+    const actions = (
       <>
-        {data.result.quiz_kind === 'trivia' ? (
-          <TriviaResult result={data.result} />
-        ) : (
-          <PersonalityResult result={data.result} />
-        )}
-        <ResultNotices data={data} />
-        <SaveResultSection data={data} />
-        <p>
-          <CopyLinkButton />{' '}
-          <Link to="/search" className="btn">
-            Find another quiz
-          </Link>
-        </p>
+        <CopyLinkButton />
+        <Link to="/search" className="btn">
+          Find another quiz
+        </Link>
       </>
     )
+    content =
+      data.result.quiz_kind === 'trivia' ? (
+        <TriviaResult result={data.result} actions={actions}>
+          <ResultNotices data={data} />
+          <SaveResultSection data={data} />
+        </TriviaResult>
+      ) : (
+        <>
+          <PersonalityResult result={data.result} actions={actions} />
+          <ResultNotices data={data} />
+          <SaveResultSection data={data} />
+        </>
+      )
   }
 
-  return <main className="units-container">{content}</main>
+  // A personality result turns the page's buttons, links and focus purple, including the
+  // Log in popup opened from Save to my account.
+  const isPersonality = data?.status === 'ok' && data.result.quiz_kind === 'personality'
+  return (
+    <main className="units-container" data-kind={isPersonality ? 'personality' : undefined}>
+      {content}
+    </main>
+  )
 }

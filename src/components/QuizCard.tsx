@@ -1,9 +1,10 @@
-import { Link, useRouter } from '@tanstack/react-router'
+import { Link, useLocation, useRouter } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
-import { formatSuggestedTime } from '../lib/formatSuggestedTime'
 import { rememberReturnFocus } from '../lib/returnFocus'
 import type { QuizSummary } from '../schemas/searchResult'
 import '../styles/search.css'
+import { KindChip } from './ui/KindChip'
+import { QuizMeta } from './ui/QuizMeta'
 
 type QuizCardProps = {
   quiz: QuizSummary
@@ -17,40 +18,43 @@ export function quizCardLinkId(quizId: string) {
 
 export function QuizCard({ quiz, actions }: QuizCardProps) {
   const router = useRouter()
+  const onSearchPage = useLocation({ select: (location) => location.pathname === '/search' })
 
   // Opening the popup from another page (the dashboard) unmounts that page, so record
   // this link for the root route to focus on coming back. The search page stays mounted
   // under its popup and puts focus back itself.
   function handleClick() {
-    const location = router.state.location
-    if (location.pathname !== '/search') {
-      rememberReturnFocus(location.state.__TSR_key, quizCardLinkId(quiz.id))
+    if (!onSearchPage) {
+      rememberReturnFocus(router.state.location.state.__TSR_key, quizCardLinkId(quiz.id))
     }
   }
 
   return (
-    <article className="border padding margin-bottom">
+    // The title link is stretched over the whole card in CSS, so clicking anywhere on the
+    // card opens the quiz while it stays one link and one tab stop. Actions sit above it.
+    <article className="quiz-card">
       <h3>
-        {/* Opens the details popup on top of the current search, keeping q. */}
+        {/* Opens the details popup on top of the current search, keeping q. On the
+            search page itself, the results behind the popup stay where they were
+            scrolled to; from another page, the search page starts at the top. */}
         <Link
           id={quizCardLinkId(quiz.id)}
           to="/search"
           search={(prev) => ({ ...prev, quiz: quiz.id })}
+          resetScroll={!onSearchPage}
           onClick={handleClick}
         >
           {quiz.title}
         </Link>
       </h3>
-      <p>
-        <span className="label">{quiz.kind === 'trivia' ? 'Trivia' : 'Personality'}</span>{' '}
-        <span className="text-secondary">
-          {quiz.question_count} questions
-          {quiz.suggested_time_seconds !== null &&
-            ` · ${formatSuggestedTime(quiz.suggested_time_seconds)}`}
-        </span>
-      </p>
+      {/* After the heading, so jumping to the heading still reaches it; CSS shows it first. */}
+      <KindChip kind={quiz.kind} />
       {quiz.description && <p className="quiz-card-description">{quiz.description}</p>}
-      {actions}
+      <QuizMeta
+        questionCount={quiz.question_count}
+        suggestedTimeSeconds={quiz.suggested_time_seconds}
+      />
+      {actions && <div className="quiz-card-actions">{actions}</div>}
     </article>
   )
 }

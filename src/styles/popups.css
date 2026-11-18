@@ -1,0 +1,258 @@
+/* The redesigned popups (specs/07-ui-redesign.md, Phase 3). Loaded after ui.css, which
+   holds the shared dialog shell. */
+
+/* ---- Start controls (details popup and take page) ------------------------------- */
+.start-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+/* In the popup footer the timer and the buttons sit at opposite ends. On the take page
+   the buttons go under the timer, as before. */
+.start-controls[data-variant='popup'] {
+  justify-content: space-between;
+}
+.start-controls[data-variant='page'] {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.start-controls-timer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.no-timer-note {
+  color: var(--ply-color-secondary);
+}
+
+/* ---- Quiz details popup (P3.1) ---------------------------------------------------
+   A strip in the kind colour down the left, the details on the right. The dialog is a
+   size container, so the strip can step aside when the popup is narrow; rem here
+   follows the text-size setting. */
+.details-dialog {
+  max-width: 34rem;
+  padding: 0;
+  /* auto, not hidden: the popup must scroll when its content is taller than a short
+     screen at a large text size, or Start quiz could end up out of reach. */
+  overflow: auto;
+  container-type: inline-size;
+}
+.details-layout {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+}
+.details-strip {
+  padding: 1rem 0.75rem;
+  background: var(--qm-trivia);
+}
+.details-strip[data-strip-kind='personality'] {
+  background: var(--qm-personality);
+}
+.details-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 1.25rem 1.5rem;
+}
+.details-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.details-main h2 {
+  margin: 0;
+  font-size: 1.375rem;
+  overflow-wrap: anywhere;
+}
+.details-description {
+  margin: 0;
+}
+.details-footer {
+  margin-top: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ply-border-color);
+}
+@container (max-width: 26rem) {
+  .details-layout {
+    grid-template-columns: 1fr;
+  }
+  .details-strip {
+    display: none;
+  }
+}
+
+/* ---- Settings popup (P3.2) -------------------------------------------------------
+   Sections without boxes, so the popup keeps its room at the largest text size on a
+   320px screen (see "The settings popup" in settings.css). */
+.settings-dialog fieldset {
+  min-width: 0;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  border: 0;
+}
+.settings-dialog fieldset > legend {
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+/* Theme tiles: real radios, hidden with Ply's .sr-only but focusable, so arrow keys work.
+   The chosen tile gets a thicker border and bold text, not just a colour. */
+.theme-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.theme-tiles label:has(> input[type='radio']) {
+  position: relative;
+  display: flex;
+  flex: 1 1 5.5rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  width: auto;
+  margin: 0;
+  padding: 0.5rem;
+  border: 1px solid var(--ply-border-strong);
+  border-radius: var(--qm-radius-input);
+  cursor: pointer;
+}
+.theme-tiles label:has(> input:checked) {
+  border: 2px solid var(--ply-btn-default-bg);
+  padding: calc(0.5rem - 1px);
+  font-weight: 700;
+}
+.theme-tiles label:has(> input:focus-visible) {
+  outline: 2px solid var(--ply-color-focus);
+  outline-offset: 2px;
+}
+/* A tiny page in each theme. These colours picture the light and dark themes
+   themselves, so they stay the same whichever theme is on. */
+.theme-preview {
+  display: block;
+  width: 100%;
+  max-width: 4.5rem;
+  height: 2.75rem;
+  border: 1px solid var(--ply-border-strong);
+  border-radius: 0.4rem;
+  background:
+    linear-gradient(#8d8d8d, #8d8d8d) 0.5rem 0.6rem / 55% 0.25rem no-repeat,
+    linear-gradient(#8d8d8d, #8d8d8d) 0.5rem 1.2rem / 35% 0.25rem no-repeat,
+    #ffffff;
+}
+.theme-preview[data-preview='dark'] {
+  background:
+    linear-gradient(#8d8d8d, #8d8d8d) 0.5rem 0.6rem / 55% 0.25rem no-repeat,
+    linear-gradient(#8d8d8d, #8d8d8d) 0.5rem 1.2rem / 35% 0.25rem no-repeat,
+    #161616;
+}
+.theme-preview[data-preview='system'] {
+  background:
+    linear-gradient(#8d8d8d, #8d8d8d) 0.5rem 0.6rem / 55% 0.25rem no-repeat,
+    linear-gradient(#8d8d8d, #8d8d8d) 0.5rem 1.2rem / 35% 0.25rem no-repeat,
+    linear-gradient(135deg, #ffffff 50%, #161616 50%);
+}
+
+/* The Lexend checkbox drawn as a switch, matching the Switch component: the track has a
+   border in both states and the knob moves, so on and off aren't colour alone. */
+.settings-dialog input.font-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 1.25rem;
+  margin: 0;
+  border: 2px solid var(--ply-border-strong);
+  border-radius: 999px;
+  background: var(--ply-bg-surface-alt);
+  appearance: none;
+  cursor: pointer;
+}
+.settings-dialog input.font-switch::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0.125rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--ply-border-strong);
+  transform: translateY(-50%);
+}
+.settings-dialog input.font-switch:checked {
+  border-color: var(--ply-btn-default-bg);
+  background: var(--ply-btn-default-bg);
+}
+.settings-dialog input.font-switch:checked::before {
+  left: calc(100% - 0.875rem);
+  background: var(--ply-btn-default-color);
+}
+.settings-dialog input.font-switch:focus-visible {
+  outline: 2px solid var(--ply-color-focus);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .settings-dialog input.font-switch::before {
+    transition: left 0.15s ease;
+  }
+}
+
+/* The Account section, set apart by a rule. */
+.settings-account {
+  padding-top: 1rem;
+  border-top: 1px solid var(--ply-border-color);
+}
+.settings-account h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+/* ---- Log in popup (P3.3) -------------------------------------------------------- */
+/* A soft tint of the button colour: Ply's alternate surface is the same grey as the
+   popup in dark mode, so it wouldn't show. */
+.login-status:not(:empty) {
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-input);
+  background: color-mix(in srgb, var(--ply-btn-default-bg) 14%, transparent);
+}
+.login-status:empty {
+  margin: 0;
+}
+.dialog-sm .form input {
+  border-radius: var(--qm-radius-input);
+}
+.form .login-submit {
+  width: 100%;
+  margin-top: 1rem;
+}
+.login-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1rem;
+  margin-top: 0.5rem;
+}
+.form .login-links .btn {
+  min-height: max(24px, 1.5rem);
+  margin: 0;
+}
+
+/* The details popup's one close button, pinned to the top-right corner in every state.
+   The modal dialog is already its containing block. The heading and chip rows leave
+   room for it. */
+dialog .details-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 1;
+}
+.details-dialog .dialog-header,
+.details-top {
+  padding-right: 2.5rem;
+}
+.details-top {
+  min-height: 2rem;
+}

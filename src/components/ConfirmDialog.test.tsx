@@ -59,6 +59,12 @@ describe('useConfirmDialog', () => {
     expect(lastAnswer).toBe(false)
   })
 
+  it('shows the confirm action as destructive', () => {
+    render(<Harness />)
+    fireEvent.click(screen.getByRole('button', { name: 'Open' }))
+    expect(screen.getByRole('button', { name: 'Delete quiz' })).toHaveClass('btn-red')
+  })
+
   it('has no detectable accessibility violations when open', async () => {
     const { container } = render(<Harness />)
     fireEvent.click(screen.getByRole('button', { name: 'Open' }))

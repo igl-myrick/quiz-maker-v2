@@ -229,6 +229,9 @@ isOneToOne: false
 "cleanup_expired":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"get_my_dashboard_summary":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "get_quiz_for_edit":
 { Args: { "p_id": string }; Returns: Json
                            },

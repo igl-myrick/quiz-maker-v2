@@ -1,0 +1,246 @@
+/* Styles for the shared redesign components in src/components/ui/, the dialog shell and
+   the quiz card (specs/07-ui-redesign.md, Phase 1). Loaded after tokens.css. */
+
+/* ---- KindChip ------------------------------------------------------------------
+   Ply's button text colour (white) on the kind colour: at least 5:1 in every theme. */
+.kind-chip {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--qm-trivia);
+  color: var(--ply-btn-default-color);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+.kind-chip[data-chip-kind='personality'] {
+  background: var(--qm-personality);
+}
+
+/* ---- QuizMeta ------------------------------------------------------------------ */
+.quiz-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  color: var(--ply-color-secondary);
+  font-size: 0.875rem;
+}
+.quiz-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.quiz-meta svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+}
+
+/* ---- Switch --------------------------------------------------------------------
+   A plain button with a track and knob. The track has a border in every state, so on
+   and off differ in knob position too, not only in colour. */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: max(24px, 1.5rem);
+  padding: 0.125rem 0.25rem;
+  border: 0;
+  border-radius: var(--qm-radius-input);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.switch:focus-visible {
+  outline: 2px solid var(--ply-color-focus);
+  outline-offset: 2px;
+}
+.switch-track {
+  position: relative;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--ply-border-strong);
+  border-radius: 999px;
+  background: var(--ply-bg-surface-alt);
+}
+.switch-knob {
+  position: absolute;
+  top: 50%;
+  left: 0.125rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--ply-border-strong);
+  transform: translateY(-50%);
+}
+.switch[aria-checked='true'] .switch-track {
+  border-color: var(--ply-btn-default-bg);
+  background: var(--ply-btn-default-bg);
+}
+.switch[aria-checked='true'] .switch-knob {
+  left: calc(100% - 0.875rem);
+  background: var(--ply-btn-default-color);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .switch-knob {
+    transition: left 0.15s ease;
+  }
+}
+
+/* ---- PillGroup -----------------------------------------------------------------
+   Real radios, hidden with Ply's .sr-only but still focusable, so arrow keys work as
+   in any radio group. Each label is one pill segment; the chosen one is filled and bold. */
+.pill-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.pill-group > legend {
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+.pill-group-options {
+  display: inline-flex;
+  flex-wrap: wrap;
+  max-width: 100%;
+  border: 1px solid var(--ply-border-strong);
+  border-radius: 1.25rem;
+  overflow: hidden;
+}
+.pill-group label:has(> input[type='radio']) {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: auto;
+  min-height: max(24px, 1.75rem);
+  margin: 0;
+  padding: 0.25rem 0.875rem;
+  border-left: 1px solid var(--ply-border-strong);
+  cursor: pointer;
+}
+.pill-group label:has(> input[type='radio']):first-child {
+  border-left: 0;
+}
+.pill-group label:has(> input:checked) {
+  background: var(--ply-btn-default-bg);
+  color: var(--ply-btn-default-color);
+  font-weight: 700;
+}
+/* Inset, because the rounded box clips anything outside it. Two tones (a surface-coloured
+   ring inside a focus-coloured one) so it shows on the filled pill too, whose fill can be
+   the same colour as the focus ring. */
+.pill-group label:has(> input:focus-visible) {
+  box-shadow:
+    inset 0 0 0 2px var(--ply-color-focus),
+    inset 0 0 0 4px var(--ply-bg-surface);
+}
+
+/* ---- StepPills -----------------------------------------------------------------
+   The current step is filled; done steps show a tick, so state isn't colour alone. */
+.step-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+.step-pills li {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: 999px;
+  color: var(--ply-color-secondary);
+  font-size: 0.8rem;
+}
+.step-pills li[data-state='done'] {
+  color: var(--ply-color-body);
+}
+.step-pills li[data-state='current'] {
+  border-color: var(--ply-btn-default-bg);
+  background: var(--ply-btn-default-bg);
+  color: var(--ply-btn-default-color);
+  font-weight: 700;
+}
+
+/* ---- Artwork ------------------------------------------------------------------- */
+.cover-art,
+.strip-art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---- Dialog shell (P1.5) -------------------------------------------------------
+   One look for every <dialog>: larger rounded corners, Ply's surface and shadow, and a
+   thin border so the edge still shows in high contrast, where Ply removes shadows. */
+dialog {
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-card);
+}
+dialog .dialog-close {
+  flex-shrink: 0;
+  border-radius: 50%;
+  line-height: 1;
+}
+
+/* ---- Quiz card (P1.6) ----------------------------------------------------------
+   Never inside the personality highlight: only its chip shows the kind colour. */
+.quiz-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-card);
+  background: var(--ply-bg-surface);
+}
+.quiz-card:hover {
+  border-color: var(--ply-border-strong);
+}
+.quiz-card h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  overflow-wrap: anywhere;
+}
+.quiz-card p {
+  margin: 0;
+}
+.quiz-card .quiz-meta {
+  margin-top: auto;
+}
+/* The title link covers the whole card. */
+.quiz-card h3 a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+/* Keyboard focus outlines the whole card instead of just the title. */
+.quiz-card:has(h3 a:focus-visible) {
+  outline: 2px solid var(--ply-color-focus);
+  outline-offset: 2px;
+}
+.quiz-card h3 a:focus-visible {
+  outline: none;
+}
+/* Actions sit above the stretched link, so they stay separately clickable. */
+.quiz-card-actions {
+  position: relative;
+  z-index: 1;
+}
+/* The chip comes after the title in the page, for screen readers, but shows first. */
+.quiz-card .kind-chip {
+  order: -1;
+}

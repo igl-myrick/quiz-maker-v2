@@ -179,7 +179,9 @@ export function LoginDialog({ dialogRef, onLoggedIn }: LoginDialogProps) {
 
       <div className="dialog-body">
         {/* Always rendered, so screen readers hear the change when a code is sent. */}
-        <p role="status">{status}</p>
+        <p role="status" className="login-status">
+          {status}
+        </p>
 
         {requestError && (
           <p role="alert" className="error">
@@ -205,7 +207,7 @@ export function LoginDialog({ dialogRef, onLoggedIn }: LoginDialogProps) {
                 {emailError}
               </p>
             )}
-            <button type="submit" className="btn btn-primary" disabled={busy}>
+            <button type="submit" className="btn btn-primary login-submit" disabled={busy}>
               {sendCode.isPending ? 'Sending…' : 'Send code'}
             </button>
           </form>
@@ -227,15 +229,28 @@ export function LoginDialog({ dialogRef, onLoggedIn }: LoginDialogProps) {
                 {codeError}
               </p>
             )}
-            <button type="submit" className="btn btn-primary" disabled={busy}>
+            <button type="submit" className="btn btn-primary login-submit" disabled={busy}>
               {verifyCode.isPending ? 'Checking…' : 'Log in'}
             </button>
-            <button type="button" className="btn" disabled={busy} onClick={handleResend}>
-              {resendCode.isPending ? 'Sending…' : 'Send a new code'}
-            </button>
-            <button type="button" className="btn" disabled={busy} onClick={handleUseDifferentEmail}>
-              Use a different email
-            </button>
+            {/* Quieter, so the main action stands out. Still real buttons. */}
+            <div className="login-links">
+              <button
+                type="button"
+                className="btn btn-ghost"
+                disabled={busy}
+                onClick={handleResend}
+              >
+                {resendCode.isPending ? 'Sending…' : 'Send a new code'}
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                disabled={busy}
+                onClick={handleUseDifferentEmail}
+              >
+                Use a different email
+              </button>
+            </div>
           </form>
         )}
       </div>

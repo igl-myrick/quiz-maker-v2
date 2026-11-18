@@ -9,7 +9,7 @@ export function SuggestedTimeField() {
   const minutesError = formState.errors.suggestedMinutes?.message
 
   return (
-    <fieldset className="margin-bottom">
+    <fieldset className="option-panel margin-bottom">
       <legend>Suggested time</legend>
       <label>
         <input type="radio" value="no" {...register('hasSuggestedTime')} /> No suggested time

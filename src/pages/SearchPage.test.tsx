@@ -81,7 +81,8 @@ describe('SearchPage', () => {
     const cards = within(screen.getByRole('main')).getAllByRole('listitem')
     expect(within(cards[0]).getByRole('link', { name: 'World Capitals' })).toBeInTheDocument()
     expect(within(cards[0]).getByText('Trivia')).toBeInTheDocument()
-    expect(within(cards[0]).getByText(/4 questions · Suggested time: 5 min/)).toBeInTheDocument()
+    expect(within(cards[0]).getByText('4 questions')).toBeInTheDocument()
+    expect(within(cards[0]).getByText('Suggested time: 5 min')).toBeInTheDocument()
     expect(within(cards[0]).getByText('Capital cities.')).toBeInTheDocument()
 
     expect(within(cards[1]).getByText('Personality')).toBeInTheDocument()
@@ -180,6 +181,16 @@ describe('SearchPage', () => {
 
     await screen.findByRole('heading', { level: 2, name: 'Results for "capital"' })
     expect(heading).not.toHaveFocus()
+  })
+
+  it('shows the results heading and the count together', async () => {
+    renderApp('/search')
+    const status = await screen.findByText('2 quizzes found')
+    const heading = screen.getByRole('heading', { level: 2, name: 'All quizzes' })
+
+    expect(status).toHaveAttribute('role', 'status')
+    expect(heading.parentElement).toBe(status.parentElement)
+    expect(heading.parentElement).toHaveClass('results-head')
   })
 
   it('has no detectable accessibility violations', async () => {

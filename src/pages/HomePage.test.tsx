@@ -29,6 +29,16 @@ describe('HomePage', () => {
     expect(screen.getByRole('link', { name: 'Find a quiz' })).toHaveAttribute('href', '/search')
   })
 
+  it('shows the cover art as decoration beside the text', async () => {
+    const { container } = renderHome()
+    await screen.findByRole('heading', { level: 1, name: 'Quiz Maker' })
+
+    const art = container.querySelector('svg.cover-art')
+    expect(art).not.toBeNull()
+    expect(art).toHaveAttribute('aria-hidden', 'true')
+    expect(container.querySelector('.home-hero')?.contains(art)).toBe(true)
+  })
+
   it('has no detectable accessibility violations', async () => {
     const { container } = renderHome()
     await screen.findByRole('heading', { level: 1, name: 'Quiz Maker' })

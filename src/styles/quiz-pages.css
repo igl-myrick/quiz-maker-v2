@@ -1,0 +1,243 @@
+/* The take page and the result pages (specs/07-ui-redesign.md, Phase 4). Loaded after
+   popups.css. */
+
+/* ---- Take page header (P4.1) ---------------------------------------------------- */
+.take-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin: 1rem 0 0.5rem;
+}
+.take-head h1 {
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+}
+.countdown-pill {
+  margin: 0;
+  padding: 0.3rem 0.85rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: 999px;
+  background: var(--ply-bg-surface-alt);
+  font-size: 0.875rem;
+}
+.take-progress {
+  margin: 0 0 1rem;
+}
+.take-progress p {
+  margin: 0 0 0.35rem;
+  color: var(--ply-color-secondary);
+  font-size: 0.875rem;
+}
+.take-progress progress {
+  display: block;
+  width: 100%;
+  height: 0.5rem;
+  border-radius: 999px;
+  accent-color: var(--ply-btn-default-bg);
+}
+/* "Page N of M": still the heading that gets focus on a page change, just small, as the
+   label over the progress bar. */
+.take-page-heading {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 1rem;
+}
+
+/* ---- Questions (T1) --------------------------------------------------------------
+   No boxes: questions are separated by thin lines. An unanswered question gets a red
+   bar down its left edge, next to its "Answer this question." text. */
+.question {
+  min-width: 0;
+  margin: 0;
+  padding: 1rem 0;
+  border: 0;
+  border-top: 1px solid var(--ply-border-color);
+  border-radius: 0;
+  background: none;
+}
+.take-progress + .question {
+  border-top: 0;
+}
+.question[data-missing] {
+  padding-left: 0.85rem;
+  border-left: 3px solid var(--qm-wrong);
+}
+.question-number {
+  display: block;
+  color: var(--ply-color-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.question-prompt {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+/* ---- Page navigation -------------------------------------------------------------- */
+.page-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.25rem 0;
+}
+.page-nav .page-nav-next {
+  margin-left: auto;
+}
+
+/* ---- Result pages (P4.2, P4.3) -------------------------------------------------- */
+.score-card,
+.result-question {
+  margin: 0 0 1rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-card);
+  background: var(--ply-bg-surface);
+}
+.score-value {
+  margin: 0 0 0.75rem;
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.score-bar {
+  height: 0.5rem;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ply-bg-surface-alt);
+  box-shadow: inset 0 0 0 1px var(--ply-border-color);
+}
+.score-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ply-btn-default-bg);
+}
+.tally {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+}
+.tally > span:not(.tally-sep) {
+  padding: 0.2rem 0.7rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: 999px;
+  font-size: 0.875rem;
+}
+.tally-sep {
+  display: none;
+}
+
+/* Copy link and Find another quiz: small buttons inside the card. Ply has no small
+   button, so they're sized here, still at least 24 by 24 CSS pixels. */
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.result-actions .btn {
+  min-height: max(24px, 1.75rem);
+  padding: 0.25rem 0.85rem;
+  font-size: 0.875rem;
+}
+/* The copy fallback field takes its own line. */
+.result-actions .form {
+  flex-basis: 100%;
+}
+
+/* Notices: soft rows. The border keeps them visible in dark mode, where Ply's alternate
+   surface is the same grey as cards. */
+.notice {
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-input);
+  background: var(--ply-bg-surface-alt);
+}
+.save-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px dashed var(--ply-border-strong);
+  border-radius: var(--qm-radius-card);
+}
+.save-card .error {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.result-question {
+  padding: 1rem 1.25rem;
+}
+.result-question h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.0625rem;
+  overflow-wrap: anywhere;
+}
+.status-badge {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+}
+.status-badge[data-status='correct'] {
+  color: var(--qm-correct);
+}
+.status-badge[data-status='partly'] {
+  color: var(--qm-partly);
+}
+.status-badge[data-status='wrong'] {
+  color: var(--qm-wrong);
+}
+.result-question ul {
+  margin: 0;
+}
+
+/* ---- Personality outcome card (P4.3) ---------------------------------------------
+   The purple strip beside the outcome; it steps aside when the card is narrow (rem in
+   the container query follows the text-size setting). */
+.outcome-card {
+  margin: 1rem 0;
+  overflow: hidden;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-card);
+  background: var(--ply-bg-surface);
+  container-type: inline-size;
+}
+.outcome-layout {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+}
+.outcome-strip {
+  padding: 1rem 0.75rem;
+  background: var(--qm-personality);
+}
+.outcome-body {
+  min-width: 0;
+  padding: 1.25rem 1.5rem;
+}
+.outcome-body h1 {
+  margin: 0 0 0.5rem;
+  overflow-wrap: anywhere;
+}
+.outcome-body h2 {
+  margin: 0.75rem 0 0;
+  color: var(--ply-color-secondary);
+  font-size: 1rem;
+}
+@container (max-width: 24rem) {
+  .outcome-layout {
+    grid-template-columns: 1fr;
+  }
+  .outcome-strip {
+    display: none;
+  }
+}

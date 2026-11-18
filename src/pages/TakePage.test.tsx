@@ -146,6 +146,25 @@ describe('TakePage', () => {
     expect(main().getByText('1 of 12 answered')).toBeInTheDocument()
   })
 
+  it('shows the kind, the page heading and an answered-progress bar', async () => {
+    seedTake()
+    await renderApp(`/quizzes/${QUIZ_ID}/take`)
+
+    expect(main().getByText('Trivia')).toBeInTheDocument()
+    const progress = main().getByRole('progressbar', { name: '0 of 12 answered' })
+    expect(progress).toHaveAttribute('max', '12')
+    expect(progress).toHaveAttribute('value', '0')
+    expect(screen.getByRole('main')).not.toHaveAttribute('data-kind')
+  })
+
+  it('turns on the personality highlight for personality takes', async () => {
+    seedTake({ quiz: { ...takeQuiz(), kind: 'personality' } })
+    await renderApp(`/quizzes/${QUIZ_ID}/take`)
+
+    expect(main().getByText('Personality')).toBeInTheDocument()
+    expect(screen.getByRole('main')).toHaveAttribute('data-kind', 'personality')
+  })
+
   it('needs every question on a page answered before moving on, then focuses and announces the next page', async () => {
     seedTake()
     const { router } = await renderApp(`/quizzes/${QUIZ_ID}/take`)
@@ -166,6 +185,27 @@ describe('TakePage', () => {
     expect(router.state.location.search).toEqual({ page: 2 })
     await waitFor(() => expect(announced()).toHaveTextContent('Page 2 of 2'))
     expect(main().getByText('Choose all that apply')).toBeInTheDocument()
+  })
+
+  it('lays out each question as a line, named "Question N of M: prompt"', async () => {
+    seedTake()
+    await renderApp(`/quizzes/${QUIZ_ID}/take`)
+
+    expect(main().getByRole('group', { name: 'Question 1 of 12: Question text 1' })).toHaveClass(
+      'question',
+    )
+  })
+
+  it('marks an unanswered question for the bar and keeps its message', async () => {
+    seedTake()
+    await renderApp(`/quizzes/${QUIZ_ID}/take`)
+
+    fireEvent.click(main().getByRole('button', { name: 'Next page' }))
+    await main().findByRole('group', { name: 'Answer these questions to continue' })
+
+    const question = main().getByRole('group', { name: 'Question 1 of 12: Question text 1' })
+    expect(question).toHaveAttribute('data-missing', 'true')
+    expect(question).toHaveAccessibleDescription(/Answer this question\./)
   })
 
   it('checks every page on submit, and links to questions on other pages', async () => {

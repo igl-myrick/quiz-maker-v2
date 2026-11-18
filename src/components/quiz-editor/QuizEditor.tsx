@@ -28,6 +28,7 @@ import { ErrorSummary, summaryItems, type SummaryItem } from './ErrorSummary'
 import { OutcomesPart } from './OutcomesPart'
 import { fieldDomId } from './FieldError'
 import { QuestionsPart } from './QuestionsPart'
+import { StepPills } from '../ui/StepPills'
 import '../../styles/editor.css'
 
 const PART_LABELS: Record<EditorPart, string> = {
@@ -234,66 +235,75 @@ export function QuizEditor({ savedQuiz, part, onRestart, onLoadLatest }: QuizEdi
 
   return (
     <FormProvider {...form}>
-      <form className="form" noValidate onSubmit={handlePublish}>
-        {isStale && (
-          <div role="alert" className="border padding margin-bottom">
-            <p>This quiz changed since you opened it (maybe in another tab).</p>
-            <button type="button" className="btn" onClick={() => void handleLoadLatest()}>
-              Load the latest version
-            </button>{' '}
-            <button type="button" className="btn" onClick={() => void handleSaveMine()}>
-              Save mine over it
-            </button>
+      {/* A personality quiz turns the editor's buttons, controls, focus and confirm popups
+          purple, from the moment Personality is picked. */}
+      <div className="editor-frame" data-kind={kind === 'personality' ? 'personality' : undefined}>
+        <form className="form" noValidate onSubmit={handlePublish}>
+          {isStale && (
+            <div role="alert" className="border padding margin-bottom">
+              <p>This quiz changed since you opened it (maybe in another tab).</p>
+              <div className="btn-group">
+                <button type="button" className="btn" onClick={() => void handleLoadLatest()}>
+                  Load the latest version
+                </button>
+                <button type="button" className="btn" onClick={() => void handleSaveMine()}>
+                  Save mine over it
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showSummary && (items.length > 0 || serverMessage) && (
+            <ErrorSummary
+              summaryRef={summaryRef}
+              items={items}
+              serverMessage={serverMessage}
+              onSelect={(item) => void handleSummarySelect(item)}
+            />
+          )}
+
+          {/* Decorative; the heading below is what screen readers use. */}
+          <StepPills steps={parts.map((p) => PART_LABELS[p])} current={partIndex + 1} />
+          <h2 ref={headingRef} tabIndex={-1}>
+            Part {partIndex + 1} of {parts.length}: {PART_LABELS[part]}
+          </h2>
+
+          {part === 'basics' && <BasicsPart isEditing={savedQuiz !== null} />}
+          {part === 'outcomes' && <OutcomesPart />}
+          {part === 'questions' && <QuestionsPart />}
+
+          {/* Back and Discard draft on the left; Next and Publish on the right. */}
+          <div className="editor-nav">
+            <div className="editor-nav-start">
+              {partIndex > 0 && (
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => void goToPart(parts[partIndex - 1])}
+                >
+                  Back
+                </button>
+              )}
+              {hasDraft && (
+                <button type="button" className="btn" onClick={() => void handleDiscard()}>
+                  Discard draft
+                </button>
+              )}
+            </div>
+            <div className="editor-nav-end">
+              {partIndex < parts.length - 1 && (
+                <button type="button" className="btn" onClick={() => void handleNext()}>
+                  Next
+                </button>
+              )}
+              <button type="submit" className="btn btn-primary" disabled={save.isPending}>
+                {save.isPending ? 'Publishing…' : savedQuiz ? 'Save changes' : 'Publish'}
+              </button>
+            </div>
           </div>
-        )}
-
-        {showSummary && (items.length > 0 || serverMessage) && (
-          <ErrorSummary
-            summaryRef={summaryRef}
-            items={items}
-            serverMessage={serverMessage}
-            onSelect={(item) => void handleSummarySelect(item)}
-          />
-        )}
-
-        <h2 ref={headingRef} tabIndex={-1}>
-          Part {partIndex + 1} of {parts.length}: {PART_LABELS[part]}
-        </h2>
-
-        {part === 'basics' && <BasicsPart isEditing={savedQuiz !== null} />}
-        {part === 'outcomes' && <OutcomesPart />}
-        {part === 'questions' && <QuestionsPart />}
-
-        <p>
-          {partIndex > 0 && (
-            <>
-              <button
-                type="button"
-                className="btn"
-                onClick={() => void goToPart(parts[partIndex - 1])}
-              >
-                Back
-              </button>{' '}
-            </>
-          )}
-          {partIndex < parts.length - 1 && (
-            <>
-              <button type="button" className="btn" onClick={() => void handleNext()}>
-                Next
-              </button>{' '}
-            </>
-          )}
-          <button type="submit" className="btn btn-primary" disabled={save.isPending}>
-            {save.isPending ? 'Publishing…' : savedQuiz ? 'Save changes' : 'Publish'}
-          </button>{' '}
-          {hasDraft && (
-            <button type="button" className="btn" onClick={() => void handleDiscard()}>
-              Discard draft
-            </button>
-          )}
-        </p>
-      </form>
-      {dialog}
+        </form>
+        {dialog}
+      </div>
     </FormProvider>
   )
 }

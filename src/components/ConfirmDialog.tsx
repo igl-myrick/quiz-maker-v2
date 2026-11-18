@@ -58,7 +58,8 @@ export function ConfirmDialog({
         >
           Cancel
         </button>
-        <button type="button" className="btn btn-primary" onClick={onConfirm}>
+        {/* Red: every confirm so far throws work away (specs/07-ui-redesign.md, P3.4). */}
+        <button type="button" className="btn btn-red" onClick={onConfirm}>
           {options?.confirmLabel}
         </button>
       </div>

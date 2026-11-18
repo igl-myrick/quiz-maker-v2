@@ -1,0 +1,25 @@
+/* The homepage hero (specs/07-ui-redesign.md, P2.1). Two columns whenever both fit at
+   20rem each, so the art drops under the text on narrow screens and at large text sizes.
+   rem widths inside minmax follow the text-size setting; media queries would not. */
+.home-hero {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem 0;
+}
+.home-hero h1 {
+  margin: 0 0 0.5rem;
+  font-size: 3rem;
+  overflow-wrap: anywhere;
+}
+.tagline {
+  margin-bottom: 1.25rem;
+  color: var(--ply-color-secondary);
+  font-size: 1.125rem;
+}
+.home-hero .cover-art {
+  justify-self: center;
+  max-width: 40rem;
+  color: var(--ply-color-body);
+}

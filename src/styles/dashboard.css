@@ -1,0 +1,108 @@
+/* The dashboard (specs/07-ui-redesign.md, Phase 5). */
+
+/* ---- Summary tiles (P5.3) -------------------------------------------------------- */
+.summary-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 1rem;
+  margin: 1rem 0 1.5rem;
+}
+.summary-tile {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-card);
+  background: var(--ply-bg-surface);
+}
+.summary-tile dt {
+  color: var(--ply-color-secondary);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+.summary-tile dd {
+  margin: 0.25rem 0 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+/* ---- Result cards (P5.3) ---------------------------------------------------------
+   Like the quiz card, with a strip in the kind colour down the left. The title link
+   covers the whole card, and keyboard focus outlines the whole card. */
+.result-card {
+  position: relative;
+  display: grid;
+  flex: 1;
+  /* The strip narrows on small cards and at large text sizes, so the text keeps room. */
+  grid-template-columns: clamp(2.5rem, 18%, 4rem) 1fr;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--ply-border-color);
+  border-radius: var(--qm-radius-card);
+  background: var(--ply-bg-surface);
+}
+.result-card:hover {
+  border-color: var(--ply-border-strong);
+}
+.result-card-strip {
+  padding: 0.75rem 0.6rem;
+  background: var(--qm-trivia);
+}
+.result-card-strip[data-strip-kind='personality'] {
+  background: var(--qm-personality);
+}
+.result-card-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 1rem 1.25rem;
+}
+.result-card-main .kind-chip {
+  order: -1;
+}
+.result-card h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  overflow-wrap: anywhere;
+}
+.result-card h3 a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.result-card:has(h3 a:focus-visible) {
+  outline: 2px solid var(--ply-color-focus);
+  outline-offset: 2px;
+}
+.result-card h3 a:focus-visible {
+  outline: none;
+}
+.result-card p {
+  margin: 0;
+}
+.result-score {
+  font-weight: 700;
+}
+.result-card .score-bar {
+  width: 100%;
+  margin: 0;
+}
+.result-card .score-bar span {
+  background: var(--qm-trivia);
+}
+.result-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin-top: auto;
+  color: var(--ply-color-secondary);
+  font-size: 0.875rem;
+}
+.status-tag {
+  padding: 0.1rem 0.6rem;
+  border: 1px solid var(--ply-border-strong);
+  border-radius: 999px;
+}

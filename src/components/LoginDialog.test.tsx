@@ -206,6 +206,21 @@ describe('LoginDialog', () => {
     expect(onLoggedIn).not.toHaveBeenCalled()
   })
 
+  it('puts the secondary code actions in a quiet row under a full-width Log in', async () => {
+    renderLogin()
+    await goToCodeStep()
+    const dialog = within(getDialog())
+    const links = getDialog().querySelector('.login-links')
+
+    expect(
+      links?.contains(dialog.getByRole('button', { name: 'Send a new code', hidden: true })),
+    ).toBe(true)
+    expect(
+      links?.contains(dialog.getByRole('button', { name: 'Use a different email', hidden: true })),
+    ).toBe(true)
+    expect(dialog.getByRole('button', { name: 'Log in', hidden: true })).toHaveClass('login-submit')
+  })
+
   it('has no detectable accessibility violations on either step', async () => {
     const { container } = renderLogin()
     openDialog()

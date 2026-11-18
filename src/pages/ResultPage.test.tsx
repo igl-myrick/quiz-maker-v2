@@ -136,7 +136,10 @@ describe('ResultPage', () => {
 
     expect(main().getByRole('heading', { level: 1, name: 'World Capitals' })).toBeInTheDocument()
     expect(main().getByText('1.5 / 3 (50%)')).toBeInTheDocument()
-    expect(main().getByText(/1 correct · .*1 partly correct · .*1 wrong/)).toBeInTheDocument()
+    // The tally is now three pills; the words are unchanged.
+    expect(document.querySelector('.tally')).toHaveTextContent(
+      /1 correct · .*1 partly correct · .*1 wrong/,
+    )
     expect(main().getByText('Correct: 1 point')).toBeInTheDocument()
     expect(main().getByText('Partly correct: 0.5 points')).toBeInTheDocument()
     expect(main().getByText('Wrong: 0 points')).toBeInTheDocument()
@@ -145,9 +148,28 @@ describe('ResultPage', () => {
       .getByRole('heading', { name: 'Question 2: Which are capitals?' })
       .closest('li')
     expect(multi).toHaveTextContent('Lisbon (your answer, correct)')
-    expect(multi).toHaveTextContent("Nairobi (correct answer you didn't choose)")
+    expect(multi).toHaveTextContent('Nairobi (correct answer)')
     expect(multi).toHaveTextContent('Sydney (not correct)')
     expect(main().getByText('Finished in 3:05 (suggested 5:00)')).toBeInTheDocument()
+  })
+
+  it('puts Copy link and Find another quiz inside the score card', async () => {
+    await renderResult(trivia())
+
+    const card = main().getByRole('button', { name: 'Copy link' }).closest('.score-card')
+    expect(card).not.toBeNull()
+    expect(card?.contains(main().getByRole('link', { name: 'Find another quiz' }))).toBe(true)
+  })
+
+  it('keeps each question status in words with its symbol, in a badge', async () => {
+    await renderResult(trivia())
+
+    const badge = main().getByText('Partly correct: 0.5 points').closest('.status-badge')
+    expect(badge).toHaveAttribute('data-status', 'partly')
+    expect(main().getByText('Wrong: 0 points').closest('.status-badge')).toHaveAttribute(
+      'data-status',
+      'wrong',
+    )
   })
 
   it('shows only the winning outcome for a personality result', async () => {
@@ -160,6 +182,22 @@ describe('ResultPage', () => {
     ).toBeInTheDocument()
     expect(main().queryByText(/Question by question/)).not.toBeInTheDocument()
     expect(main().queryByText(/Finished in/)).not.toBeInTheDocument()
+  })
+
+  it('shows the outcome card with the strip and actions, in the personality highlight', async () => {
+    await renderResult(personality())
+
+    const card = main()
+      .getByRole('heading', { level: 1, name: "You're Winter" })
+      .closest('.outcome-card')
+    expect(card?.querySelector('svg.strip-art')).toHaveAttribute('aria-hidden', 'true')
+    expect(card?.contains(main().getByRole('button', { name: 'Copy link' }))).toBe(true)
+    expect(screen.getByRole('main')).toHaveAttribute('data-kind', 'personality')
+  })
+
+  it('leaves trivia results outside the personality highlight', async () => {
+    await renderResult(trivia())
+    expect(screen.getByRole('main')).not.toHaveAttribute('data-kind')
   })
 
   it('shows the updated, deleted and expiry notices', async () => {

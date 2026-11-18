@@ -16,6 +16,7 @@ type Page<T> = { items: T[]; next_cursor: { created_at: string; id: string } | n
 const mocks = vi.hoisted(() => ({
   listResults: vi.fn(),
   listQuizzes: vi.fn(),
+  summary: vi.fn(),
   deleteSelect: vi.fn(),
   listener: null as AuthListener | null,
 }))
@@ -25,6 +26,7 @@ vi.mock('../lib/supabase', () => ({
     rpc: (name: string, args: { p_cursor?: unknown }) => {
       if (name === 'list_my_results') return mocks.listResults(args)
       if (name === 'list_my_quizzes') return mocks.listQuizzes(args)
+      if (name === 'get_my_dashboard_summary') return mocks.summary()
       return Promise.resolve({
         data: { mode: 'browse', total: 0, items: [], next_cursor: null },
         error: null,
@@ -128,6 +130,10 @@ describe('DashboardPage', () => {
     useAnnouncerStore.setState({ message: '' })
     mocks.listResults.mockReset().mockImplementation(() => page([]))
     mocks.listQuizzes.mockReset().mockImplementation(() => page([]))
+    mocks.summary.mockReset().mockResolvedValue({
+      data: { results_saved: 3, quizzes_made: 1, average_trivia_score: 0.6667 },
+      error: null,
+    })
     mocks.deleteSelect.mockReset().mockResolvedValue({ data: [{ id: id(1) }], error: null })
   })
 
@@ -192,19 +198,70 @@ describe('DashboardPage', () => {
       'href',
       `/results/${result(1).id}`,
     )
-    expect(trivia).toHaveTextContent('Trivia 3.5 / 4')
+    // Each result is a card: strip, kind chip, score, date and any status tag.
+    expect(trivia?.querySelector('.result-card')).not.toBeNull()
+    expect(within(trivia as HTMLElement).getByText('Trivia')).toBeInTheDocument()
+    expect(trivia).toHaveTextContent('3.5 / 4')
+    expect(trivia?.querySelector('svg.strip-art')).toHaveAttribute('aria-hidden', 'true')
     expect(trivia?.querySelector('time')).toHaveAttribute('datetime', '2026-11-12T10:00:00Z')
 
     const personality = results
       .getByRole('link', { name: 'Which Season Matches You?' })
       .closest('li')
-    expect(personality).toHaveTextContent('Personality Winter')
-    expect(personality).toHaveTextContent('Quiz updated')
+    expect(within(personality as HTMLElement).getByText('Personality')).toBeInTheDocument()
+    expect(personality).toHaveTextContent('Winter')
+    expect(within(personality as HTMLElement).getByText('Quiz updated')).toHaveClass('status-tag')
 
     const deleted = results.getByRole('link', { name: 'Gone Quiz' }).closest('li')
     expect(deleted).toHaveTextContent('0 / 3')
     expect(deleted).toHaveTextContent('Quiz deleted')
     expect(within(deleted as HTMLElement).getAllByRole('link')).toHaveLength(1)
+  })
+
+  it('lays both lists out in the card grid, with Create quiz as the primary button', async () => {
+    mocks.listResults.mockImplementation(() => page([result(1)]))
+    mocks.listQuizzes.mockImplementation(() => page([worldCapitals()]))
+    await renderDashboard()
+
+    await section('My results').findByRole('link', { name: 'Result 1' })
+    expect(section('My results').getByRole('list')).toHaveClass('quiz-grid')
+    await section('My quizzes').findByRole('link', { name: 'World Capitals' })
+    expect(section('My quizzes').getByRole('list')).toHaveClass('quiz-grid')
+    expect(section('My quizzes').getByRole('link', { name: '+ Create quiz' })).toHaveClass(
+      'btn-primary',
+    )
+  })
+
+  it('shows the summary tiles', async () => {
+    await renderDashboard()
+
+    const saved = await main().findByText('Results saved')
+    expect(saved.tagName).toBe('DT')
+    expect(saved.nextElementSibling).toHaveTextContent('3')
+    expect(main().getByText('Quizzes made').nextElementSibling).toHaveTextContent('1')
+    expect(main().getByText('Average trivia score').nextElementSibling).toHaveTextContent('67%')
+  })
+
+  it('shows a dash when there are no trivia results', async () => {
+    mocks.summary.mockResolvedValue({
+      data: { results_saved: 0, quizzes_made: 0, average_trivia_score: null },
+      error: null,
+    })
+    await renderDashboard()
+
+    expect((await main().findByText('Average trivia score')).nextElementSibling).toHaveTextContent(
+      '—',
+    )
+  })
+
+  it('keeps the lists when the summary fails, with its own retry', async () => {
+    mocks.summary.mockResolvedValue({ data: null, error: new Error('boom') })
+    await renderDashboard()
+
+    expect(await main().findByText("Couldn't load your summary.")).toBeInTheDocument()
+    expect(main().getByRole('button', { name: 'Try loading summary again' })).toBeInTheDocument()
+    expect(main().getByRole('region', { name: 'My results' })).toBeInTheDocument()
+    expect(main().getByRole('region', { name: 'My quizzes' })).toBeInTheDocument()
   })
 
   it('shows each quiz card with Edit and Delete named by its title', async () => {
