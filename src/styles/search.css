@@ -12,10 +12,12 @@
    pill when the box has keyboard focus; the box's own outline is removed only then. */
 .search-field {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 0.5rem;
   max-width: 34rem;
-  padding: 0.25rem 0.25rem 0.25rem 1rem;
+  /* The button stretches to the field's inner height, so this one inset is the gap above,
+     below and to the right of it at every text size. */
+  padding: 0.3rem 0.3rem 0.3rem 1rem;
   border: 1px solid var(--ply-border-strong);
   border-radius: 999px;
   background: var(--ply-bg-surface-alt);
@@ -43,6 +45,7 @@
 }
 .search-icon {
   flex-shrink: 0;
+  align-self: center;
   width: 1rem;
   height: 1rem;
   color: var(--ply-color-secondary);
