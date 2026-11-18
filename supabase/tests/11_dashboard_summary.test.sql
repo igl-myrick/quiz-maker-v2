@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(10);
+select plan(12);
 
 -- ---------------------------------------------------------------------------
 -- Alex: two trivia results (0.5 and 1) and one personality result.
@@ -86,6 +86,17 @@ set local role anon;
 select throws_ok('select public.get_my_dashboard_summary()', '42501', null,
   'anon cannot execute it');
 reset role;
+
+-- The error above would also come from the function's own logged-out check, so check
+-- the grants directly too: only authenticated may execute it.
+select ok(
+  not has_function_privilege('anon', 'public.get_my_dashboard_summary()', 'execute'),
+  'anon has no execute grant'
+);
+select ok(
+  has_function_privilege('authenticated', 'public.get_my_dashboard_summary()', 'execute'),
+  'authenticated has the execute grant'
+);
 
 select ok(
   (select prosecdef from pg_proc where oid = 'public.get_my_dashboard_summary()'::regprocedure),

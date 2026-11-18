@@ -51,7 +51,7 @@ export function AnswerList({ questionIndex: q, questionType, kind, answerIds }: 
             return (
               <div key={answerId} className="answer-row">
                 <div className="answer-cell">
-                  <label className="cell-label" htmlFor={fieldDomId(labelName)}>
+                  <label className="cell-label sr-only" htmlFor={fieldDomId(labelName)}>
                     Answer {n} text
                   </label>
                   <input
@@ -62,7 +62,7 @@ export function AnswerList({ questionIndex: q, questionType, kind, answerIds }: 
                   <FieldError id={`${fieldDomId(labelName)}-error`} message={labelError} />
                 </div>
                 <div className="answer-cell">
-                  <label className="cell-label" htmlFor={fieldDomId(outcomeName)}>
+                  <label className="cell-label sr-only" htmlFor={fieldDomId(outcomeName)}>
                     {/* Ends in "leads to", like its column heading, so the name contains
                         the visible words (WCAG 2.5.3). */}
                     Answer {n} leads to

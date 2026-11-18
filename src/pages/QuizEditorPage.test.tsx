@@ -284,6 +284,15 @@ describe('QuizEditorPage', () => {
     expect(within(points).getByRole('radio', { name: '3' })).toBeChecked()
   })
 
+  it("hides the table's per-answer labels with Ply's sr-only class in the wide layout", async () => {
+    saveDraft('quiz-draft:new', personality())
+    await renderApp('/quizzes/new?part=questions')
+    await main().findByRole('heading', { name: 'Part 3 of 3: Questions' })
+
+    expect(main().getByText('Answer 1 text', { selector: 'label' })).toHaveClass('sr-only')
+    expect(main().getByText('Answer 1 leads to', { selector: 'label' })).toHaveClass('sr-only')
+  })
+
   it('publishes the chosen points', async () => {
     const quiz = personality()
     quiz.questions = [1, 2, 3].map((n) => ({ ...quiz.questions[0], prompt: `Pick ${n}` }))

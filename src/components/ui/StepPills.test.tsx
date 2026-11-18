@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { axe } from 'vitest-axe'
 import { StepPills } from './StepPills'
 
 describe('StepPills', () => {
@@ -22,5 +23,12 @@ describe('StepPills', () => {
     const { container } = render(<StepPills steps={['Basics', 'Questions']} current={1} />)
     expect(container).toHaveTextContent('Basics')
     expect(container).toHaveTextContent('Questions')
+  })
+
+  it('has no detectable accessibility violations', async () => {
+    const { container } = render(
+      <StepPills steps={['Basics', 'Outcomes', 'Questions']} current={2} />,
+    )
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

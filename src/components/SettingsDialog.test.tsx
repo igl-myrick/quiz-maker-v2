@@ -129,6 +129,12 @@ describe('SettingsDialog', () => {
     expect(font).toBeChecked()
   })
 
+  it("hides the theme tiles' radios with Ply's sr-only class", async () => {
+    await renderApp(null)
+    const dialog = openSettings()
+    expect(within(dialog).getByRole('radio', { name: 'Dark' })).toHaveClass('sr-only')
+  })
+
   it('shows text size and high contrast as pill groups', async () => {
     await renderApp(null)
     const dialog = openSettings()

@@ -30,6 +30,7 @@ export function PillGroup<T extends string>({
         {options.map((option) => (
           <label key={option.value}>
             <input
+              className="sr-only"
               type="radio"
               name={name}
               value={option.value}

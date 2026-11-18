@@ -99,7 +99,7 @@
   font-weight: 700;
 }
 
-/* Theme tiles: real radios, clipped out of sight but focusable, so arrow keys work.
+/* Theme tiles: real radios, hidden with Ply's .sr-only but focusable, so arrow keys work.
    The chosen tile gets a thicker border and bold text, not just a colour. */
 .theme-tiles {
   display: flex;
@@ -119,16 +119,6 @@
   border: 1px solid var(--ply-border-strong);
   border-radius: var(--qm-radius-input);
   cursor: pointer;
-}
-.theme-tiles input[type='radio'] {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 .theme-tiles label:has(> input:checked) {
   border: 2px solid var(--ply-btn-default-bg);
@@ -197,7 +187,7 @@
 }
 .settings-dialog input.font-switch:checked::before {
   left: calc(100% - 0.875rem);
-  background: #ffffff;
+  background: var(--ply-btn-default-color);
 }
 .settings-dialog input.font-switch:focus-visible {
   outline: 2px solid var(--ply-color-focus);

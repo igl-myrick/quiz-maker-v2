@@ -2,13 +2,13 @@
    the quiz card (specs/07-ui-redesign.md, Phase 1). Loaded after tokens.css. */
 
 /* ---- KindChip ------------------------------------------------------------------
-   White text on the kind colour: at least 5:1 in every theme (see tokens.css). */
+   Ply's button text colour (white) on the kind colour: at least 5:1 in every theme. */
 .kind-chip {
   display: inline-block;
   padding: 0.2rem 0.6rem;
   border-radius: 999px;
   background: var(--qm-trivia);
-  color: #ffffff;
+  color: var(--ply-btn-default-color);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -84,7 +84,7 @@
 }
 .switch[aria-checked='true'] .switch-knob {
   left: calc(100% - 0.875rem);
-  background: #ffffff;
+  background: var(--ply-btn-default-color);
 }
 @media (prefers-reduced-motion: no-preference) {
   .switch-knob {
@@ -93,8 +93,8 @@
 }
 
 /* ---- PillGroup -----------------------------------------------------------------
-   Real radios, clipped out of sight but still focusable, so arrow keys work as in any
-   radio group. Each label is one pill segment; the chosen one is filled and bold. */
+   Real radios, hidden with Ply's .sr-only but still focusable, so arrow keys work as
+   in any radio group. Each label is one pill segment; the chosen one is filled and bold. */
 .pill-group {
   min-width: 0;
   margin: 0;
@@ -127,19 +127,9 @@
 .pill-group label:has(> input[type='radio']):first-child {
   border-left: 0;
 }
-.pill-group input[type='radio'] {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
 .pill-group label:has(> input:checked) {
   background: var(--ply-btn-default-bg);
-  color: #ffffff;
+  color: var(--ply-btn-default-color);
   font-weight: 700;
 }
 /* Inset, because the rounded box clips anything outside it. Two tones (a surface-coloured
@@ -177,7 +167,7 @@
 .step-pills li[data-state='current'] {
   border-color: var(--ply-btn-default-bg);
   background: var(--ply-btn-default-bg);
-  color: #ffffff;
+  color: var(--ply-btn-default-color);
   font-weight: 700;
 }
 

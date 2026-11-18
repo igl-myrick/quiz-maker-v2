@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { axe } from 'vitest-axe'
 import { CoverArt } from './CoverArt'
 import { StripArt } from './StripArt'
 
@@ -33,5 +34,16 @@ describe('CoverArt and StripArt', () => {
       </>,
     )
     expect(container.innerHTML).not.toMatch(/#[0-9a-f]{3,6}\b/i)
+  })
+
+  it('has no detectable accessibility violations', async () => {
+    const { container } = render(
+      <>
+        <CoverArt />
+        <StripArt kind="trivia" />
+        <StripArt kind="personality" />
+      </>,
+    )
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

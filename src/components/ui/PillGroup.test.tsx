@@ -78,6 +78,19 @@ describe('PillGroup', () => {
     expect(screen.getByRole('group', { name: 'Answer 2 points' })).toBeInTheDocument()
   })
 
+  it("hides its radios with Ply's sr-only class, keeping them focusable", () => {
+    render(
+      <PillGroup
+        legend="Text size"
+        name="size"
+        options={sizes}
+        value="large"
+        onChange={() => {}}
+      />,
+    )
+    expect(screen.getByRole('radio', { name: 'Large' })).toHaveClass('sr-only')
+  })
+
   it('has no detectable accessibility violations', async () => {
     const { container } = render(
       <PillGroup

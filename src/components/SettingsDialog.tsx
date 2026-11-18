@@ -67,6 +67,7 @@ export function SettingsDialog({ dialogRef }: SettingsDialogProps) {
             {themeChoices.map((choice) => (
               <label key={choice.value}>
                 <input
+                  className="sr-only"
                   type="radio"
                   name="theme"
                   value={choice.value}

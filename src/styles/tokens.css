@@ -136,9 +136,11 @@
 }
 
 /* ---- Radio buttons and checkboxes (P1.3) ---------------------------------------
-   One size site-wide, in the button colour, so they follow the personality highlight. */
-input[type='radio'],
-input[type='checkbox'] {
+   One size site-wide, in the button colour, so they follow the personality highlight.
+   Radios hidden with Ply's .sr-only (pill groups, theme tiles) are left alone; :where
+   keeps this rule's specificity as it was. */
+input[type='radio']:not(:where(.sr-only)),
+input[type='checkbox']:not(:where(.sr-only)) {
   width: 1.0625rem;
   height: 1.0625rem;
   accent-color: var(--ply-btn-default-bg);
