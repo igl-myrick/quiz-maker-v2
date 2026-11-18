@@ -256,6 +256,7 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 5. Quiz taking (feature 1)
 6. User dashboard (feature 3)
 7. Settings (feature 5)
+8. UI redesign (feature 7)
 
 ### 0. Project foundation
 - **Status:** Done
@@ -283,7 +284,7 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 - **Spec:** [`specs/04-authentication.md`](specs/04-authentication.md). Do not build from it until its status says Approved. Any change to the auth flow beyond that spec needs asking first.
 
 ### 5. Settings
-- **Status:** In progress
+- **Status:** Done
 - **Goal:** A settings menu, reachable from every page, with:
   - **Theme:** System (the default, following `prefers-color-scheme`), Light, or Dark.
   - **Accessibility:** text size, high contrast, and a dyslexia-friendly font. High contrast defaults to following `prefers-contrast`.
@@ -296,6 +297,17 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 - **Goal:** Anyone can search the public quizzes and open a quiz's details popup (see section 1) from the results. Because all quizzes are public, this is how they are discovered.
 - **Notes:** Search matches only quiz titles and descriptions. A quiz matches when enough of the search words appear in them (Postgres full-text search is the expected approach, and the threshold and ranking are set in the spec). There are **no user-picked tags or categories**. Do not add them.
 - **Spec:** [`specs/06-quiz-search.md`](specs/06-quiz-search.md) (also covers the splash page and the quiz details popup's URL mechanism). Do not build from it until its status says Approved.
+
+### 7. UI redesign
+- **Status:** Done
+- **Goal:** Every page and popup rebuilt from one small set of shared pieces, so the site looks designed rather than assembled while keeping Ply's minimal character. Behaviour and wording stay the same. The one data change is a read-only dashboard summary function.
+- **Notes:** New UI builds on what this feature added rather than starting fresh:
+  - the shared components in `src/components/ui/`
+  - the `--qm-*` colour and radius tokens in `src/styles/tokens.css`
+  - the personality highlight: `data-kind="personality"` on the content of a page or popup that shows one personality quiz, never on the navbar or Settings
+
+  Every confirm button is red, by my decision.
+- **Spec:** [`specs/07-ui-redesign.md`](specs/07-ui-redesign.md) (the chosen design for each page, built in six phases).
 
 ## 12. Stretch goals
 
