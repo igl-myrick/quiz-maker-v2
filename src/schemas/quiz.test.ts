@@ -4,6 +4,7 @@ import {
   emptyQuizValues,
   fromSavedQuiz,
   quizFormSchema,
+  quizStepSchema,
   toSavePayload,
   type QuizFormInput,
   type SavedQuiz,
@@ -201,8 +202,26 @@ describe('quizFormSchema', () => {
     values.questions[0].options[0].outcomeKey = ''
     expect(errors(values)).toMatchObject({
       'questions.0.options.0.outcomeKey': 'Choose an outcome.',
-      'outcomes.2.key': 'No answer leads to this outcome yet.',
+      'outcomes.2.title': 'No answer leads to this outcome yet.',
     })
+  })
+
+  it('leaves reachability to Publish: the step stage skips it', () => {
+    const values = validPersonality()
+    values.outcomes.push({ key: 'fish', title: 'Fish', description: '' })
+    expect(errors(values)['outcomes.2.title']).toBe('No answer leads to this outcome yet.')
+    expect(quizStepSchema.safeParse(values).success).toBe(true)
+  })
+
+  it('applies every other rule at the step stage too', () => {
+    const values = validPersonality()
+    values.outcomes[0].title = ''
+    values.questions[0].options[0].outcomeKey = ''
+    const result = quizStepSchema.safeParse(values)
+    const paths = result.success ? [] : result.error.issues.map((issue) => issue.path.join('.'))
+    expect(paths).toEqual(
+      expect.arrayContaining(['outcomes.0.title', 'questions.0.options.0.outcomeKey']),
+    )
   })
 
   it('keeps personality questions single-choice', () => {

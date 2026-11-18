@@ -190,6 +190,49 @@ describe('QuizEditorPage', () => {
     await waitFor(() => expect(announced()).toHaveTextContent('Part 2 of 2: Questions'))
   })
 
+  it("doesn't let later parts block Next, and opens the next part with no errors", async () => {
+    await renderApp('/quizzes/new')
+    await main().findByRole('heading', { name: 'Part 1 of 2: Basics' })
+
+    // The new quiz's question is empty too, but Next on Basics lists only Basics problems.
+    fireEvent.click(main().getByRole('button', { name: 'Next' }))
+    const summary = await main().findByRole('group', { name: 'Fix these before publishing' })
+    expect(
+      within(summary)
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual(['Title: Enter a title of at least 3 characters.'])
+
+    fireEvent.change(main().getByLabelText('Title'), { target: { value: 'My quiz' } })
+    fireEvent.click(main().getByRole('button', { name: 'Next' }))
+    await main().findByRole('heading', { name: 'Part 2 of 2: Questions' })
+    expect(main().queryByRole('group', { name: 'Fix these before publishing' })).toBeNull()
+    expect(main().queryByText('Enter the question.')).toBeNull()
+  })
+
+  it('leaves "no answer leads here" to Publish, then shows it on the outcome name', async () => {
+    const quiz = personality()
+    quiz.questions = [1, 2, 3].map((n) => ({ ...quiz.questions[0], prompt: `Pick ${n}` }))
+    quiz.outcomes.push({ key: 'fish', title: 'Fish', description: '' })
+    saveDraft('quiz-draft:new', quiz)
+    await renderApp('/quizzes/new?part=outcomes')
+    await main().findByRole('heading', { name: 'Part 2 of 3: Outcomes' })
+
+    fireEvent.click(main().getByRole('button', { name: 'Next' }))
+    await main().findByRole('heading', { name: 'Part 3 of 3: Questions' })
+
+    fireEvent.click(main().getByRole('button', { name: 'Publish' }))
+    const summary = await main().findByRole('group', { name: 'Fix these before publishing' })
+    fireEvent.click(
+      within(summary).getByRole('link', {
+        name: 'Outcome 3: No answer leads to this outcome yet.',
+      }),
+    )
+    const name = await main().findByLabelText('Outcome 3 name')
+    await waitFor(() => expect(name).toHaveFocus())
+    expect(name).toHaveAccessibleDescription('No answer leads to this outcome yet.')
+  })
+
   it('confirms before switching kind when kind-specific work would be lost', async () => {
     saveDraft('quiz-draft:new', validTrivia())
     await renderApp('/quizzes/new')

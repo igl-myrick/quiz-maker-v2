@@ -1,17 +1,9 @@
-import { useId, type ReactNode, type RefObject } from 'react'
 import type { FieldErrors } from 'react-hook-form'
+import type { SummaryItem } from '../../hooks/usePagedForm'
 import type { EditorPart, QuizFormInput } from '../../schemas/quiz'
 import { fieldDomId } from './FieldError'
 import { ADD_OUTCOME_ID } from './OutcomesPart'
 import { ADD_QUESTION_ID } from './QuestionsPart'
-
-export type SummaryItem = {
-  key: string
-  text: string
-  // Where the problem is: the part to show and the element to focus.
-  part: EditorPart
-  targetId: string
-}
 
 // Every message in React Hook Form's nested errors, with its dotted path.
 function collectMessages(
@@ -34,40 +26,41 @@ function collectMessages(
   }
 }
 
-// Turns one error path into its summary text, part and focus target.
-function describe(path: string[], message: string): SummaryItem {
+// Turns one error path into its summary text, part and focus target. This is the one
+// place that knows which part holds each field.
+function describe(path: string[], message: string): SummaryItem<EditorPart> {
   const key = path.join('.')
   const [section, first, second, third, fourth] = path
 
   if (section === 'title' || section === 'description') {
     const label = section === 'title' ? 'Title' : 'Description'
-    return { key, text: `${label}: ${message}`, part: 'basics', targetId: fieldDomId(section) }
+    return { key, text: `${label}: ${message}`, step: 'basics', targetId: fieldDomId(section) }
   }
   if (section === 'suggestedMinutes') {
     return {
       key,
       text: `Suggested time: ${message}`,
-      part: 'questions',
+      step: 'questions',
       targetId: fieldDomId(section),
     }
   }
   if (section === 'outcomes') {
     if (first === 'root' || first === undefined) {
-      return { key, text: message, part: 'outcomes', targetId: ADD_OUTCOME_ID }
+      return { key, text: message, step: 'outcomes', targetId: ADD_OUTCOME_ID }
     }
     const n = Number(first)
     const field = second === 'description' ? 'description' : 'title'
     return {
       key,
       text: `Outcome ${n + 1}: ${message}`,
-      part: 'outcomes',
+      step: 'outcomes',
       targetId: fieldDomId(`outcomes.${n}.${field}`),
     }
   }
 
   // Questions
   if (first === 'root' || first === undefined) {
-    return { key, text: message, part: 'questions', targetId: ADD_QUESTION_ID }
+    return { key, text: message, step: 'questions', targetId: ADD_QUESTION_ID }
   }
   const q = Number(first)
   const where = `Question ${q + 1}`
@@ -78,14 +71,14 @@ function describe(path: string[], message: string): SummaryItem {
       return {
         key,
         text: `${where}, answer ${a + 1}: ${message}`,
-        part: 'questions',
+        step: 'questions',
         targetId: fieldDomId(`questions.${q}.options.${a}.${field}`),
       }
     }
     return {
       key,
       text: `${where}: ${message}`,
-      part: 'questions',
+      step: 'questions',
       targetId: fieldDomId(`questions.${q}.options.0.label`),
     }
   }
@@ -93,55 +86,18 @@ function describe(path: string[], message: string): SummaryItem {
   return {
     key,
     text: `${where}: ${message}`,
-    part: 'questions',
+    step: 'questions',
     targetId: fieldDomId(`questions.${q}.${field}`),
   }
 }
 
-export function summaryItems(errors: FieldErrors<QuizFormInput>): SummaryItem[] {
+// The part that holds the field at an error path.
+export function partOf(path: PropertyKey[]): EditorPart {
+  return describe(path.map(String), '').step
+}
+
+export function summaryItems(errors: FieldErrors<QuizFormInput>): SummaryItem<EditorPart>[] {
   const messages: { path: string[]; message: string }[] = []
   collectMessages(errors, [], messages)
   return messages.map(({ path, message }) => describe(path, message))
-}
-
-type ErrorSummaryProps = {
-  summaryRef: RefObject<HTMLDivElement | null>
-  items: SummaryItem[]
-  serverMessage: ReactNode
-  onSelect: (item: SummaryItem) => void
-}
-
-// Shown at the top of the current part after Next or Publish finds problems.
-export function ErrorSummary({ summaryRef, items, serverMessage, onSelect }: ErrorSummaryProps) {
-  const headingId = useId()
-
-  return (
-    <div
-      ref={summaryRef}
-      tabIndex={-1}
-      role="group"
-      aria-labelledby={headingId}
-      className="border padding margin-bottom"
-    >
-      <h3 id={headingId} className="error">
-        Fix these before publishing
-      </h3>
-      <ul>
-        {serverMessage && <li>{serverMessage}</li>}
-        {items.map((item) => (
-          <li key={item.key}>
-            <a
-              href={`#${item.targetId}`}
-              onClick={(event) => {
-                event.preventDefault()
-                onSelect(item)
-              }}
-            >
-              {item.text}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
 }

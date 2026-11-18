@@ -69,10 +69,7 @@ export function OutcomesPart() {
       <FieldError id="outcomes-root-error" message={rootError} />
 
       {fields.map((field, index) => {
-        // "No answer leads to this outcome yet" is stored on the hidden key; show it by the name.
-        const nameError =
-          formState.errors.outcomes?.[index]?.title?.message ??
-          formState.errors.outcomes?.[index]?.key?.message
+        const nameError = formState.errors.outcomes?.[index]?.title?.message
         const descriptionError = formState.errors.outcomes?.[index]?.description?.message
         const nameName = `outcomes.${index}.title` as const
         const descriptionName = `outcomes.${index}.description` as const

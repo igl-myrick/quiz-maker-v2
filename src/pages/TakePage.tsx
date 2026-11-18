@@ -1,16 +1,16 @@
 import { Link, Navigate, useNavigate } from '@tanstack/react-router'
-import { useId, useRef, useState } from 'react'
+import { useId } from 'react'
 import { LoginButton } from '../components/LoginButton'
 import { StartQuizControls } from '../components/StartQuizControls'
 import { Countdown } from '../components/take/Countdown'
-import { ErrorSummary, type MissingItem } from '../components/take/ErrorSummary'
 import { PageNav } from '../components/take/PageNav'
 import { QuestionFieldset, firstInputId } from '../components/take/QuestionFieldset'
+import { ErrorSummary } from '../components/ui/ErrorSummary'
 import { KindChip } from '../components/ui/KindChip'
+import { usePagedForm, type SummaryItem } from '../hooks/usePagedForm'
 import { useQuizDetails } from '../hooks/useQuizDetails'
 import { SubmitError, useSubmitQuiz } from '../hooks/useSubmitQuiz'
 import { saveClaimToken } from '../lib/claimTokens'
-import { announce } from '../stores/announcerStore'
 import { useSession } from '../stores/authStore'
 import {
   takeKey,
@@ -82,82 +82,50 @@ function TakeInProgress({ take, page }: { take: Take; page: number }) {
   const key = takeKey(take.quiz.id, take.quiz.version)
   const questions = take.quiz.questions
   const totalPages = Math.max(1, Math.ceil(questions.length / QUESTIONS_PER_PAGE))
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
 
-  // Which check the person last asked for, so the summary lists the right questions.
-  // The questions themselves are always derived from the take store.
-  const [attempt, setAttempt] = useState<'next' | 'submit' | null>(null)
   const submit = useSubmitQuiz()
   const session = useSession()
   const navigate = useNavigate()
   const clearTake = useTakeStore((state) => state.clear)
-  const headingRef = useRef<HTMLHeadingElement>(null)
-  const summaryRef = useRef<HTMLDivElement>(null)
   const answeredId = useId()
+  const { headingRef, summaryRef, ...form } = usePagedForm({
+    steps: pages,
+    current: page,
+    goToStep: (next) => navigate({ to: '.', search: { page: next } }),
+    describeStep: (p, _index, total) => `Page ${p} of ${total}`,
+  })
 
   // A page past the end (say, after a typo in the URL) shows the last page.
   if (page > totalPages) return <Navigate to="." search={{ page: totalPages }} replace />
 
   const pageQuestions = questions.slice((page - 1) * QUESTIONS_PER_PAGE, page * QUESTIONS_PER_PAGE)
+  const pageIds = pageQuestions.map((question) => question.id)
   const allIds = questions.map((question) => question.id)
   const answeredCount = allIds.length - unansweredIds(take, allIds).length
   const submitError = submit.error instanceof SubmitError ? submit.error : null
 
+  // The questions listed depend on which check the person last asked for. The answers
+  // themselves always come from the take store.
   let missingIds: string[] = []
-  if (attempt === 'next')
-    missingIds = unansweredIds(
-      take,
-      pageQuestions.map((question) => question.id),
-    )
-  if (attempt === 'submit') missingIds = unansweredIds(take, allIds)
+  if (form.lastCheck === 'step') missingIds = unansweredIds(take, pageIds)
+  if (form.lastCheck === 'finish') missingIds = unansweredIds(take, allIds)
   if (submitError?.code === 'unanswered') {
     missingIds = [...new Set([...missingIds, ...unansweredIds(take, submitError.questionIds)])]
   }
-  const missingItems: MissingItem[] = missingIds.map((id) => {
+  const missingItems: SummaryItem<number>[] = missingIds.map((id) => {
     const index = allIds.indexOf(id)
     return {
-      questionId: id,
+      key: id,
+      step: Math.floor(index / QUESTIONS_PER_PAGE) + 1,
       text: `Question ${index + 1}: ${questions[index]?.prompt ?? ''}`,
       targetId: firstInputId(id),
     }
   })
 
-  function focusSummary() {
-    // After the summary has rendered.
-    setTimeout(() => summaryRef.current?.focus(), 0)
-  }
-
-  async function goToPage(next: number) {
-    setAttempt(null)
-    await navigate({ to: '.', search: { page: next } })
-    headingRef.current?.focus()
-    announce(`Page ${next} of ${totalPages}`)
-  }
-
-  function handleNext() {
-    if (
-      unansweredIds(
-        take,
-        pageQuestions.map((question) => question.id),
-      ).length > 0
-    ) {
-      setAttempt('next')
-      focusSummary()
-      return
-    }
-    void goToPage(page + 1)
-  }
-
-  async function handleSelectMissing(item: MissingItem) {
-    const targetPage = Math.floor(allIds.indexOf(item.questionId) / QUESTIONS_PER_PAGE) + 1
-    if (targetPage !== page) await navigate({ to: '.', search: { page: targetPage } })
-    // After that page has rendered.
-    setTimeout(() => document.getElementById(item.targetId)?.focus(), 0)
-  }
-
   function handleSubmit() {
     if (unansweredIds(take, allIds).length > 0) {
-      setAttempt('submit')
-      focusSummary()
+      form.showSummary('finish')
       return
     }
     submit.mutate(
@@ -179,8 +147,7 @@ function TakeInProgress({ take, page }: { take: Take; page: number }) {
             replace: true,
           }).then(() => clearTake(key))
         },
-        // Focusing the summary reads it out, so there's no separate announcement.
-        onError: focusSummary,
+        onError: () => form.showSummary('finish'),
       },
     )
   }
@@ -225,8 +192,8 @@ function TakeInProgress({ take, page }: { take: Take; page: number }) {
   }
 
   let summaryHeading = "Couldn't submit your answers"
-  if (attempt === 'next') summaryHeading = 'Answer these questions to continue'
-  if (attempt === 'submit' || submitError?.code === 'unanswered')
+  if (form.lastCheck === 'step') summaryHeading = 'Answer these questions to continue'
+  if (form.lastCheck === 'finish' || submitError?.code === 'unanswered')
     summaryHeading = 'Answer these questions before submitting'
 
   return (
@@ -248,15 +215,16 @@ function TakeInProgress({ take, page }: { take: Take; page: number }) {
         <ErrorSummary
           summaryRef={summaryRef}
           heading={missingItems.length > 0 ? summaryHeading : "Couldn't submit your answers"}
+          headingLevel={2}
           items={missingItems}
-          onSelect={(item) => void handleSelectMissing(item)}
+          onSelect={(item) => void form.selectItem(item)}
         >
           {serverMessage}
         </ErrorSummary>
       )}
 
       <h2 ref={headingRef} tabIndex={-1} className="take-page-heading">
-        Page {page} of {totalPages}
+        {form.stepHeading}
       </h2>
       {/* Answered questions, not pages: the heading already says the page. */}
       <div className="take-progress">
@@ -282,8 +250,8 @@ function TakeInProgress({ take, page }: { take: Take; page: number }) {
         page={page}
         totalPages={totalPages}
         submitting={submit.isPending}
-        onPrevious={() => void goToPage(page - 1)}
-        onNext={handleNext}
+        onPrevious={() => void form.back()}
+        onNext={() => void form.next(() => unansweredIds(take, pageIds).length === 0)}
         onSubmit={handleSubmit}
       />
     </>
