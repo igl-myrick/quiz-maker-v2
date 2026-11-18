@@ -145,3 +145,9 @@ input[type='checkbox']:not(:where(.sr-only)) {
   height: 1.0625rem;
   accent-color: var(--ply-btn-default-bg);
 }
+/* Ply's input[type=radio] rule sets position: relative and outranks its own .sr-only, so a
+   hidden radio stayed in the layout: 1px plus its label's gap pushed the pill text right. */
+input[type='radio'].sr-only,
+input[type='checkbox'].sr-only {
+  position: absolute;
+}
