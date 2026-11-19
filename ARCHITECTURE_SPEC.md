@@ -28,7 +28,7 @@ Status: **Draft** (2026-11-06). Written for whoever writes the spec for feature 
 | Term | Meaning |
 | --- | --- |
 | **Anonymous visitor** | Someone not logged in. Can take quizzes. Their results expire after 1 day. |
-| **Member** | A logged-in user (Supabase Auth, email one-time code). Owns results long term, creates quizzes, has settings. |
+| **Member** | A logged-in user (Supabase Auth, Google or GitHub OAuth). Owns results long term, creates quizzes, has settings. |
 | **Creator** | The member who created a quiz. Not a separate role, just the quiz's owner. |
 | **Quiz** | A public set of questions. Its **kind** is `trivia` or `personality`. "Test" is only a word in a title, never a kind. |
 | **Question** | One item in a quiz. **Type** is `single_choice`, `true_false`, or `multi_select`. Personality quizzes use `single_choice` only. |
@@ -419,7 +419,7 @@ sequenceDiagram
     E-->>B: result_id (+ claim_token once, if anonymous)
     B->>B: localStorage["claim:<result_id>"] = token
     B->>DB: rpc get_result(result_id)
-    Note over B: later, after login on the same page
+    Note over B: later, after login (OAuth redirect back to the same page)
     B->>DB: rpc claim_result(result_id, token)
     B->>B: delete localStorage token
 ```
@@ -458,7 +458,7 @@ Create each migration with `supabase migration new <name>`, one concern per file
 | Feature | Migrations it adds |
 | --- | --- |
 | 0. Foundation | enums; `quizzes`, `questions`, `options`, `outcomes`, `option_keys`; `results`; `quizzes_public`; grants and RLS for these; `get_result`; seed quizzes in `seed.sql`. `quizzes.creator_id` must point at a real user, so `seed.sql` first inserts one or two fixed-UUID test users into `auth.users` (local stack only). |
-| 4. Authentication | No tables. Login email template in `supabase/templates/`. |
+| 4. Authentication | No tables. Google and GitHub providers in `supabase/config.toml` (change 9; the original email template is removed). |
 | 6. Search | `search_quizzes`. |
 | 2. Creation | `rate_limits`, `hit_rate_limit`; `save_quiz`, `get_quiz_for_edit`; length and count limit constraints. |
 | 1. Taking | `submit-quiz` edge function; `quiz_versions`, the retire step added to `save_quiz`, and the `before delete` trigger on `quizzes`; `results.timed` and `results.duration_seconds`; `pg_cron` cleanup job. |
@@ -499,7 +499,6 @@ At minimum:
 - Rate-limit numbers and window lengths for anonymous submissions, member submissions, and quiz creation. `hit_rate_limit` takes them as parameters.
 - The URL mechanism for the quiz details popup (proposed in feature 6's spec). It does not affect the schema.
 - Search threshold and ranking.
-- Login code length and expiry (Supabase defaults unless changed).
 - Also left to feature specs: text and count limits (feature 2), allowed `text_size` values (feature 5), and which header holds the real client IP (feature 1).
 
 ## 15. Calls made in this document
