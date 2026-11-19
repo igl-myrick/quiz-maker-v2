@@ -1,6 +1,6 @@
 # Change 9: Log in with Google or GitHub
 
-Status: **Draft** (2026-11-19). Do not build from it until this says Approved. It changes feature 4 (authentication), which is Done, and depends on every feature before it. Rules come from `CLAUDE.md` (feature 4, §6 "Login providers", §7 and §8). The reasons are in `docs/adr/0004-oauth-login-instead-of-email-codes.md`. Domain terms come from `GLOSSARY.md`.
+Status: **Approved** (2026-11-19). It is built on the branch `feature/9-oauth-login`. It changes feature 4 (authentication), which is Done, and depends on every feature before it. Rules come from `CLAUDE.md` (feature 4, §6 "Login providers", §7 and §8). The reasons are in `docs/adr/0004-oauth-login-instead-of-email-codes.md`. Domain terms come from `GLOSSARY.md`.
 
 ## Goal
 
