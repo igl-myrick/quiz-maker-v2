@@ -9,7 +9,7 @@ Someone using the site without logging in.
 _Avoid_: Guest, user
 
 **Member**:
-Someone logged in with an email one-time code.
+Someone logged in with their Google or GitHub account.
 _Avoid_: User, account holder
 
 **Creator**:

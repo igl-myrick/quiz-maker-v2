@@ -95,6 +95,7 @@ Members open `/dashboard` to see their saved results and to manage the quizzes t
     - **Otherwise** it shows nothing. A member's own result, or anyone else's shared link, never shows a "saved" message.
 21. The button is **one element that stays mounted**, like the header button (feature 4, criterion 2):
     - Logged out, it reads "Log in to save this result" and opens the login popup. After logging in, the popup closes, focus returns to the same button, and it now reads "Save to my account". Saving never happens automatically.
+    - _Change 9 (2026-11-19): logging in now redirects to Google or GitHub and back. Focus still lands on this button afterward, through the saved return state (change 9, criterion 11)._
     - A plain `LoginButton` can't be used here, because it would have to be swapped for a different button when the session changes, and feature 4 requires the opener to stay mounted. So `LoginButton.tsx` exports a small helper (or hook) holding its open logic (`showModal()` and then focusing the email field), and both `LoginButton` and this button use it with `LoginDialog`. The open logic is not copied.
     - Logged in, it reads "Save to my account" and calls `useClaimResult`.
     - While saving it reads "Saving…" and uses `aria-disabled="true"` with a guard in the click handler, not `disabled`. A `disabled` button drops focus to `<body>` in Chrome.

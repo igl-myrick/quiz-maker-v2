@@ -69,7 +69,7 @@ No feature screens.
         - For personality, `snapshot` is returned with `outcomes` removed, and with `outcome_id` and `points` removed from every option. `outcome_ranking` is never returned.
 17. `npm run db:reset` rebuilds the database from migrations plus `supabase/seed.sql` with no errors.
 18. `supabase/seed.sql` (local only) inserts:
-    - **2 test members** with fixed UUIDs and `@example.test` emails. Each has complete `auth.users` and `auth.identities` rows, so from feature 4 onward you can log in as either one with a code from the local test inbox and edit their seeded quizzes **(call)**. The builder copies the row shape from current Supabase docs or examples for the installed CLI version, rather than guessing.
+    - **2 test members** with fixed UUIDs and `@example.test` emails. Each has complete `auth.users` and `auth.identities` rows, so from feature 4 onward you can log in as either one with a code from the local test inbox and edit their seeded quizzes **(call)**. _(Since change 9, 2026-11-19, login is Google or GitHub only, so the seeded members can't log in. They remain as quiz creators.)_ The builder copies the row shape from current Supabase docs or examples for the installed CLI version, rather than guessing.
     - **8 public quizzes**:
       - 5 trivia: world capitals, the solar system, animals, food around the world, and general science
       - 3 personality: which season matches you, what kind of traveller you are, and which pet suits you

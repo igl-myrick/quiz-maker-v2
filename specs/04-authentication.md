@@ -2,6 +2,8 @@
 
 Status: **Approved** (2026-11-10). It depends on feature 0 being Done. Rules come from `CLAUDE.md` (feature 4, §6 "Login emails", and §8). Domain terms come from `GLOSSARY.md`.
 
+> **Partly replaced by [change 9](09-oauth-login.md) (2026-11-19).** Members now log in with Google or GitHub instead of an email code (`docs/adr/0004-oauth-login-instead-of-email-codes.md`). Everything about the email and code steps no longer applies: the goal's "no social or OAuth logins", criteria 5, 6, 8, 9, 10 and 11, the email and code half of 11a, 15, 16 and 17, the OTP parts of 18, the `login.ts` schema and `supabase/templates/`, and the matching review notes and manual checks. Criterion 7 is replaced by change 9's "After coming back" criteria. The header (1–3), the dialog shell (4), the Announcer (11a) and login state (12–14) still stand. This spec is kept as the record of what was built.
+
 ## Goal
 
 Members log in with a one-time code sent to their email, through a login popup that opens on whatever page they're on. Logging in and signing up are the same flow. When it succeeds, the popup closes and the member is still on the same page, now logged in. There are no passwords, no sign-in links, and no social or OAuth logins.

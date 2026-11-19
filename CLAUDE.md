@@ -15,7 +15,7 @@ There is **no separate "test" type**. A creator may call their quiz a test in it
 | Anonymous visitor | Take quizzes and view results through a result link that **expires after 1 day** |
 | Member (logged in) | Everything above, plus results saved long term, creating quizzes, and the dashboard |
 
-Members log in with a one-time code sent to their email. There are no passwords (see feature 4).
+Members log in with their Google or GitHub account. There are no passwords and no login emails (see feature 4).
 
 ### Quizzes and results
 
@@ -30,7 +30,7 @@ Members log in with a one-time code sent to their email. There are no passwords 
 - Every submitted quiz produces a result with its own **unguessable ID**, viewed at a result link. Anyone with the link can view that result, so results are effectively private unless the owner shares the link.
 - Result links fetch a result only by exact ID, through a database function. Never allow listing, searching, or enumerating results, and never create a policy that lets the public select from the results table. The one exception is a member listing their own results: RLS allows select only where the owner is the current user, and the dashboard uses this. No one can list anyone else's results, and anonymous results can never be listed. Result pages must not show an email or any other account identifier.
 - **Anonymous results expire after 1 day.** They are stored server-side with an `expires_at`. Reads must check `expires_at` and not rely only on cleanup, and expired links show a clear "expired" message. A Supabase Cron job deletes expired rows (see section 6).
-- **Claiming:** When an anonymous visitor submits a quiz, the server also returns a random **claim token**, once. Store only a hash of the token in the database, never the token itself. The browser keeps the token in local storage, keyed by result ID, and deletes it when the result is claimed or expires. Never put the token in a URL or log it, so sharing a result link never shares the ability to claim it. A logged-in member viewing an unexpired anonymous result in the browser that holds the token can choose "Save to my account". This runs through a single database function that atomically verifies the token hash, that the result has no owner, and that it has not expired, then sets the owner, clears `expires_at`, and clears the token hash. Claiming is always an explicit user action, never automatic, and it must not change the auth flow itself. Because login uses a code entered on the same page (see feature 4), the user is still on the result page after logging in. Without the token, or if the result is expired or already owned, it cannot be claimed and the "Save to my account" button is hidden. Members taking a quiz while logged in own their result immediately, with no token.
+- **Claiming:** When an anonymous visitor submits a quiz, the server also returns a random **claim token**, once. Store only a hash of the token in the database, never the token itself. The browser keeps the token in local storage, keyed by result ID, and deletes it when the result is claimed or expires. Never put the token in a URL or log it, so sharing a result link never shares the ability to claim it. A logged-in member viewing an unexpired anonymous result in the browser that holds the token can choose "Save to my account". This runs through a single database function that atomically verifies the token hash, that the result has no owner, and that it has not expired, then sets the owner, clears `expires_at`, and clears the token hash. Claiming is always an explicit user action, never automatic, and it must not change the auth flow itself. Logging in sends the tab to Google or GitHub and back to the same result page (see feature 4), and the token survives because it is in local storage. Without the token, or if the result is expired or already owned, it cannot be claimed and the "Save to my account" button is hidden. Members taking a quiz while logged in own their result immediately, with no token.
 - **Members' results are saved long term** with no expiry, appear in their dashboard, and can also be viewed by link. Results cannot be deleted individually by anyone, including their owner, so no role has a delete policy on the results table. A result row is removed only by account deletion or, for anonymous results, by the expiry cleanup job.
 - **Account deletion:** A member can delete their account from the settings menu (see feature 5). This permanently deletes the account, all of their results, all quizzes they created, and their saved settings. Other people's results for those quizzes are unaffected because results store snapshots, and they show the "quiz no longer exists" notice. The only exception is the private retired copy of each deleted quiz's last version (see "Edits during a take"). No one can read it except the grading function, and it is deleted within 24 hours. Deletion requires explicit confirmation in an accessible dialog and runs in an edge function, because deleting an auth user needs the service role key. Set up foreign keys so the database does the cleanup: results, quizzes, and settings cascade from their owner, while results reference their quiz with `ON DELETE SET NULL` and never cascade from it.
 
@@ -130,7 +130,6 @@ src/
 supabase/
   migrations/   SQL migrations (source of truth for schema)
   functions/    Edge functions (grading and submission, account deletion)
-  templates/    Auth email templates (login code)
   tests/        pgTAP database tests (RLS)
   seed.sql
 ```
@@ -165,7 +164,7 @@ Conventions:
 - **Where server logic lives:** Edge functions handle anything that needs secrets, request headers, or the service role key: grading and submission (including rate limiting) and account deletion. Database functions handle short operations that must be atomic: fetching a result by its exact ID and claiming a result. Scheduled cleanup uses Supabase Cron (`pg_cron`), defined in a migration, and runs plain SQL every 15 minutes to delete expired anonymous results and old rate-limiter rows.
 - **Grading and answer checking happen server-side only**, in the grading edge function. Correct answers and scoring logic must never be sent to the browser before a submission is graded. This applies to personality quiz scoring too.
 - The Supabase **anon key** is the only key allowed in front-end env vars. The **service role key** never appears in client code or in the repo.
-- **Login emails** are sent by Supabase Auth. During development they land in the local stack's test inbox (its URL is shown by `supabase status`), so no real email is sent. The login email template is a file in `supabase/templates/`, referenced from `supabase/config.toml`, and it must show the code (`{{ .Token }}`), never a sign-in link (`{{ .ConfirmationURL }}`). Never configure SMTP or email settings on a hosted project. I set up the production email provider, Brevo, and its SMTP key lives only in the hosted Supabase settings, never in the repo.
+- **Login providers:** members log in through Supabase Auth's built-in OAuth, with Google and GitHub only. No other providers, no email sign-in, and no SMTP. Locally, the providers are set up in `supabase/config.toml`, and their client IDs and secrets are read with `env(...)` from a gitignored env file, never committed. The browser client uses the PKCE flow, and only the `/auth/callback` route exchanges the code. I register the OAuth apps and set up the hosted providers and the hosted redirect URL allowlist (the production domain and Vercel preview URLs). See `docs/adr/0004-oauth-login-instead-of-email-codes.md`.
 - **Spam protection** is simple rate limiting, with three limits:
   - **Anonymous submissions** are limited inside the grading function, checked before grading. Store only a salted hash of the visitor's IP (the salt is a server-side secret, never in the repo), a count, and a window timestamp. Never store, log, or expose raw IPs, and never read the IP in client code.
   - **Member submissions** are limited the same way, keyed by user ID instead of an IP hash. Do not read or store a member's IP.
@@ -181,7 +180,7 @@ Conventions:
 - Commit secrets.
 - Install a library I have not approved for the task.
 - Commit directly to `main`. All work happens on branches.
-- Deploy to production or change settings in the Vercel, Supabase, or Brevo dashboards. I do that. Editing `vercel.json` in the repo is allowed when a task needs it, such as for rewrites or headers.
+- Deploy to production or change settings in the Vercel or Supabase dashboards, or in the Google or GitHub OAuth app settings. I do that. Editing `vercel.json` in the repo is allowed when a task needs it, such as for rewrites or headers.
 - Modify files outside the current task's scope. Generated files and `package-lock.json` changes described in section 4 are the exception.
 - Add analytics, telemetry, tracking, error-reporting services, or third-party scripts. This site collects no data beyond what accounts and saved content require.
 
@@ -190,7 +189,7 @@ Conventions:
 - Deleting files.
 - Changing RLS policies.
 - Modifying the auth flow.
-- Adding any new user data field or collecting any new kind of user data. Keep it to the minimum the feature needs. Accounts store only what Supabase Auth requires, plus each member's settings (feature 5). The only other user content is saved results and created quizzes. Two exceptions are approved: short-lived rate-limiter rows (a hashed IP for anonymous visitors, or a user ID for members) used only for rate limiting (see section 6), and Brevo, the email provider that delivers login codes. Brevo receives a member's email address only to send a code, through its transactional SMTP relay. Members are never added to Brevo contact lists, open and click tracking are turned off, and Brevo is never used for marketing.
+- Adding any new user data field or collecting any new kind of user data. Keep it to the minimum the feature needs. Accounts store only what Supabase Auth requires, plus each member's settings (feature 5). The only other user content is saved results and created quizzes. Two exceptions are approved: short-lived rate-limiter rows (a hashed IP for anonymous visitors, or a user ID for members) used only for rate limiting (see section 6), and the profile that Google or GitHub sends at login (such as name and avatar URL), which Supabase Auth stores on the auth user. The app keeps only the email address in use: no app code, migration, function, view, or query reads, displays, copies, or logs the rest. Never request OAuth scopes beyond Supabase's defaults.
 
 ## 8. Accessibility (WCAG 2.2 AA)
 
@@ -206,7 +205,7 @@ Quiz-specific requirements:
 - Once question images exist (stretch goal S1), every image needs alt text. If audio or video is ever added, it needs captions.
 - Provide a non-drag alternative for any drag-and-drop interaction. None are planned, since there are no ordering or matching question types.
 - Any popup or dialog (such as the quiz details popup) moves focus into it when opened, keeps focus inside, closes with Escape, and returns focus to what opened it. Prefer the native `<dialog>` element, and check the Ply CSS docs for modal support.
-- The login code field has a visible label, uses `autocomplete="one-time-code"` and `inputmode="numeric"`, and allows pasting. Announce when a code has been sent and when a code is rejected. If a code expires, the user can request a new one without leaving the page or losing their place.
+- Login buttons ("Continue with Google", "Continue with GitHub") are real buttons with visible text, not logo-only images. Logging in leaves the page, so before redirecting, save where the person was (path and the element to refocus) in session storage, never in the URL. On return, put them back on that page, move focus to that element (or the header's auth button), and announce once that they are logged in, or why they are not (cancelled or failed). Never lose a take, a claim token, or settings across the redirect.
 - Respect `prefers-reduced-motion`, `prefers-contrast`, and `prefers-color-scheme`.
 
 **Testing:** use role-based queries in React Testing Library, run `eslint-plugin-jsx-a11y`, and add `vitest-axe` checks to component tests. Automated checks catch only part of the problems, so also note any manual keyboard checks needed for the task.
@@ -257,6 +256,7 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 6. User dashboard (feature 3)
 7. Settings (feature 5)
 8. UI redesign (feature 7)
+9. Log in with Google or GitHub (change 9, reworks feature 4 before deploying)
 
 ### 0. Project foundation
 - **Status:** Done
@@ -279,9 +279,9 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 - **Spec:** [`specs/03-user-dashboard.md`](specs/03-user-dashboard.md) (includes "Save to my account" on the result page). Do not build from it until its status says Approved.
 
 ### 4. Authentication
-- **Status:** Done
-- **Goal:** Supabase Auth for members, using passwordless email login. The member enters their email address, receives a one-time code, and types it into the page they are on, then stays on that page once logged in. Signing up and logging in are the same flow, with no separate registration form. No passwords, no sign-in links, and no social or OAuth logins. Anonymous users can take quizzes but must log in to save results long term or create quizzes.
-- **Spec:** [`specs/04-authentication.md`](specs/04-authentication.md). Do not build from it until its status says Approved. Any change to the auth flow beyond that spec needs asking first.
+- **Status:** In progress (login method changing from email codes to Google and GitHub; see change 9)
+- **Goal:** Supabase Auth for members, logging in with a Google or GitHub account through Supabase's built-in OAuth. The member picks a provider in the login popup, the tab goes to that provider and comes back to the page they were on, and focus returns to where they were. Signing up and logging in are the same flow, with no separate registration form. No passwords, no email codes or links, and no providers other than Google and GitHub. Anonymous users can take quizzes but must log in to save results long term or create quizzes.
+- **Spec:** [`specs/04-authentication.md`](specs/04-authentication.md) for the header, popup shell and login state, and [`specs/09-oauth-login.md`](specs/09-oauth-login.md) for the login method, which replaces the email code parts of spec 04. Do not build from a spec until its status says Approved. Any change to the auth flow beyond these specs needs asking first.
 
 ### 5. Settings
 - **Status:** Done
@@ -384,7 +384,6 @@ Ask me before assuming any of these:
 - The rate limit numbers: how many anonymous submissions, member submissions, and new quizzes are allowed per window, and how long each window lasts. Submission limits are set in feature 1's spec, and the creation limit in feature 2's.
 - Which URL mechanism the quiz details popup uses (to be proposed in its spec).
 - How many of the search words a quiz must match, and how search results are ranked.
-- Login code length and expiry. Use the Supabase defaults unless I decide otherwise.
 
 ## Agent skills
 
