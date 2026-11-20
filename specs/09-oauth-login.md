@@ -139,6 +139,15 @@ Deleting `src/schemas/login.ts`, `supabase/templates/login-code.html` and the `s
 - Press Back after logging in and confirm you don't land on a broken `/auth/callback` page.
 - Reload while logged in and confirm you stay logged in.
 
-## Build notes
+## Build notes (2026-11-19)
 
-_To be filled in while building: the env file the CLI reads, the local provider setup steps (criterion 17), and confirmation of automatic identity linking (criterion 12)._
+- **Env file (criterion 15).** The Supabase CLI fills in `env(...)` from `supabase/.env`. It is ignored by `supabase/.gitignore`, and `supabase/.env.example` lists the four keys. A missing key fails silently: the stack starts and Auth sends the literal `env(...)` as the client ID. Restart with `npm run db:stop` and `npm run db:start` after editing it.
+- **Local provider setup (criterion 17).** Done by the project owner before the build:
+  - GitHub: Settings → Developer settings → OAuth Apps → New OAuth App. Homepage `http://localhost:5173`, callback `http://127.0.0.1:54321/auth/v1/callback`.
+  - Google: Google Cloud Console → Google Auth Platform. External audience, left in Testing with the owner added as a test user. A Web application client with the redirect URI `http://127.0.0.1:54321/auth/v1/callback` and no JavaScript origins.
+- **Identity linking (criterion 12).** Supabase's docs say identities with the same verified email are linked to one user automatically. Not yet seen locally: the owner's first test made two users, which may have used different emails. It's in the manual checks.
+- **Email sign-in off (criterion 15).** The key is `[auth.email] enabled = false`. `[auth] enable_signup` stays true, because new members still sign up through Google or GitHub. `email_sent` and `max_frequency` are back to the CLI defaults (2 and `"1s"`).
+- **Return focus (criterion 9).** `src/lib/authReturn.ts` keeps an in-memory "arrival" that the callback page sets just before navigating. The root route's `onRendered` rule takes it before its usual `<h1>` rule. Checked in the browser on a full page load of `/auth/callback?error=access_denied`: back on `/`, "Log in" focused, the cancel message announced, and the return state cleared.
+- **Callback runs once.** The page uses a ref guard in its effect. Refs survive Strict Mode's second effect run, so the code is exchanged once.
+- **The return path comes from `window.location`**, not the router. In tests that use a memory router, set the browser address with `history.replaceState` first.
+- **Local data.** `npm run db:test` failed until `npm run db:reset`, because a leftover settings row for seeded member `1111…` from earlier manual testing was still in the local database. This had nothing to do with this change. After the reset, a stale session in the browser gets one harmless `400` on token refresh and is then cleared.

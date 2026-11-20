@@ -26,8 +26,7 @@ vi.mock('../lib/supabase', () => ({
     from: () => ({ select: () => ({ eq: () => ({ maybeSingle: mocks.maybeSingle }) }) }),
     auth: {
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: vi.fn() } } }),
-      signInWithOtp: vi.fn(),
-      verifyOtp: vi.fn(),
+      signInWithOAuth: vi.fn(),
       signOut: vi.fn(),
     },
   },

@@ -201,7 +201,7 @@ password_requirements = ""
 
 [auth.rate_limit]
 # Number of emails that can be sent per hour. Requires auth.email.smtp to be enabled.
-email_sent = 30
+email_sent = 2
 # Number of SMS messages that can be sent per hour. Requires auth.sms to be enabled.
 sms_sent = 30
 # Number of anonymous sign-ins that can be made per hour per IP address. Requires enable_anonymous_sign_ins = true.
@@ -224,7 +224,8 @@ web3 = 30
 [auth.email]
 # Allow/disallow the email provider. When false, users can't sign up or sign in with email.
 # To block new signups only, set enable_signup = false under [auth] instead.
-enabled = true
+# Off: members log in with Google or GitHub only (change 9, CLAUDE.md section 6).
+enabled = false
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
@@ -236,7 +237,7 @@ secure_password_change = false
 # they signed in with a one-time password, magic link, or recovery link.
 # require_current_password = true
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
-max_frequency = "60s"
+max_frequency = "1s"
 # Number of characters used in the email OTP.
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
@@ -251,17 +252,6 @@ otp_expiry = 3600
 # pass = "env(SENDGRID_API_KEY)"
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
-
-# Login emails show a one-time code, never a sign-in link (CLAUDE.md section 6).
-# signInWithOtp sends the confirmation template to new members when confirmations are on,
-# and the magic link template otherwise, so both are code-only.
-[auth.email.template.confirmation]
-subject = "Your Quiz Maker login code"
-content_path = "./supabase/templates/login-code.html"
-
-[auth.email.template.magic_link]
-subject = "Your Quiz Maker login code"
-content_path = "./supabase/templates/login-code.html"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]

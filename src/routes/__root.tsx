@@ -3,6 +3,7 @@ import { createRootRoute, HeadContent, Link, Outlet, useRouter } from '@tanstack
 import { useEffect } from 'react'
 import { Announcer } from '../components/Announcer'
 import { SiteHeader } from '../components/SiteHeader'
+import { AUTH_BUTTON_ID, takeLoginArrival } from '../lib/authReturn'
 import { queryClient } from '../lib/queryClient'
 import { takeReturnFocus } from '../lib/returnFocus'
 import { announce } from '../stores/announcerStore'
@@ -23,6 +24,18 @@ function RootLayout() {
   // goes back to that element instead.
   useEffect(() => {
     return router.subscribe('onRendered', (event) => {
+      // Coming back from logging in (change 9): focus the element the login was started for,
+      // or the header's auth button, and announce the outcome instead of the page heading.
+      const arrival = takeLoginArrival()
+      if (arrival) {
+        const target =
+          (arrival.focusId && document.getElementById(arrival.focusId)) ||
+          document.getElementById(AUTH_BUTTON_ID)
+        target?.focus()
+        announce(arrival.message)
+        return
+      }
+
       if (!event.fromLocation || !event.pathChanged) return
 
       const heading = document.querySelector<HTMLElement>('main h1')

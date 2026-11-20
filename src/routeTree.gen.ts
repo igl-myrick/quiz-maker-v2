@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as QuizzesNewRouteImport } from './routes/quizzes.new'
 import { Route as ResultsResultIdRouteImport } from './routes/results.$resultId'
 import { Route as QuizzesQuizIdEditRouteImport } from './routes/quizzes.$quizId.edit'
@@ -30,6 +31,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuizzesNewRoute = QuizzesNewRouteImport.update({
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/search': typeof SearchRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/quizzes/new': typeof QuizzesNewRoute
   '/results/$resultId': typeof ResultsResultIdRoute
   '/quizzes/$quizId/edit': typeof QuizzesQuizIdEditRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/search': typeof SearchRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/quizzes/new': typeof QuizzesNewRoute
   '/results/$resultId': typeof ResultsResultIdRoute
   '/quizzes/$quizId/edit': typeof QuizzesQuizIdEditRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/search': typeof SearchRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/quizzes/new': typeof QuizzesNewRoute
   '/results/$resultId': typeof ResultsResultIdRoute
   '/quizzes/$quizId/edit': typeof QuizzesQuizIdEditRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/search'
+    | '/auth/callback'
     | '/quizzes/new'
     | '/results/$resultId'
     | '/quizzes/$quizId/edit'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/search'
+    | '/auth/callback'
     | '/quizzes/new'
     | '/results/$resultId'
     | '/quizzes/$quizId/edit'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/search'
+    | '/auth/callback'
     | '/quizzes/new'
     | '/results/$resultId'
     | '/quizzes/$quizId/edit'
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   SearchRoute: typeof SearchRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   QuizzesNewRoute: typeof QuizzesNewRoute
   ResultsResultIdRoute: typeof ResultsResultIdRoute
   QuizzesQuizIdEditRoute: typeof QuizzesQuizIdEditRoute
@@ -142,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/quizzes/new': {
@@ -179,6 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   SearchRoute: SearchRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   QuizzesNewRoute: QuizzesNewRoute,
   ResultsResultIdRoute: ResultsResultIdRoute,
   QuizzesQuizIdEditRoute: QuizzesQuizIdEditRoute,

@@ -3,15 +3,14 @@ import { LoginDialog, openLoginDialog } from './LoginDialog'
 
 type LoginButtonProps = {
   label?: string
-  // Called after a successful login. Pass it when this button disappears once the
-  // person is logged in, so focus can move somewhere sensible instead of being lost.
-  onLoggedIn?: () => void
+  // The id of the element to focus after coming back logged in. Pass it when this button
+  // disappears once the person is logged in. Without it, focus goes to the header's auth button.
+  returnFocusId?: string
 }
 
 // A reusable button that opens its own login popup, such as
-// "Log in to save this result" (feature 3). Keep it mounted until its popup has closed,
-// so focus can return to it, or pass onLoggedIn to move focus yourself.
-export function LoginButton({ label = 'Log in', onLoggedIn }: LoginButtonProps) {
+// "Log in to create a quiz" or "Log in to submit".
+export function LoginButton({ label = 'Log in', returnFocusId }: LoginButtonProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   function handleClick() {
@@ -23,7 +22,7 @@ export function LoginButton({ label = 'Log in', onLoggedIn }: LoginButtonProps) 
       <button type="button" className="btn" onClick={handleClick}>
         {label}
       </button>
-      <LoginDialog dialogRef={dialogRef} onLoggedIn={onLoggedIn} />
+      <LoginDialog dialogRef={dialogRef} returnFocusId={returnFocusId} />
     </>
   )
 }

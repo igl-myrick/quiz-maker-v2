@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useRef } from 'react'
+import { AUTH_BUTTON_ID } from '../lib/authReturn'
 import { logOut, useAuthStatus, useSession } from '../stores/authStore'
 import { LoginDialog, openLoginDialog } from './LoginDialog'
 import { SettingsButton } from './SettingsButton'
@@ -52,6 +53,7 @@ export function SiteHeader() {
           <li>
             {/* Hidden (but still taking up space) until Supabase reports the first session state. */}
             <button
+              id={AUTH_BUTTON_ID}
               type="button"
               className="btn"
               style={status === 'loading' ? { visibility: 'hidden' } : undefined}
