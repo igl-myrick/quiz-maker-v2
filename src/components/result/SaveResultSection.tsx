@@ -7,6 +7,9 @@ import type { ResultOk } from '../../schemas/result'
 import { useSession } from '../../stores/authStore'
 import { LoginDialog, openLoginDialog } from '../LoginDialog'
 
+// Focused after coming back from logging in, when it reads "Save to my account" (change 9).
+const BUTTON_ID = 'save-result-button'
+
 // "Save to my account" for an anonymous result, only in the browser holding its claim
 // token (feature 3, criteria 20 to 22). What shows is worked out on every render from the
 // claim mutation, the session, get_result and the stored token. Nothing is copied into state.
@@ -36,8 +39,8 @@ export function SaveResultSection({ data }: { data: ResultOk }) {
   const token = readClaimToken(resultId)
   if (!data.claimable || !token) return null
 
-  // One button that stays mounted as the person logs in, so focus returns to it when the
-  // login popup closes. Saving is always a separate press.
+  // One button, focused again when the person comes back logged in, now reading
+  // "Save to my account". Saving is always a separate press.
   function handleClick() {
     if (!session) {
       if (dialogRef.current) openLoginDialog(dialogRef.current)
@@ -53,6 +56,7 @@ export function SaveResultSection({ data }: { data: ResultOk }) {
     <div className="save-card">
       {/* aria-disabled rather than disabled: a disabled button drops focus to the page. */}
       <button
+        id={BUTTON_ID}
         type="button"
         className="btn btn-primary"
         aria-disabled={claim.isPending}
@@ -66,7 +70,7 @@ export function SaveResultSection({ data }: { data: ResultOk }) {
           Something went wrong. Please try again.
         </p>
       )}
-      <LoginDialog dialogRef={dialogRef} />
+      <LoginDialog dialogRef={dialogRef} returnFocusId={BUTTON_ID} />
     </div>
   )
 }

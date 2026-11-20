@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { z } from 'zod'
 import { LoginButton } from '../components/LoginButton'
 import { QuizEditor } from '../components/quiz-editor/QuizEditor'
@@ -12,10 +12,12 @@ type QuizEditorPageProps = {
   part: EditorPart
 }
 
+// Focused after coming back from logging in (change 9).
+const HEADING_ID = 'quiz-editor-heading'
+
 export function QuizEditorPage({ quizId, part }: QuizEditorPageProps) {
   const status = useAuthStatus()
   const session = useSession()
-  const headingRef = useRef<HTMLHeadingElement>(null)
 
   let content = null
   if (status === 'ready' && !session) {
@@ -23,7 +25,7 @@ export function QuizEditorPage({ quizId, part }: QuizEditorPageProps) {
       <>
         <p>Log in to create a quiz.</p>
         {/* This button disappears once logged in, so focus moves to the page heading. */}
-        <LoginButton onLoggedIn={() => headingRef.current?.focus()} />
+        <LoginButton returnFocusId={HEADING_ID} />
       </>
     )
   } else if (session) {
@@ -32,7 +34,7 @@ export function QuizEditorPage({ quizId, part }: QuizEditorPageProps) {
 
   return (
     <main className="units-container">
-      <h1 ref={headingRef} tabIndex={-1}>
+      <h1 id={HEADING_ID} tabIndex={-1}>
         {quizId ? 'Edit quiz' : 'Create a quiz'}
       </h1>
       {content}

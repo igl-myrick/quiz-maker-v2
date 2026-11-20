@@ -11,4 +11,8 @@ if (!url || !anonKey) {
 }
 
 // Only the anon/publishable key is ever used in the browser.
-export const supabase = createClient<Database>(url, anonKey)
+// PKCE login (change 9): only the /auth/callback route exchanges the code, so the client
+// doesn't read the URL itself and no other route sees `code` or `error` search params.
+export const supabase = createClient<Database>(url, anonKey, {
+  auth: { flowType: 'pkce', detectSessionInUrl: false },
+})

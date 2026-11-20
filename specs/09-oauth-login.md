@@ -1,6 +1,6 @@
 # Change 9: Log in with Google or GitHub
 
-Status: **Draft** (2026-11-19). Do not build from it until this says Approved. It changes feature 4 (authentication), which is Done, and depends on every feature before it. Rules come from `CLAUDE.md` (feature 4, §6 "Login providers", §7 and §8). The reasons are in `docs/adr/0004-oauth-login-instead-of-email-codes.md`. Domain terms come from `GLOSSARY.md`.
+Status: **Approved** (2026-11-19). It is built on the branch `feature/9-oauth-login`. It changes feature 4 (authentication), which is Done, and depends on every feature before it. Rules come from `CLAUDE.md` (feature 4, §6 "Login providers", §7 and §8). The reasons are in `docs/adr/0004-oauth-login-instead-of-email-codes.md`. Domain terms come from `GLOSSARY.md`.
 
 ## Goal
 
@@ -62,7 +62,7 @@ Logging in now leaves the page: the tab goes to Google or GitHub and comes back 
 ### Accounts
 
 12. Google and GitHub are the only providers. A member's account is keyed on their verified email address. Supabase links identities with the same verified email automatically, so a member who uses Google one day and GitHub the next (with the same email) gets the same account, results and quizzes. The builder confirms this from current Supabase docs and records the result in this spec's build notes.
-13. Supabase Auth stores the provider's profile (name, avatar URL and similar) in `auth.users.raw_user_meta_data` and `auth.identities.identity_data`. This is an approved exception (`CLAUDE.md` §7): **no app code, migration, function, view or query reads, displays, copies or logs these fields.** The header and every page still show no email, name, avatar or other account identifier.
+13. Supabase Auth stores the provider's profile in `auth.users.raw_user_meta_data` and `auth.identities.identity_data`. Names are removed as they are saved (criteria 20–23). The rest (email, avatar URL and the provider's IDs) is an approved exception (`CLAUDE.md` §7): **no app code, migration, function, view or query reads, displays, copies or logs these fields**, apart from the name removal itself. The header and every page still show no email, name, avatar or other account identifier.
 14. Logged-in state, the auth store and the listener don't change: `exchangeCodeForSession` fires `SIGNED_IN`, which already invalidates `['me']` queries and runs the settings sync (feature 5). Logging out is unchanged.
 
 ### Local config
@@ -82,6 +82,22 @@ Logging in now leaves the page: the tab goes to Google or GitHub and comes back 
     - A callback test covers: success navigates to the saved path with `replace`, focuses the `focusId` element and announces once; a missing or unsafe path goes to `/`; `access_denied` and other errors announce the right message and leave the person logged out; the return state is removed in every case.
     - The OTP tests in `LoginDialog.test.tsx` and any OTP mocks in other test files are removed or updated.
 19. `npm test`, `npm run lint`, `npm run typecheck`, `npm run format:check` and `npm run db:test` pass, and the browser console shows no warnings.
+
+### Removing names (added 2026-11-20, approved by the project owner)
+
+Google and GitHub send the member's name with the profile picture, and asking for the picture brings the name with it, so names are removed after Supabase saves them.
+
+20. A migration adds one trigger function, `public.strip_profile_names()`, and two `before insert or update` triggers that use it: one on `auth.users`, for `raw_user_meta_data`, and one on `auth.identities`, for `identity_data`. It removes these keys:
+    - display names: `name`, `full_name`, `given_name`, `family_name`, `middle_name`, `nickname`
+    - the GitHub username: `user_name`, `preferred_username`
+
+    Supabase writes these fields again on every login, so a trigger is needed, not a one-time cleanup. The function follows the project's pattern: `set search_path = ''`, and `execute` revoked from `public`, `anon`, `authenticated` and `service_role`.
+21. Everything else is kept, including the keys Supabase needs: `sub`, `email`, `email_verified`, `phone_verified`, `iss`, `provider_id`, `avatar_url` and `picture`. Linking a second provider by email (criterion 12) still works.
+22. The same migration removes those keys once from every existing row in both tables.
+23. A pgTAP test, `supabase/tests/12_strip_profile_names.test.sql`, covers:
+    - a new user and a new identity are saved without names, with the other keys kept
+    - an update that adds names back (a later login) has them removed again
+    - after the migration, no row in either table holds any of the keys
 
 ## Packages
 
@@ -109,6 +125,8 @@ src/styles/*.css                         # login buttons, only where Ply lacks s
 supabase/config.toml
 supabase/templates/login-code.html       # delete
 .gitignore, supabase/<env file>.example
+supabase/migrations/<timestamp>_strip_profile_names.sql      # criteria 20–22
+supabase/tests/12_strip_profile_names.test.sql              # criterion 23
 ```
 
 Deleting `src/schemas/login.ts`, `supabase/templates/login-code.html` and the `supabase/templates/` folder is approved as part of approving this spec.
@@ -118,7 +136,7 @@ Deleting `src/schemas/login.ts`, `supabase/templates/login-code.html` and the `s
 - Any provider other than Google and GitHub, and any choice of OAuth scopes beyond Supabase's defaults.
 - Reading or showing the member's name or avatar anywhere, including a "Logged in as" line.
 - Opening the provider in a popup window instead of redirecting the tab (considered in ADR 0004).
-- Database changes. No migrations, RLS or pgTAP changes are expected. If one turns out to be needed, stop and ask.
+- Database changes, apart from the name removal (criteria 20–23). No RLS changes and no new tables.
 - Account deletion, the settings sync, claiming and the submit-quiz function, apart from the focus change in criterion 11.
 - Anything on a hosted project: the hosted Google and GitHub providers, the production redirect URL allowlist (including Vercel preview URLs), and turning off hosted email sign-in. The project owner does these.
 
@@ -139,6 +157,20 @@ Deleting `src/schemas/login.ts`, `supabase/templates/login-code.html` and the `s
 - Press Back after logging in and confirm you don't land on a broken `/auth/callback` page.
 - Reload while logged in and confirm you stay logged in.
 
-## Build notes
+## Build notes (2026-11-19)
 
-_To be filled in while building: the env file the CLI reads, the local provider setup steps (criterion 17), and confirmation of automatic identity linking (criterion 12)._
+- **Env file (criterion 15).** The Supabase CLI fills in `env(...)` from `supabase/.env`. It is ignored by `supabase/.gitignore`, and `supabase/.env.example` lists the four keys. A missing key fails silently: the stack starts and Auth sends the literal `env(...)` as the client ID. Restart with `npm run db:stop` and `npm run db:start` after editing it.
+- **Local provider setup (criterion 17).** Done by the project owner before the build:
+  - GitHub: Settings → Developer settings → OAuth Apps → New OAuth App. Homepage `http://localhost:5173`, callback `http://127.0.0.1:54321/auth/v1/callback`.
+  - Google: Google Cloud Console → Google Auth Platform. External audience, left in Testing with the owner added as a test user. A Web application client with the redirect URI `http://127.0.0.1:54321/auth/v1/callback` and no JavaScript origins.
+- **Identity linking (criterion 12).** Supabase's docs say identities with the same verified email are linked to one user automatically. Not yet seen locally: the owner's first test made two users, which may have used different emails. It's in the manual checks.
+- **Email sign-in off (criterion 15).** The key is `[auth.email] enabled = false`. `[auth] enable_signup` stays true, because new members still sign up through Google or GitHub. `email_sent` and `max_frequency` are back to the CLI defaults (2 and `"1s"`).
+- **Return focus (criterion 9).** `src/lib/authReturn.ts` keeps an in-memory "arrival" that the callback page sets just before navigating. The root route's `onRendered` rule takes it before its usual `<h1>` rule. Checked in the browser on a full page load of `/auth/callback?error=access_denied`: back on `/`, "Log in" focused, the cancel message announced, and the return state cleared.
+- **Callback runs once.** The page uses a ref guard in its effect. Refs survive Strict Mode's second effect run, so the code is exchanged once.
+- **The return path comes from `window.location`**, not the router. In tests that use a memory router, set the browser address with `history.replaceState` first.
+- **Name removal (criteria 20–23, 2026-11-20).**
+  - The trigger function runs as the caller (not `security definer`), because it only changes the row being saved.
+  - The triggers fire only when the profile column itself is written (`update of raw_user_meta_data` / `update of identity_data`), not on every sign-in timestamp update.
+  - Checked on the owner's real local test user with `supabase migration up`: the name and username keys were removed, and email, picture and provider IDs stayed. Then rebuilt from scratch with `db:reset`, and all 13 pgTAP files pass.
+  - On the hosted project, Supabase allows triggers on `auth` tables when the function lives in your own schema, as this one does in `public`. Once the migration is applied, log in once and check that the user's raw metadata in Studio has no name.
+- **Local data.** `npm run db:test` failed until `npm run db:reset`, because a leftover settings row for seeded member `1111…` from earlier manual testing was still in the local database. This had nothing to do with this change. After the reset, a stale session in the browser gets one harmless `400` on token refresh and is then cleared.

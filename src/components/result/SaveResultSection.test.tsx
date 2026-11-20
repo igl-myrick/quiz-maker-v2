@@ -26,8 +26,7 @@ vi.mock('../../lib/supabase', () => ({
         mocks.listener = listener
         return { data: { subscription: { unsubscribe: vi.fn() } } }
       },
-      signInWithOtp: vi.fn(),
-      verifyOtp: vi.fn(),
+      signInWithOAuth: () => Promise.resolve({ data: {}, error: null }),
       signOut: vi.fn(),
     },
   },
@@ -115,6 +114,22 @@ describe('SaveResultSection', () => {
     expect(main().getByRole('button', { name: 'Save to my account' })).toBe(button)
     // Saving is a separate press, never automatic.
     expect(mocks.claimResult).not.toHaveBeenCalled()
+  })
+
+  it('asks for focus to come back to the same button after logging in', async () => {
+    sessionStorage.clear()
+    // The return path comes from the browser's address, which the memory router doesn't set.
+    window.history.replaceState(null, '', `/results/${RESULT_ID}`)
+    await renderResult(null)
+    const button = main().getByRole('button', { name: 'Log in to save this result' })
+
+    fireEvent.click(button)
+    fireEvent.click(screen.getByRole('button', { name: 'Continue with GitHub' }))
+
+    await waitFor(() => expect(sessionStorage.getItem('auth:return')).not.toBeNull())
+    const saved: unknown = JSON.parse(sessionStorage.getItem('auth:return') ?? '')
+    expect(button.id).not.toBe('')
+    expect(saved).toEqual({ path: `/results/${RESULT_ID}`, focusId: button.id })
   })
 
   it('saves the result, focuses the confirmation and removes the token', async () => {
