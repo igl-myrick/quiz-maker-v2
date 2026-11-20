@@ -1,3 +1,5 @@
+// Must stay the first import: see the file for why.
+import './lib/zodConfig'
 import 'ply-css/dist/css/ply.min.css'
 import './styles/app.css'
 // Lexend for the dyslexia-friendly font setting, bundled and served from our own domain.

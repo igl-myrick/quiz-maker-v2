@@ -1,6 +1,6 @@
 # Change 10: Security headers
 
-Status: **Draft** (2026-11-20). Not approved. Do not build from it until this line says Approved. It is a pre-deploy change that depends on every feature before it, and it changes no features' behaviour. Rules come from `CLAUDE.md` (§2 "Hosting", §6, §7 and §8).
+Status: **Approved** (2026-11-20). It is built on the branch `feature/10-security-headers`. It is a pre-deploy change that depends on every feature before it, and it changes no features' behaviour. Rules come from `CLAUDE.md` (§2 "Hosting", §6, §7 and §8).
 
 ## Goal
 
@@ -63,7 +63,7 @@ Two library details matter:
 
    - There is no `'unsafe-inline'`, no `'unsafe-eval'` and no wildcard host anywhere.
    - `https://yslyxdjkzbdkxenwfkpy.supabase.co` is the hosted production project's URL, chosen by the owner on 2026-11-20. It is the origin only, with no path, so it covers REST, RPC, Auth and the edge functions. It is already public, because it's in the front-end bundle through `VITE_SUPABASE_URL`, so this commits no secret. Vercel's `VITE_SUPABASE_URL` must be this same URL, or the policy blocks every request. The wildcard alternative, `https://*.supabase.co`, was rejected because it would let the page talk to any Supabase project.
-   - The hash is computed from the inline script exactly as it appears in the built `dist/index.html`. On 2026-11-20 that was `sha256-qRLCek200dt6eZysCDQBx7P23h//HqwT16ipz5PImtU=`. Any edit to that script, including its comments or whitespace, changes the hash, which criterion 6 catches.
+   - The hash is computed from the inline script exactly as it appears in the built `dist/index.html`. Before this change it was `sha256-qRLCek200dt6eZysCDQBx7P23h//HqwT16ipz5PImtU=`. Criterion 7's comment edit changed it to `sha256-78P5wo/cJBaHgIZQNh7M6N5FWSH3mnACZqDIhlcMSA0=`. Any edit to that script, including its comments or whitespace, changes the hash, which criterion 6 catches.
 
 3. Built assets get long-term caching: a second `headers` entry for `/assets/(.*)` adds `Cache-Control: public, max-age=31536000, immutable`. `index.html` keeps Vercel's default caching, so a new deploy is picked up immediately.
 4. No other headers are added. In particular:
@@ -97,7 +97,8 @@ Two library details matter:
 ## Files in scope
 
 - `vercel.json`
-- `src/main.tsx` (the `z.config` line only)
+- `src/main.tsx` (one import line only)
+- `src/lib/zodConfig.ts` (new, added during the build: see the build notes)
 - `index.html` (the comment only)
 - `src/lib/securityHeaders.test.ts` (new)
 - `specs/10-security-headers.md` (this file: status and build notes)
@@ -117,3 +118,37 @@ None open. Decided:
 
 - **`connect-src` host** (2026-11-20): the exact production project URL, `https://yslyxdjkzbdkxenwfkpy.supabase.co`, not a wildcard.
 - **`Permissions-Policy` list** (2026-11-20): the six features above, all turned off, including `interest-cohort=()`.
+
+## Build notes (2026-11-20)
+
+### Change from the spec
+
+- **Criterion 5 needed a separate module.** `z.config` can't sit in `src/main.tsx` itself. ES imports run before the importing file's own code, and `src/stores/settingsStore.ts` already parses with Zod while it is being imported (its persist `merge` runs on the synchronous rehydrate), so Zod would probe `new Function` before `z.config` ran. The call lives in `src/lib/zodConfig.ts`, which `main.tsx` imports first, with a comment saying it must stay first. "Files in scope" lists the new file.
+
+### Checks
+
+- **Hash (criterion 6):** before any edits, the inline script's SHA-256 was the same in `index.html` and the built `dist/index.html`, so Vite leaves its bytes alone and hashing the source is safe.
+- **Test first:** `src/lib/securityHeaders.test.ts` failed before `vercel.json` had headers, then passed (5 tests).
+- **Criterion 8:** lint, typecheck and `format:check` pass. `npm test` passes 297 tests in 40 files, `npm run db:test` passes, and `npm run build` succeeds.
+- **Criterion 4, HSTS:** Vercel sends `Strict-Transport-Security` by default (two-year max-age; `*.vercel.app` is preloaded), per https://vercel.com/docs/cdn-security/encryption and https://vercel.com/docs/headers/response-headers.
+
+### Local browser check (criterion 9)
+
+A scratch copy of `dist/` (in the session's temporary folder, outside the repo) had the policy added as a `<meta http-equiv="Content-Security-Policy">` tag, with `frame-ancestors` removed and `connect-src` set to `http://127.0.0.1:54321`. It was served with `vite preview --outDir <scratch>` on port 4173, against the local Supabase stack, in the in-app browser.
+
+- **The policy was enforced.** An injected inline script and an image from `https://example.com` were both blocked and reported in the console, which also confirmed the console captures violations. (Code run by the browser tool itself bypasses the page's policy, so `new Function` called from the tool proves nothing either way.)
+- **No violations or other console errors** came from the app on any page below, apart from those two deliberate tests.
+- **The inline script ran under its hash.** A saved `dark` theme, `large` text and the Lexend font applied on reload, and the Lexend font files loaded under `font-src 'self'`.
+- **Worked:** the splash page, search (`?q=capitals`), the details popup opened by click and by direct link (`/search?quiz=…`), taking and submitting a trivia quiz (graded by the local `submit-quiz` function, score bar drawn), taking and submitting a personality quiz, reloading a result link directly, and the Settings popup (theme and high contrast).
+- **Login:** "Continue with GitHub" left the page and reached GitHub's sign-in page. The check stopped there.
+- **Not checked locally:** the dashboard, creating and editing a quiz, and account deletion. These need a logged-in member, and logging in locally means signing in to a real GitHub or Google account. They make the same kind of requests to the same Supabase origin as the pages above, and nothing they load falls outside the policy, so they are checked on the first preview deployment (below).
+
+### First Vercel preview deployment (criterion 10, project owner)
+
+1. Push `feature/10-security-headers`. Vercel builds a preview deployment.
+2. Open the preview URL with DevTools open (Network tab, "Preserve log" on).
+3. Click the first request (the page itself). Under Response Headers, check `Content-Security-Policy`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` and `Strict-Transport-Security`.
+4. Click any `/assets/…` file and check `Cache-Control: public, max-age=31536000, immutable`.
+5. In the Console, check there are no red errors while you search, open a quiz, take and submit one, view the result, log in with Google and then with GitHub, open the dashboard, create and edit a quiz, change settings, and save an anonymous result to your account. A message containing "Content Security Policy" means something was blocked; send it to the builder.
+6. Framing check: in the Console on any other site (for example `https://example.com`), run `document.body.innerHTML = '<iframe src="https://<preview-url>" width="600" height="400"></iframe>'`. The frame should stay empty or show a "refused to connect" message.
+7. Account deletion only on a throwaway account, if at all, since it is permanent.
