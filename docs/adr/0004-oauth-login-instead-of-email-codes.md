@@ -15,6 +15,7 @@ Staying on Supabase Auth keeps members as ordinary `auth.users` rows, so `auth.u
 
 - Logging in leaves the page and comes back. Before redirecting, the app saves the path and the element to refocus in session storage (never in the URL), and puts the person back there afterward.
 - Google and GitHub send a profile (name, avatar URL and similar), and Supabase Auth stores it on the auth user. The project owner approved this as an exception to the minimal-data rule, on the condition that the app never reads, shows, copies or logs it.
+- Names and GitHub usernames are removed as they're saved (added 2026-11-20). A trigger on `auth.users` and `auth.identities` strips them on every insert and update, because Supabase writes the profile again on every login. The project owner chose this over the original "keep it, never read it", accepting that the trigger depends on Supabase's metadata key names and that a failing trigger would block logins. The email and avatar URL are still kept.
 - A member who uses both providers with the same verified email gets one account, because Supabase links identities by email.
 - Local development needs real Google and GitHub OAuth apps pointed at the local Supabase stack. The seeded test members can no longer log in, but still exist as quiz creators.
 - The project owner sets up the hosted providers and adds the production domain and Vercel preview URLs to the hosted redirect allowlist.

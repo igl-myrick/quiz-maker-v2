@@ -189,7 +189,7 @@ Conventions:
 - Deleting files.
 - Changing RLS policies.
 - Modifying the auth flow.
-- Adding any new user data field or collecting any new kind of user data. Keep it to the minimum the feature needs. Accounts store only what Supabase Auth requires, plus each member's settings (feature 5). The only other user content is saved results and created quizzes. Two exceptions are approved: short-lived rate-limiter rows (a hashed IP for anonymous visitors, or a user ID for members) used only for rate limiting (see section 6), and the profile that Google or GitHub sends at login (such as name and avatar URL), which Supabase Auth stores on the auth user. The app keeps only the email address in use: no app code, migration, function, view, or query reads, displays, copies, or logs the rest. Never request OAuth scopes beyond Supabase's defaults.
+- Adding any new user data field or collecting any new kind of user data. Keep it to the minimum the feature needs. Accounts store only what Supabase Auth requires, plus each member's settings (feature 5). The only other user content is saved results and created quizzes. Two exceptions are approved: short-lived rate-limiter rows (a hashed IP for anonymous visitors, or a user ID for members) used only for rate limiting (see section 6), and the profile that Google or GitHub sends at login, which Supabase Auth stores on the auth user. A database trigger removes names and GitHub usernames whenever that profile is saved (change 9). The rest, such as the avatar URL, stays, but no app code, migration, function, view, or query reads, displays, copies, or logs it, apart from the name removal itself. Never request OAuth scopes beyond Supabase's defaults.
 
 ## 8. Accessibility (WCAG 2.2 AA)
 
