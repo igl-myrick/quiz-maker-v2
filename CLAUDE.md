@@ -279,7 +279,7 @@ Feature numbers are IDs, not the order of work. Build features in this order. Ea
 - **Spec:** [`specs/03-user-dashboard.md`](specs/03-user-dashboard.md) (includes "Save to my account" on the result page). Do not build from it until its status says Approved.
 
 ### 4. Authentication
-- **Status:** In progress (login method changing from email codes to Google and GitHub; see change 9)
+- **Status:** Done (login method changed from email codes to Google and GitHub in change 9)
 - **Goal:** Supabase Auth for members, logging in with a Google or GitHub account through Supabase's built-in OAuth. The member picks a provider in the login popup, the tab goes to that provider and comes back to the page they were on, and focus returns to where they were. Signing up and logging in are the same flow, with no separate registration form. No passwords, no email codes or links, and no providers other than Google and GitHub. Anonymous users can take quizzes but must log in to save results long term or create quizzes.
 - **Spec:** [`specs/04-authentication.md`](specs/04-authentication.md) for the header, popup shell and login state, and [`specs/09-oauth-login.md`](specs/09-oauth-login.md) for the login method, which replaces the email code parts of spec 04. Do not build from a spec until its status says Approved. Any change to the auth flow beyond these specs needs asking first.
 
