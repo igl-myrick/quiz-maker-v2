@@ -7,8 +7,9 @@
     <script>
       // Applies saved settings before the first paint, so the page never flashes the wrong
       // theme or text size. Sets the same attributes as src/lib/applySettings.ts, and only
-      // values from the allowed lists in src/schemas/settings.ts. Our own code, not a
-      // third-party script: a future Content-Security-Policy needs a hash for it.
+      // values from the allowed lists in src/schemas/settings.ts. The Content-Security-Policy
+      // in vercel.json allows this script by its hash, so any edit here (even to a comment)
+      // must update that hash. src/lib/securityHeaders.test.ts fails until it does.
       try {
         const saved = JSON.parse(localStorage.getItem('settings')).state
         const root = document.documentElement
