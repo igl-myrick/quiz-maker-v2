@@ -52,6 +52,9 @@ function RootLayout() {
       <HeadContent />
       <SiteHeader />
       <Outlet />
+      <footer className="units-container site-footer border-top">
+        <Link to="/privacy">Privacy</Link>
+      </footer>
       <Announcer />
     </QueryClientProvider>
   )
