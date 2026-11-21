@@ -1,6 +1,6 @@
 # Change 11: Privacy page
 
-Status: **Draft** (2026-11-20). Not approved. Do not build from it until this line says Approved. It is a pre-deploy change. It adds one public page and two links, and it collects, stores and changes no data. Rules come from `CLAUDE.md` (§1, §6, §7 and §8).
+Status: **Approved** (2026-11-20). It is built on the branch `feature/11-privacy-page`. It is a pre-deploy change. It adds one public page and two links, and it collects, stores and changes no data. Rules come from `CLAUDE.md` (§1, §6, §7 and §8).
 
 ## Goal
 
@@ -57,7 +57,8 @@ Draft wording. `[call]` marks the owner's choices.
 >
 > You log in with Google or GitHub. The site never sees or stores a password.
 >
-> - **Your account:** your email address and an ID from Google or GitHub, so you can log in again. Google and GitHub also send your name, username and profile picture. The site removes your name and username as soon as they arrive. The link to your picture is kept by the login system, but the site never shows, uses or shares it.
+> - **Your account:** your email address and an ID from Google or GitHub, so you can log in again. Google and GitHub also send your name, username and profile picture. The site removes your name and username from your account as soon as they arrive. The link to your picture is kept, but the site never shows, uses or shares it.
+> - **Login records:** while you're logged in, the login system keeps your IP address and the type of browser you use with your login session, until you log out. It also keeps a security log of sign-ups, logins and logouts, which records your email address, the name Google or GitHub sent when you signed up, and sometimes your IP address. This log is kept by Supabase, which runs the site's logins.
 > - **Your results:** kept until you delete your account, so you can see them in your dashboard.
 > - **Quizzes you make:** public, so anyone can find and take them. Your name and account aren't shown with them.
 > - **Your settings:** theme, text size, contrast and font, so they follow you to other devices.
@@ -88,10 +89,11 @@ Draft wording. `[call]` marks the owner's choices.
 >
 > ## Deleting your data
 >
-> If you're logged in, open **Settings** and choose **Delete account**. This immediately and permanently deletes your account, your results, the quizzes you made and your settings. Two things to know:
+> If you're logged in, open **Settings** and choose **Delete account**. This immediately and permanently deletes your account, your results, the quizzes you made, your settings and your login sessions. Three things to know:
 >
 > - If someone is partway through one of your quizzes, a private copy of it is kept for up to 24 hours so their answers can still be marked, then deleted. No one can read it.
 > - Results other people got from your quizzes keep their copy of the questions, but nothing that identifies you.
+> - Supabase's security log of your sign-ups and logins isn't deleted.
 >
 > Results can't be deleted one at a time.
 >
@@ -105,7 +107,7 @@ Draft wording. `[call]` marks the owner's choices.
 - `src/pages/PrivacyPage.tsx` and `src/pages/PrivacyPage.test.tsx` (new)
 - `src/routes/__root.tsx` (the footer only)
 - `src/components/LoginDialog.tsx` (the link only) and its test
-- Styles for the page and footer, in an existing stylesheet or a new `src/styles/privacy.css`
+- Styles for the page, the footer and the login popup's link: `src/styles/privacy.css` (new, the page) and `src/styles/app.css` (the footer and the link, which appear outside the page)
 - `src/routeTree.gen.ts` (regenerated)
 - `specs/11-privacy-page.md` (this file: status and build notes)
 
@@ -126,3 +128,48 @@ Decided (2026-11-20):
 - **Contact:** GitHub issues on the public repository, not an email address. The page tells people issues are public and not to include personal details, and that deleting their data needs no contact at all.
 - **Footer:** on every page, with just a "Privacy" link, because Google's reviewers also look for a privacy link on the home page.
 - **Date:** the day the page ships, updated whenever the page's meaning changes.
+
+## Build notes (2026-11-20)
+
+### Wording changed for accuracy (criterion 3)
+
+The accuracy check found two things the draft didn't say. The page text above and the page itself now include them:
+
+- **"If you log in" gained a "Login records" item.** On the local stack, Supabase Auth keeps the IP address and user agent on each row of `auth.sessions`, which lasts until logout or account deletion. Its security log, `auth.audit_log_entries`, keeps the email (`actor_username`) on every event, the provider's full name (`actor_name`) on sign-up, and an IP address on some events. The "Your account" item now says names are removed "from your account", because the trigger from change 9 only cleans `auth.users` and `auth.identities`, not this log.
+- **"Deleting your data" now says the security log isn't deleted.** `auth.audit_log_entries` has no foreign key to `auth.users`, so deleting an account leaves those rows. It also lists login sessions among what is deleted, since `auth.sessions` cascades.
+
+These describe the local stack's defaults. **For the owner:** this is a gap against CLAUDE.md §7, which says names are removed whenever a profile is saved. Fixing it, by clearing or trimming the security log or by turning off its database copy on the hosted project if Supabase offers that, is a separate change that touches auth data, so it needs its own decision. If it's fixed, the "Login records" and "Deleting your data" wording can be simplified.
+
+### Accuracy check (criterion 10)
+
+- **If you don't log in:** anonymous results get `expires_at` = submission + 1 day (`supabase/functions/submit-quiz/index.ts`), and reads and the 15-minute cleanup enforce it. The anonymous limit stores an HMAC of the normalized IP under `IP_HASH_SECRET`, with a 1-hour window, and cleanup deletes rows after the window ends.
+- **If you log in:** `auth.users` and `auth.identities` on the local stack (after Google and GitHub logins) hold the email, provider ID (`sub`, `provider_id`), `iss`, `email_verified`, `phone_verified` and the picture link (`avatar_url`, `picture`), with no name or username. Session and audit log contents are as described above. Results have no expiry once owned. Public quiz reads go through `quizzes_public`, which leaves out `creator_id`. Settings are the four `user_settings` columns. Member limits are 60 submissions and 10 quiz creations per 1-hour window, keyed by user ID.
+- **What a result contains:** the `results` columns (`snapshot`, `score`, `outcome_ranking`, `created_at`, `timed`, `duration_seconds`). `get_result` returns `claimable` (a yes or no) but never `owner_id`.
+- **What's kept in your browser:** local storage holds `settings`, Supabase's session (`sb-…-auth-token`, plus a short-lived PKCE code verifier during login) and `claim:<resultId>` (removed when claimed, and pruned at startup once expired). Session storage holds `quiz-takes`, `quiz-draft:*` and `auth:return`. `document.cookie` was empty in the running app, and the code sets no cookies.
+- **Who else handles your data:** no analytics or third-party scripts in the code (CLAUDE.md §7). Cloudflare sits in front of Supabase (`cf-connecting-ip`, and the error 1000 seen during the hosted rate-limit check).
+- **Deleting your data:** results, quizzes, settings, identities and sessions cascade from `auth.users`. Results keep their snapshot with `quiz_id` set to null. A deleted quiz's last version goes to `quiz_versions` and is cleaned up after 24 hours.
+- **Questions:** the repository is public (`gh repo view` shows PUBLIC).
+
+### Other build details
+
+- **Footer styles live in `src/styles/app.css`, not `privacy.css`.** The privacy page's stylesheet only loads with that page, but the footer is on every page.
+- **The login popup's link is 28 pixels tall.** It's small text on its own line, so it would have been 19 pixels. It gets the footer link's minimum size (`.login-privacy-link` in `app.css`). Following it closes the popup first (`onClick`), so the page-change rule then focuses the privacy page's `<h1>`.
+- **The date is shown as "November 20, 2026"**, in the US style the result pages use. If the page ships on a later day, update the `<time>` and its test.
+
+### Checks
+
+- `PrivacyPage.test.tsx` and the new `LoginDialog` test failed first, then passed. Lint, typecheck, `format:check`, `npm test` (299 tests in 40 files), `npm run db:test` and `npm run build` pass.
+- **In the browser, on the dev server:**
+  - The footer link goes to `/privacy`, focus moves to the `h1`, "Privacy" is announced and the title is "Privacy · Quiz Maker".
+  - The popup link closes the popup and lands the same way.
+  - The footer link is 49×32 pixels, and 74×48 at the largest text size.
+  - At the largest text size, in light theme with high contrast, in a 431-pixel-wide window, there's no sideways scrolling and the footer stays in the page flow.
+  - The console showed only Vite's and React's normal development messages.
+- **Not checked:** a screen reader pass (criterion 11). The headings, lists and link names are covered by the role-based tests and axe.
+
+### After deploying (owner, criterion 12)
+
+1. Open `https://<production-domain>/privacy` in a private window and check it loads.
+2. In Google Auth Platform → **Branding**, paste that address into **Application privacy policy link** and save.
+3. On **Audience**, click **Publish app**.
+4. In a private window, log in with a Google account that isn't a test user.

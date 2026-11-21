@@ -1,0 +1,11 @@
+/* The privacy page (specs/11-privacy-page.md). A readable line length for long text.
+   rem keeps it in step with the text-size setting. */
+.privacy-page > * {
+  max-width: 40rem;
+}
+.privacy-page h2 {
+  margin-top: 2rem;
+}
+.privacy-page li + li {
+  margin-top: 0.5rem;
+}

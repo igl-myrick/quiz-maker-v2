@@ -80,3 +80,21 @@ label > input[type='checkbox'] {
   margin: 0;
   top: 0;
 }
+
+/* ---- Site footer -------------------------------------------------------------
+   The footer with the Privacy link (src/routes/__root.tsx, specs/11-privacy-page.md).
+   It sits in the normal page flow, never fixed, so it can't cover content or the focused
+   element at any text size (WCAG 2.4.11). */
+.site-footer {
+  margin-top: 3rem;
+  padding-block: 1rem;
+}
+/* At least 24 by 24 CSS pixels to tap (WCAG 2.5.8). The login popup's privacy link
+   stands on its own line, so it gets the same size. */
+.site-footer a,
+.login-privacy-link {
+  display: inline-block;
+  min-height: 1.5rem;
+  min-width: 1.5rem;
+  padding-block: 0.25rem;
+}

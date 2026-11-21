@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { axe } from 'vitest-axe'
 import { takeAuthReturn } from '../lib/authReturn'
@@ -11,6 +12,22 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('../lib/supabase', () => ({
   supabase: { auth: { signInWithOAuth: mocks.signInWithOAuth } },
+}))
+
+// The popup only needs Link to render a plain link in these tests. The click handler is
+// kept so following the link can close the popup.
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({ to, onClick, children }: { to: string; onClick?: () => void; children: ReactNode }) => (
+    <a
+      href={to}
+      onClick={(event) => {
+        event.preventDefault()
+        onClick?.()
+      }}
+    >
+      {children}
+    </a>
+  ),
 }))
 
 function renderLogin(returnFocusId?: string) {
@@ -107,6 +124,19 @@ describe('LoginDialog', () => {
 
     await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
     expect(screen.getByRole('button', { name: 'Continue with Google' })).toBeEnabled()
+  })
+
+  it('links to the privacy page and closes when the link is followed', () => {
+    renderLogin()
+    openDialog()
+
+    const link = screen.getByRole('link', { name: 'Read the privacy page' })
+    expect(link).toHaveAttribute('href', '/privacy')
+    const dialog = getDialog()
+    expect(dialog).toHaveAttribute('open')
+
+    fireEvent.click(link)
+    expect(dialog).not.toHaveAttribute('open')
   })
 
   it('has no detectable accessibility violations', async () => {
