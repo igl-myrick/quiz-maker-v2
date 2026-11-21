@@ -154,6 +154,7 @@ These describe the local stack's defaults. **For the owner:** this is a gap agai
 
 - **Footer styles live in `src/styles/app.css`, not `privacy.css`.** The privacy page's stylesheet only loads with that page, but the footer is on every page.
 - **The login popup's link is 28 pixels tall.** It's small text on its own line, so it would have been 19 pixels. It gets the footer link's minimum size (`.login-privacy-link` in `app.css`). Following it closes the popup first (`onClick`), so the page-change rule then focuses the privacy page's `<h1>`.
+- **The footer sits at the bottom of short pages** (added at the owner's request after the first build). `#root` is a flex column at least as tall as the window, and `main` grows to fill it, so on a short page the footer and its border sit at the bottom. On a longer page it follows the content as before. It is never fixed, so 2.4.11 still holds. Main and the footer get `width: 100%`, because flex items with auto side margins otherwise shrink to fit. At 1920×1080, every page's heading position and content width were the same before and after. The footer ended exactly at the window's bottom on the home page, dashboard and not-found page, with no new scrollbar. On a 375-pixel-wide phone at the largest text size, there was no sideways scrolling and the Settings popup still opened normally.
 - **The date is shown as "November 20, 2026"**, in the US style the result pages use. If the page ships on a later day, update the `<time>` and its test.
 
 ### Checks
