@@ -45,9 +45,9 @@ describe('PrivacyPage', () => {
     renderAt('/privacy')
 
     await screen.findByRole('heading', { level: 1, name: 'Privacy' })
-    const time = screen.getByText('November 20, 2026')
+    const time = screen.getByText('November 23, 2026')
     expect(time.tagName).toBe('TIME')
-    expect(time).toHaveAttribute('datetime', '2026-11-20')
+    expect(time).toHaveAttribute('datetime', '2026-11-23')
   })
 
   it('links to GitHub issues for questions, with a name that says where it goes', async () => {

@@ -8,7 +8,7 @@ export function PrivacyPage() {
     <main className="units-container privacy-page">
       <h1 tabIndex={-1}>Privacy</h1>
       <p className="text-secondary">
-        Last updated: <time dateTime="2026-11-20">November 20, 2026</time>
+        Last updated: <time dateTime="2026-11-23">November 23, 2026</time>
       </p>
       <p>
         Quiz Maker is a small, free quiz site. It keeps as little about you as it can, and never
