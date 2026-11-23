@@ -44,7 +44,7 @@ Two library details matter:
    | `Content-Security-Policy` | see criterion 2 |
    | `X-Content-Type-Options` | `nosniff` |
    | `Referrer-Policy` | `strict-origin-when-cross-origin` |
-   | `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()` |
+   | `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=(), usb=()` |
 
 2. The Content-Security-Policy is exactly these directives, in this order:
 
@@ -117,7 +117,7 @@ Two library details matter:
 None open. Decided:
 
 - **`connect-src` host** (2026-11-20): the exact production project URL, `https://yslyxdjkzbdkxenwfkpy.supabase.co`, not a wildcard.
-- **`Permissions-Policy` list** (2026-11-20): the six features above, all turned off, including `interest-cohort=()`.
+- **`Permissions-Policy` list** (2026-11-20, changed 2026-11-23): camera, microphone, geolocation, payment and usb, all turned off. `interest-cohort=()` was in the first build but removed on 2026-11-23: browsers no longer recognise that feature, so it logged "Unrecognized feature" in the console on the preview.
 
 ## Build notes (2026-11-20)
 
