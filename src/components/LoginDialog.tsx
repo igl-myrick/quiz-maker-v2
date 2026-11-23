@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { useId, type RefObject } from 'react'
 import { clearAuthReturn, saveAuthReturn } from '../lib/authReturn'
 import { supabase } from '../lib/supabase'
@@ -94,6 +95,16 @@ export function LoginDialog({ dialogRef, returnFocusId }: LoginDialogProps) {
         <p className="text-sm">
           We only use your email address to keep your account. Your name and picture from Google or
           GitHub are never shown or shared.
+        </p>
+        {/* Closing first lets the page-change focus rule move focus to the new page's heading. */}
+        <p className="text-sm">
+          <Link
+            to="/privacy"
+            className="login-privacy-link"
+            onClick={() => dialogRef.current?.close()}
+          >
+            Read the privacy page
+          </Link>
         </p>
       </div>
     </dialog>
