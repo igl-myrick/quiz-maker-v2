@@ -9,6 +9,7 @@ import type { MyResult } from '../schemas/myResults'
 import type { QuizSummary } from '../schemas/searchResult'
 import { useAnnouncerStore } from '../stores/announcerStore'
 import { useAuthStore } from '../stores/authStore'
+import { showNotice, useNoticeStore } from '../stores/noticeStore'
 
 type AuthListener = (event: string, session: Session | null) => void
 type Page<T> = { items: T[]; next_cursor: { created_at: string; id: string } | null }
@@ -127,6 +128,7 @@ describe('DashboardPage', () => {
     queryClient.setDefaultOptions({ queries: { retry: false }, mutations: { retry: false } })
     useAuthStore.setState({ status: 'loading' }, true)
     useAnnouncerStore.setState({ message: '' })
+    useNoticeStore.setState({ notice: null })
     mocks.listResults.mockReset().mockImplementation(() => page([]))
     mocks.listQuizzes.mockReset().mockImplementation(() => page([]))
     mocks.summary.mockReset().mockResolvedValue({
@@ -434,6 +436,26 @@ describe('DashboardPage', () => {
     await waitFor(() =>
       expect(screen.getByRole('heading', { level: 1, name: 'Your dashboard' })).toHaveFocus(),
     )
+  })
+
+  it('shows no confirmation without a notice', async () => {
+    await renderDashboard()
+    await section('My quizzes').findByText(/haven’t made|no quizzes|Create/i)
+
+    expect(main().queryByText('Quiz created')).not.toBeInTheDocument()
+    expect(main().queryByText('Changes saved')).not.toBeInTheDocument()
+  })
+
+  it('shows a confirmation from the editor under the heading, until leaving the page', async () => {
+    showNotice('Quiz created')
+    const { router } = await renderDashboard()
+
+    const notice = await main().findByText('Quiz created')
+    expect(notice.closest('.dashboard-notice')).not.toBeNull()
+    expect(notice.closest('[role="status"], [aria-live]')).toBeNull()
+
+    await act(() => router.navigate({ to: '/search' }))
+    expect(useNoticeStore.getState().notice).toBeNull()
   })
 
   it('has no detectable accessibility violations', async () => {

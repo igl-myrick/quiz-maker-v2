@@ -456,19 +456,48 @@ describe('QuizEditorPage', () => {
     expect(main().getByLabelText('Title')).toHaveAccessibleDescription(/Enter a title/)
   })
 
-  it('publishes, clears the draft and opens the new quiz', async () => {
+  it('focuses the summary on the first Publish, so it scrolls into view', async () => {
+    await renderApp('/quizzes/new?part=questions')
+    await main().findByRole('heading', { name: 'Part 2 of 2: Questions' })
+
+    // Like a real mouse click: the button takes focus first.
+    const publish = main().getByRole('button', { name: 'Publish' })
+    act(() => publish.focus())
+    fireEvent.click(publish)
+
+    const summary = await main().findByRole('group', { name: 'Fix these before publishing' })
+    await waitFor(() => expect(summary).toHaveFocus())
+    // Still focused once everything has settled.
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(summary).toHaveFocus()
+  })
+
+  it('publishes, clears the draft and replaces the editor with the dashboard', async () => {
     saveDraft('quiz-draft:new', validTrivia())
     const { router } = await renderApp('/quizzes/new?part=questions')
     await waitFor(() => expect(announced()).toHaveTextContent('Restored your unsaved draft.'))
+    const historyLength = router.history.length
 
     fireEvent.click(main().getByRole('button', { name: 'Publish' }))
 
-    await waitFor(() => expect(router.state.location.search).toEqual({ quiz: QUIZ_ID }))
-    expect(router.state.location.pathname).toBe('/search')
+    await waitFor(() => expect(router.state.location.pathname).toBe('/dashboard'))
+    expect(router.history.length).toBe(historyLength)
+    expect(await main().findByText('Quiz created')).toBeInTheDocument()
     expect(sessionStorage.getItem('quiz-draft:new')).toBeNull()
     const [, args] = mocks.rpc.mock.calls.find(([name]) => name === 'save_quiz') ?? []
     expect(args.p_quiz).toMatchObject({ id: null, kind: 'trivia', title: 'Test Quiz' })
-    await waitFor(() => expect(announced()).toHaveTextContent('Quiz published'))
+    await waitFor(() => expect(announced()).toHaveTextContent('Quiz created'))
+  })
+
+  it('saves changes and says so on the dashboard', async () => {
+    const { router } = await renderApp(`/quizzes/${QUIZ_ID}/edit?part=questions`)
+    await main().findByRole('heading', { name: 'Part 2 of 2: Questions' })
+
+    fireEvent.click(main().getByRole('button', { name: 'Save changes' }))
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/dashboard'))
+    expect(await main().findByText('Changes saved')).toBeInTheDocument()
+    await waitFor(() => expect(announced()).toHaveTextContent('Changes saved'))
   })
 
   it.each([

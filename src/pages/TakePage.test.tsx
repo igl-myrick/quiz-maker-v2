@@ -216,6 +216,8 @@ describe('TakePage', () => {
     const summary = await main().findByRole('group', {
       name: 'Answer these questions before submitting',
     })
+    // Focused on the first press, so it scrolls into view (change 12).
+    await waitFor(() => expect(summary).toHaveFocus())
     fireEvent.click(within(summary).getByRole('link', { name: 'Question 1: Question text 1' }))
 
     await waitFor(() => expect(router.state.location.search).toEqual({ page: 1 }))
