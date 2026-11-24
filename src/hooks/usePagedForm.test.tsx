@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useState } from 'react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { axe } from 'vitest-axe'
@@ -63,6 +63,40 @@ function Harness({ serverMessage }: { serverMessage?: string }) {
 
 function fill(step: Step) {
   fireEvent.change(screen.getByLabelText(`Field ${step}`), { target: { value: 'x' } })
+}
+
+// The summary appears one render after the request, as it does in the browser when
+// React Hook Form's errors arrive after the editor asks for focus (change 12).
+function LateSummary() {
+  const [showErrors, setShowErrors] = useState(false)
+  const { headingRef, summaryRef, showSummary } = usePagedForm({
+    steps: ['only'] as const,
+    current: 'only',
+    goToStep: () => Promise.resolve(),
+    describeStep: () => 'Step 1',
+  })
+
+  return (
+    <>
+      <h2 ref={headingRef} tabIndex={-1}>
+        Step 1
+      </h2>
+      {showErrors && (
+        <div ref={summaryRef} tabIndex={-1} role="group" aria-label="Problems">
+          Problems
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={() => {
+          showSummary('finish')
+          setTimeout(() => setShowErrors(true), 0)
+        }}
+      >
+        Publish
+      </button>
+    </>
+  )
 }
 
 describe('usePagedForm', () => {
@@ -147,5 +181,15 @@ describe('usePagedForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Finish' }))
     await screen.findByRole('group')
     expect(await axe(container)).toHaveNoViolations()
+  })
+  it('focuses the summary even when it renders after the request', async () => {
+    render(<LateSummary />)
+    const publish = screen.getByRole('button', { name: 'Publish' })
+    act(() => publish.focus())
+
+    fireEvent.click(publish)
+    await act(() => new Promise((resolve) => setTimeout(resolve, 10)))
+
+    expect(screen.getByRole('group', { name: 'Problems' })).toHaveFocus()
   })
 })

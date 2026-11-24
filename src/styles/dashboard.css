@@ -1,5 +1,13 @@
 /* The dashboard (specs/07-ui-redesign.md, Phase 5). */
 
+/* "Quiz created ✓" / "Changes saved ✓" after publishing (specs/12-editor-and-results-polish.md).
+   --qm-correct is the site's success green, tuned for each theme and high contrast. */
+.dashboard-notice {
+  margin: 0.25rem 0 0;
+  color: var(--qm-correct);
+  font-weight: 700;
+}
+
 /* ---- Summary tiles (P5.3) -------------------------------------------------------- */
 .summary-tiles {
   display: grid;

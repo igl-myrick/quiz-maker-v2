@@ -25,6 +25,7 @@ import {
   type ValidationStage,
 } from '../../schemas/quiz'
 import { announce } from '../../stores/announcerStore'
+import { showNotice } from '../../stores/noticeStore'
 import { useConfirmDialog } from '../ConfirmDialog'
 import { ErrorSummary } from '../ui/ErrorSummary'
 import { StepPills } from '../ui/StepPills'
@@ -136,10 +137,12 @@ export function QuizEditor({ savedQuiz, part, onRestart, onLoadLatest }: QuizEdi
         void queryClient.invalidateQueries({ queryKey: ['quizzes'] })
         void queryClient.invalidateQueries({ queryKey: ['quiz', id] })
         void queryClient.invalidateQueries({ queryKey: ['me'] })
-        const message = savedQuiz ? 'Changes saved' : 'Quiz published'
-        // Announce once the new page is showing, so its own page-change announcement
-        // doesn't replace this one.
-        void navigate({ to: '/search', search: { quiz: id } }).then(() =>
+        const message = savedQuiz ? 'Changes saved' : 'Quiz created'
+        // The dashboard shows the message under its heading. It replaces the editor in
+        // history, so Back never returns to an emptied editor (change 12). Announce once
+        // the dashboard is showing, so its own page-change announcement doesn't replace this.
+        showNotice(message)
+        void navigate({ to: '/dashboard', replace: true }).then(() =>
           setTimeout(() => announce(message), 0),
         )
       },

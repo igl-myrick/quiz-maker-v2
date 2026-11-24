@@ -87,7 +87,8 @@ export function TriviaResult({ result, actions, children }: TriviaResultProps) {
                 <span aria-hidden="true">{outcome.icon} </span>
                 {outcome.text}
               </p>
-              <ul>
+              {/* No bullets: each answer already starts with its own ✓ or ✗ (change 12). */}
+              <ul className="flat-list">
                 {question.options.map((option) => {
                   const chosen = question.selected_option_ids.includes(option.id)
                   return (

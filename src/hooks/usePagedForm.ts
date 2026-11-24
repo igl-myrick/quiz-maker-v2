@@ -52,14 +52,21 @@ export function usePagedForm<Step extends string | number>({
     setFocusRequests((count) => count + 1)
   }
 
-  // Runs after every render. Waits until the target's step is showing.
+  // Runs after every render. Waits until the target's step is showing and the target
+  // itself has rendered: the error summary can appear a render after it is asked for,
+  // when the form's errors arrive later (change 12). A newer request replaces this one.
   useEffect(() => {
     const target = pendingFocus.current
     if (target === null || target.step !== current) return
+    const element =
+      target.kind === 'heading'
+        ? headingRef.current
+        : target.kind === 'summary'
+          ? summaryRef.current
+          : document.getElementById(target.id)
+    if (!element) return
     pendingFocus.current = null
-    if (target.kind === 'heading') headingRef.current?.focus()
-    else if (target.kind === 'summary') summaryRef.current?.focus()
-    else document.getElementById(target.id)?.focus()
+    element.focus()
   })
 
   const index = steps.indexOf(current)

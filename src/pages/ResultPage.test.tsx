@@ -153,6 +153,17 @@ describe('ResultPage', () => {
     expect(main().getByText('Finished in 3:05 (suggested 5:00)')).toBeInTheDocument()
   })
 
+  it('lists each question’s answers without bullets, since each has its own ✓ or ✗', async () => {
+    await renderResult(trivia())
+
+    const question = main()
+      .getByRole('heading', { name: 'Question 2: Which are capitals?' })
+      .closest('li')
+    const answers = within(question as HTMLElement).getByRole('list')
+    expect(answers).toHaveClass('flat-list')
+    expect(within(answers).getAllByRole('listitem').length).toBeGreaterThan(1)
+  })
+
   it('puts Copy link and Find another quiz inside the score card', async () => {
     await renderResult(trivia())
 
